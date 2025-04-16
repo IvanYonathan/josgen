@@ -33,7 +33,8 @@
         <title inertia>{{ config('app.name', 'Joshua Generation') }}</title>
         
         <!-- Add favicon -->
-        <link rel="icon" href="/logo.svg" type="image/svg+xml">
+       <link rel="icon" href="/logo/logoJG.png" type="image/png">
+
         <link rel="alternate icon" href="/favicon.ico" type="image/png">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
