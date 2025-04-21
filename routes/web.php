@@ -13,29 +13,37 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::get('division', function () {
-        return Inertia::render('division');
-    })->name('division');
+        return Inertia::render('division/index'); // Matches folder and file structure
+    })->name('division.index');
 
     Route::get('toDoList', function () {
-        return Inertia::render('toDoList');
-    })->name('toDoList');
+        return Inertia::render('toDoList/index'); // Matches folder and file structure
+    })->name('toDoList.index');
+
+    Route::get('toDoList/personal/index', function () {
+        return Inertia::render('toDoList/personal/index');
+    })->name('toDoList.personal.index');
+
+    Route::get('toDoList/division/index', function () {
+        return Inertia::render('toDoList/division/index');
+    })->name('toDoList.division.index');
 
     Route::get('event', function () {
-        return Inertia::render('event');
-    })->name('event');
+        return Inertia::render('event/index'); // Matches folder and file structure
+    })->name('event.index');
 
     Route::get('project', function () {
-        return Inertia::render('project');
-    })->name('project');
+        return Inertia::render('project/index'); // Matches folder and file structure
+    })->name('project.index');
 
     Route::get('treasury', function () {
-        return Inertia::render('treasury');
-    })->name('treasury');
+        return Inertia::render('treasury/index'); // Matches folder and file structure
+    })->name('treasury.index');
 
     Route::get('note', function () {
-        return Inertia::render('note');
-    })->name('note');
+        return Inertia::render('note/index'); // Matches folder and file structure
+    })->name('note.index');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';

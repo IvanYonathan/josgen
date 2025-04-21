@@ -18,8 +18,8 @@ export interface NavGroup {
 export interface NavItem {
     title: string;
     href: string;
-    icon?: LucideIcon | null;
-    isActive?: boolean;
+    icon?: React.ComponentType<{ className?: string }>; // Ensure the icon accepts className
+    children?: NavItem[];
 }
 
 export interface SharedData {

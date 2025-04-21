@@ -20,8 +20,18 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'To Do List',
-        href: '/toDoList',
-        icon: ListTodo ,
+        href: '#',
+        icon: ListTodo,
+        children: [
+            {
+                title: 'Personal To-Do',
+                href: '/toDoList/personal/index', // Matches the route in web.php
+            },
+            {
+                title: 'Division To-Do',
+                href: '/toDoList/division/index', // Matches the route in web.php
+            },
+        ],
     },
     {
         title: 'Divison',
