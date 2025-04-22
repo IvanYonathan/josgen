@@ -1,7 +1,7 @@
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { Head, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -11,7 +11,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
-    const userName = "John Doe"; // Replace with dynamic user data if available
+    // Access the logged-in user's data from the shared props
+    const { auth } = usePage<{ auth: { user: { name: string } } }>().props;
+    const userName = auth.user.name; 
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

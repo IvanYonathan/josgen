@@ -1,0 +1,31 @@
+/* globals.css */
+
+/* Hide scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Floating submenu for collapsed sidebar */
+.sidebar-floating-submenu {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  z-index: 50;
+  min-width: 200px;
+  padding: 0.5rem;
+  background-color: white;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  display: none;
+}
+.dark .sidebar-floating-submenu {
+  background-color: #1a1a1a;
+}
+
+.sidebar-menu-item.group:hover .sidebar-floating-submenu {
+  display: block;
+}

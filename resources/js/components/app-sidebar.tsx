@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, NotebookPen, CalendarDays, Lightbulb, ListTodo, Users, Handshake   } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, NotebookPen, CalendarDays, Lightbulb, ListTodo, Users, Handshake, Cog   } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -53,6 +53,25 @@ const mainNavItems: NavItem[] = [
         href: '/treasury',
         icon: Handshake,
     },
+    {
+        title: 'Setting',
+        href: '#',
+        icon: Cog,
+        children: [
+            {
+                title: 'User Setting',
+                href: '/setting/userSetting',
+            },
+            {
+                title: 'Permission Setting',
+                href: '/setting/permissionSetting',
+            },
+            {
+                title: 'Role Setting',
+                href: '/setting/roleSetting',
+            },
+        ],
+    },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -70,7 +89,7 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="inset" className="group">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
