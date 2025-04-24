@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, NotebookPen, CalendarDays, Lightbulb, ListTodo, Users, Handshake, Cog   } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, NotebookPen, CalendarDays, Lightbulb, ListTodo, Users, Handshake, Cog } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -16,7 +16,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Note',
         href: '/note',
-        icon: NotebookPen  ,
+        icon: NotebookPen,
     },
     {
         title: 'To Do List',
@@ -36,7 +36,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Divison',
         href: '/division',
-        icon: Users ,
+        icon: Users,
     },
     {
         title: 'Events',
@@ -106,7 +106,7 @@ export function AppSidebar() {
                 <NavMain items={mainNavItems} />
             </SidebarContent>
 
-            <SidebarFooter>
+            <SidebarFooter className="p-2"> {/* Adjusted padding */}
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>

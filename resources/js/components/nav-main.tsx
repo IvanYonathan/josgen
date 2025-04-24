@@ -32,72 +32,43 @@ export function NavMain({
 
       return (
         <SidebarMenuItem
-          key={item.title}
-          className="relative group sidebar-menu-item px-2 py-0"
+  key={item.title}
+  className="relative group sidebar-menu-item px-0 py-0" // Remove extra padding
+>
+  <div className="flex items-center justify-between w-full">
+    <SidebarMenuButton
+      asChild
+      isActive={item.href === page.url}
+      className="flex items-center gap-2 w-full px-2 py-2" // Adjust padding
+    >
+      {hasChildren ? (
+        <button
+          type="button"
+          onClick={() => toggleMenu(item.title)}
+          className="flex items-center gap-2 w-full text-left"
         >
-          <div className="flex items-center justify-between w-full">
-            <SidebarMenuButton asChild isActive={item.href === page.url}>
-              {hasChildren ? (
-                <button
-                  type="button"
-                  onClick={() => toggleMenu(item.title)}
-                  className="flex items-center gap-2 w-full text-left"
-                >
-                  {item.icon && <item.icon className="w-5 h-5" />}
-                  <span>{item.title}</span>
-                </button>
-              ) : (
-                <Link
-                  href={item.href}
-                  prefetch
-                  className="flex items-center gap-2 w-full"
-                >
-                  {item.icon && <item.icon className="w-5 h-5" />}
-                  <span>{item.title}</span>
-                </Link>
-              )}
-            </SidebarMenuButton>
-
-            {hasChildren && (
-              <button
-                type="button"
-                onClick={() => toggleMenu(item.title)}
-                className="ml-auto group-data-[collapsible=icon]:hidden"
-              >
-                {isOpen ? (
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                )}
-              </button>
-            )}
-          </div>
-
-          {/* Submenu logic */}
-          {hasChildren && (
-            <>
-              {!isCollapsed && isOpen && (
-                <SidebarMenu className="ml-6 mt-2 border-l border-neutral-200 dark:border-neutral-700 pl-4">
-                  {renderNavItems(item.children ?? [])}
-                </SidebarMenu>
-              )}
-
-              {isCollapsed && (
-                <div className="sidebar-floating-submenu">
-                  <SidebarMenu>
-                    {renderNavItems(item.children ?? [])}
-                  </SidebarMenu>
-                </div>
-              )}
-            </>
-          )}
-        </SidebarMenuItem>
+          {item.icon && <item.icon className="w-5 h-5" />}
+          <span>{item.title}</span>
+        </button>
+      ) : (
+        <Link
+          href={item.href}
+          prefetch
+          className="flex items-center gap-2 w-full"
+        >
+          {item.icon && <item.icon className="w-5 h-5" />}
+          <span>{item.title}</span>
+        </Link>
+      )}
+    </SidebarMenuButton>
+  </div>
+</SidebarMenuItem>
       );
     });
   };
 
   return (
-    <SidebarGroup className="px-2 py-0 h-full overflow-y-auto overflow-x-hidden scrollbar-hide">
+    <SidebarGroup className="px-2 py-0 h-full overflow-y-auto relative z-50">
       <SidebarMenu className="whitespace-normal break-words">
         {renderNavItems(items)}
       </SidebarMenu>

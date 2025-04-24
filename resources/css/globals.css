@@ -1,4 +1,13 @@
 /* globals.css */
+.sidebar {
+  position: relative;
+  width: var(--sidebar-width, 16rem); /* Ensure the sidebar width is consistent */
+  min-height: 100vh; /* Ensure it spans the full height */
+  overflow: hidden; /* Prevent content overflow */
+  padding: 0; /* Remove extra padding */
+  display: flex;
+  flex-direction: column; /* Ensure proper layout */
+}
 
 /* Hide scrollbar */
 .scrollbar-hide::-webkit-scrollbar {
@@ -14,13 +23,14 @@
   position: absolute;
   left: 100%;
   top: 0;
-  z-index: 50;
+  z-index: 1000; /* Ensure it appears above other elements */
   min-width: 200px;
   padding: 0.5rem;
   background-color: white;
   border-radius: 0.375rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   display: none;
+  overflow: visible; /* Prevent clipping */
 }
 .dark .sidebar-floating-submenu {
   background-color: #1a1a1a;
@@ -28,4 +38,47 @@
 
 .sidebar-menu-item.group:hover .sidebar-floating-submenu {
   display: block;
+}
+
+/* Sidebar menu item adjustments */
+.sidebar-menu-item {
+  padding: 0; /* Remove extra padding */
+  margin: 0; /* Remove extra margin */
+}
+
+.sidebar-menu-button {
+  padding: 0.5rem; /* Adjust padding for alignment */
+  display: flex;
+  align-items: center; /* Center icons vertically */
+  gap: 0.5rem; /* Add spacing between icon and text */
+}
+
+.sidebar-menu-button svg {
+  margin: 0; /* Remove extra margin */
+  width: 1.25rem; /* Adjust icon size */
+  height: 1.25rem;
+}
+
+/* Debugging styles */
+.sidebar {
+  border: 1px solid red; /* Debugging border */
+}
+.sidebar-floating-submenu {
+  border: 1px solid blue; /* Debugging border */
+}
+
+.sidebar-header,
+.sidebar-footer {
+  padding: 0.5rem; /* Ensure consistent padding */
+  display: flex;
+  align-items: center; /* Align content vertically */
+  gap: 0.5rem; /* Add spacing between elements */
+}
+
+.sidebar-header {
+  border-bottom: 1px solid var(--sidebar-border-color, #e5e7eb); /* Optional border */
+}
+
+.sidebar-footer {
+  border-top: 1px solid var(--sidebar-border-color, #e5e7eb); /* Optional border */
 }
