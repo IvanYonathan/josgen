@@ -35,7 +35,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Divison',
-        href: '/division',
+        href: '/divisions',
         icon: Users ,
     },
     {
