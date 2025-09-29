@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Users, CalendarDays, Briefcase, ListTodo } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface DivisionIndexProps {
     divisions: Division[];
@@ -20,19 +21,20 @@ interface DivisionIndexProps {
 
 
 export default function DivisionIndex({ divisions, canCreate }: DivisionIndexProps) {
+    const {t} = useTranslation('division');
     return (
         <AppLayout breadcrumbs={[{ title: 'Divisions', href: '/divisions' }]}>
             <Head title="Divisions" />
             
             <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">Divisions</h1>
+                    <h1 className="text-2xl font-bold">{t('title')}</h1>
                     
                     {canCreate && (
                         <Link href={route('divisions.create')}>
                             <Button>
                                 <PlusCircle className="h-4 w-4 mr-2" />
-                                Create Division
+                                {t('createDivision.button.create')}
                             </Button>
                         </Link>
                     )}
