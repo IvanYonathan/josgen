@@ -30,31 +30,6 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
-export interface User {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string;
-    email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
-}
-
-export interface Division {
-    id: number;
-    name: string;
-    description: string | null;
-    leader_id: number | null;
-    leader?: User;
-    created_at: string;
-    updated_at: string;
-    members_count?: number;
-    events_count?: number;
-    projects_count?: number;
-    todo_lists_count?: number;
-}
-
 export interface Event {
     id: number;
     title: string;

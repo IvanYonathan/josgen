@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\DivisionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -13,14 +12,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::get('division', function () {
-        return Inertia::render('division/index'); // Matches folder and file structure
-    })->name('division.index');
-
-    Route::resource('divisions', DivisionController::class);
-    Route::get('divisions/{division}/members', [DivisionController::class, 'members'])->name('divisions.members');
-    Route::post('divisions/{division}/members', [DivisionController::class, 'addMember'])->name('divisions.members.add');
-    Route::delete('divisions/{division}/members', [DivisionController::class, 'removeMember'])->name('divisions.members.remove');
+    // Division page - pure SPA, all data loaded via API
+    Route::get('divisions', function () {
+        return Inertia::render('division/division-page');
+    })->name('divisions.index');
 
     Route::get('toDoList', function () {
         return Inertia::render('toDoList/index'); // Matches folder and file structure
