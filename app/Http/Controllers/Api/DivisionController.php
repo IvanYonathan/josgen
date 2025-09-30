@@ -18,9 +18,10 @@ class DivisionController extends ApiController
             return $this->forbidden('You do not have permission to view divisions');
         }
 
-        $divisions = Division::with('leader')
+        $divisions = Division::with('leader:id,name')
             ->withCount(['members', 'events', 'projects', 'todoLists'])
-            ->get();
+            ->get()
+            ->makeHidden(['created_at', 'updated_at', 'leader_id']);
 
         return $this->success($divisions, 'Divisions retrieved successfully', $divisions->count());
     }

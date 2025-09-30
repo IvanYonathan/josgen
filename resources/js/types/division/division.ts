@@ -15,7 +15,18 @@ export interface Division {
 }
 
 export interface DivisionListResponse {
-  divisions: Division[];
+  id: number;
+  name: string;
+  description: string | null;
+  leader_id: number | null;
+  leader?: {
+    id: number;
+    name: string;
+  };
+  members_count?: number;
+  events_count?: number;
+  projects_count?: number;
+  todo_lists_count?: number;
 }
 
 export interface CreateDivisionRequest {

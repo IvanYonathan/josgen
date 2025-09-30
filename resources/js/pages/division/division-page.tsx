@@ -24,7 +24,7 @@ import {
   UserMinus
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
-import { Division, UpdateDivisionRequest } from '@/types/division/division';
+import { Division, DivisionListResponse, UpdateDivisionRequest } from '@/types/division/division';
 import { DivisionMembersResponse } from '@/types/division/members/division-members';
 import { User } from '@/types/user/user';
 import { CreateDivisionSheet } from './components/create-division-sheet';
@@ -53,7 +53,7 @@ export default function DivisionPage() {
     const [selectedDivisionId, setSelectedDivisionId] = useState<number | null>(null);
 
     // Division list state
-    const [divisions, setDivisions] = useState<Division[]>([]);
+    const [divisions, setDivisions] = useState<DivisionListResponse[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [canCreate, setCanCreate] = useState(false);
     const [loading, setLoading] = useState(true);
