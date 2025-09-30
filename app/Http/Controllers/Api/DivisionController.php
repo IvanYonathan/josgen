@@ -85,7 +85,8 @@ class DivisionController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        $division = Division::findOrFail($request->id);
+        $division = Division::findOrFail($request->id)
+        ->makeHidden(['created_at', 'leader_id']);
 
         if (!Auth::user()->can('edit divisions')) {
             return $this->forbidden('You do not have permission to edit divisions');
