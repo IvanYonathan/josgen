@@ -71,7 +71,15 @@ class AuthController extends ApiController
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+
+        // Delete current access token if it exists (Sanctum)
+        if ($user && $user->currentAccessToken()) {
+            $user->currentAccessToken()->delete();
+        }
+
+        // Also logout from web session
+        Auth::guard('web')->logout();
 
         return $this->success(null, 'Logout successful');
     }

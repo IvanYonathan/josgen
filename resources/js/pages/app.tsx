@@ -16,6 +16,8 @@ import { TreasuryPage } from './treasury/treasury-page';
 import { NotePage } from './note/note-page';
 import { NotFoundPage } from './not-found-page';
 import { ErrorPage } from './error-page';
+import ReactLoginPage from './auth/react-login-page';
+import ReactRegisterPage from './auth/react-register-page';
 import { useEffect } from 'react';
 
 function App() {
@@ -37,7 +39,11 @@ function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
-        {/* Application Routes */}
+        {/* Public Auth Routes */}
+        <Route path="/login" element={<ReactLoginPage />} />
+        <Route path="/register" element={<ReactRegisterPage />} />
+
+        {/* Protected Application Routes */}
         <Route element={<ApplicationLayout />} errorElement={<ErrorPage />}>
           <Route element={<DashboardLayout />}>
             <Route path="/" index element={<DashboardPage />} />

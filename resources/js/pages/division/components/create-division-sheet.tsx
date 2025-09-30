@@ -10,8 +10,7 @@ import { addDivisionMember } from '@/lib/api/division/members/add-division-membe
 import { CreateDivisionRequest, Division } from '@/types/division/division';
 import { User } from '@/types/user/user';
 import { useTranslation } from '@/hooks/use-translation';
-import { Loader2, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Loader2 } from 'lucide-react';
 
 interface CreateDivisionSheetProps {
   open: boolean;
@@ -84,21 +83,6 @@ export function CreateDivisionSheet({
     }
   };
 
-  const handleAddMember = (userId: string) => {
-    const user = availableUsers.find(u => u.id.toString() === userId);
-    if (user && !selectedMembers.find(m => m.id === user.id)) {
-      setSelectedMembers(prev => [...prev, user]);
-    }
-  };
-
-  const handleRemoveMember = (userId: number) => {
-    setSelectedMembers(prev => prev.filter(m => m.id !== userId));
-  };
-
-  const availableUsersForSelection = availableUsers.filter(
-    user => !selectedMembers.find(m => m.id === user.id)
-  );
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md">
@@ -119,9 +103,9 @@ export function CreateDivisionSheet({
             )}
 
             {/* Division Name */}
-            <div className="grid gap-2">
+            <div className="grid gap-2 ml-2 mr-2 mb-2">
               <Label htmlFor="name">
-                {t('createDivision.form.name.label')} *
+                {t('createDivision.form.name.label')}
               </Label>
               <Input
                 id="name"
@@ -136,7 +120,7 @@ export function CreateDivisionSheet({
             </div>
 
             {/* Description */}
-            <div className="grid gap-2">
+            <div className="grid gap-2 ml-2 mr-2 mb-2">
               <Label htmlFor="description">
                 {t('createDivision.form.description.label')}
               </Label>
@@ -150,7 +134,7 @@ export function CreateDivisionSheet({
             </div>
 
             {/* Leader Selection */}
-            <div className="grid gap-2">
+            <div className="grid gap-2 ml-2 mr-2 mb-2">
               <Label htmlFor="leader">
                 {t('createDivision.form.leader.label')}
               </Label>
@@ -175,44 +159,6 @@ export function CreateDivisionSheet({
               </Select>
             </div>
 
-            {/* Members Selection */}
-            <div className="grid gap-2">
-              <Label>{t('createDivision.form.members.label')} (Optional)</Label>
-
-              {/* Selected Members */}
-              {selectedMembers.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {selectedMembers.map(member => (
-                    <Badge key={member.id} variant="secondary" className="flex items-center gap-1">
-                      {member.name}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMember(member.id)}
-                        className="ml-1 hover:text-red-600"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {/* Add Member Select */}
-              {availableUsersForSelection.length > 0 && (
-                <Select onValueChange={handleAddMember}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Add members to division" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableUsersForSelection.map(user => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.name} ({user.email})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
           </div>
 
           <SheetFooter>

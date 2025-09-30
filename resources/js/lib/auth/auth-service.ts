@@ -1,7 +1,9 @@
 import { TokenManager } from "./token-manager";
 import { login as apiLogin, logout as apiLogout, register as apiRegister, me as apiMe } from "@/lib/api/auth";
-import type { LoginRequest, RegisterRequest } from "@/types/api/requests";
-import type { User } from "@/types";
+import { User } from "@/types/user/user";
+import { LoginRequest } from "../api/auth/login";
+import { RegisterRequest } from "@/types/auth/auth";
+
 
 /**
  * Authentication Service
