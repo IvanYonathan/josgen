@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Head } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +23,6 @@ import {
   Trash2,
   UserMinus
 } from 'lucide-react';
-import AppLayout from '@/layouts/app-layout';
 import { useTranslation } from '@/hooks/use-translation';
 import { Division, UpdateDivisionRequest } from '@/types/division/division';
 import { DivisionMembersResponse } from '@/types/division/members/division-members';
@@ -332,17 +330,11 @@ export default function DivisionPage() {
     };
 
 
-    const breadcrumbs = viewMode === 'list'
-        ? [{ title: 'Divisions', href: '/divisions' }]
-        : [
-            { title: 'Divisions', href: '/divisions' },
-            { title: selectedDivision?.name || 'Division Details', href: '/divisions' }
-        ];
+    // Breadcrumbs now handled by DashboardLayout
 
     return (
         <>
-            <AppLayout breadcrumbs={breadcrumbs}>
-                <Head title={viewMode === 'list' ? 'Divisions' : selectedDivision?.name || 'Division Details'} />
+            {/* Layout and breadcrumbs now handled by DashboardLayout */}
 
                 {viewMode === 'list' ? (
                     // DIVISION LIST VIEW
@@ -796,7 +788,6 @@ export default function DivisionPage() {
                         )}
                     </div>
                 )}
-            </AppLayout>
 
             {/* Create Division Sheet */}
             <CreateDivisionSheet

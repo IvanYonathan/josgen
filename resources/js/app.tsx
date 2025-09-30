@@ -10,7 +10,14 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
-    resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
+    resolve: (name) => {
+        // For the 'app' page, load our SPA
+        if (name === 'app') {
+            return import('./pages/app');
+        }
+        // For all other pages (auth, settings, etc.), use the normal Inertia resolution
+        return resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx'));
+    },
     setup({ el, App, props }) {
         const root = createRoot(el);
 

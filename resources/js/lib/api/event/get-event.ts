@@ -4,6 +4,6 @@ import { EventResponse, GetEventRequest } from "@/types/event/event";
 
 export async function getEvent(data: GetEventRequest): Promise<EventResponse> {
   const response = await AxiosJosgen.post<ApiResponse<EventResponse>>("/event/get", data);
-  if (!response.data.success) throw new Error(response.data.message);
+  if (!response.data.status) throw new Error(response.data.message);
   return response.data.data;
 }
