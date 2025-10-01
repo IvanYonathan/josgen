@@ -11,8 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('note', function (Blueprint $table) {
+        Schema::create('notes', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
+            $table->text('content');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->unsignedBigInteger('division_id')->nullable();
+            $table->foreign('division_id')->references('id')->on('divisions')->nullOnDelete();
+            $table->boolean('is_private')->default(true);
             $table->timestamps();
         });
     }
@@ -22,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('note');
+        Schema::dropIfExists('notes');
     }
 };
