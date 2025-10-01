@@ -1,0 +1,52 @@
+{
+    "title": "Divisions",
+    "description": "View and Manage Divisions here",
+    "createDivision":{
+        "title": "Create New Division",
+        "description": "Fill the form below to create a new division",
+        "form": {
+            "name": {
+                "label": "Division Name",
+                "placeholder": "Enter division name"
+            },
+            "description": {
+                "label": "Description",
+                "placeholder": "Enter division description (optional)"
+            },
+            "leader": {
+                "label": "Division Leader",
+                "placeholder": "Select a leader (optional)"
+            },
+            "members": {
+                "label": "Members"
+            }
+        },
+        "button":{
+            "create": "Create Division",
+            "cancel": "Cancel"
+        }
+    },
+    "editDivision":{
+        "title": "Edit Division",
+        "description": "Update division information",
+        "form": {
+            "name": {
+                "label": "Division Name",
+                "placeholder": "Enter division name"
+            },
+            "description": {
+                "label": "Description",
+                "placeholder": "Enter division description (optional)"
+            },
+            "leader": {
+                "label": "Division Leader",
+                "placeholder": "Select a leader (optional)"
+            }
+        },
+        "button":{
+            "update": "Update Division",
+            "delete": "Delete Division",
+            "cancel": "Cancel"
+        }
+    }
+}

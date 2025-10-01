@@ -19,7 +19,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         <SidebarMenuItem key={item.title} className="flex flex-col">
             <div className="flex items-center justify-between">
                 <SidebarMenuButton asChild isActive={item.href === page.url}>
-                    <Link href={item.href} prefetch className="flex items-center gap-2">
+                    <Link href={item.href} className="flex items-center gap-2">
                         {item.icon && <item.icon className="w-5 h-5" />} {/* Render the icon */}
                         <span>{item.title}</span>
                     </Link>
