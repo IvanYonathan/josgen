@@ -7,6 +7,8 @@ import { TaskManager } from './components/task-manager';
 import { personalTasks, divisionTasks } from '@/data/mock-tasks';
 import { me } from '@/lib/api/auth';
 import { User } from '@/types/user/user';
+import { DailyVerseCard } from '@/components/common/daily-verse-card';
+import { useDailyVerse } from '@/hooks/use-daily-verse';
 
 const AppLayout: FC<{ children: React.ReactNode }> = ({ children }) => (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 font-sans">
@@ -29,6 +31,7 @@ const Link: FC<{ href: string; children: React.ReactNode; className?: string }> 
 
 export default function Dashboard() {
     const [user, setUser] = useState<User | null>(null);
+    const { verse, loading: verseLoading } = useDailyVerse();
 
     const [activeView, setActiveView] = useState('personal');
     
@@ -94,6 +97,15 @@ export default function Dashboard() {
                     
                     {/* Calendar & Details Column (takes 1/3 width) */}
                     <div className="md:col-span-1 flex flex-col gap-4">
+                        {/* Daily Verse Card */}
+                        {!verseLoading && verse && (
+                            <DailyVerseCard
+                                reference={verse.reference}
+                                text={verse.text}
+                                url={verse.url}
+                            />
+                        )}
+
                         <div className="dark:border-sidebar-border/70 border border-sidebar-border/70 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
                             <Calendar 
                                 tasks={tasksToDisplay} 
