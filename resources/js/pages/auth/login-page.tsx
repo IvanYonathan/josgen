@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import ReactAuthLayout from '@/layouts/auth/react-auth-layout';
 import { AuthService } from '@/lib/auth/auth-service';
 
-export default function ReactLoginPage() {
+export default function LoginPage() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',

@@ -16,8 +16,8 @@ import { TreasuryPage } from './treasury/treasury-page';
 import { NotePage } from './note/note-page';
 import { NotFoundPage } from './not-found-page';
 import { ErrorPage } from './error-page';
-import ReactLoginPage from './auth/react-login-page';
-import ReactRegisterPage from './auth/react-register-page';
+import LoginPage from './auth/login-page';
+import RegisterPage from './auth/register-page';
 import { useEffect } from 'react';
 
 function App() {
@@ -40,8 +40,8 @@ function App() {
     createRoutesFromElements(
       <>
         {/* Public Auth Routes */}
-        <Route path="/login" element={<ReactLoginPage />} />
-        <Route path="/register" element={<ReactRegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         {/* Protected Application Routes */}
         <Route element={<ApplicationLayout />} errorElement={<ErrorPage />}>

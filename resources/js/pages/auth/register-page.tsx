@@ -1,40 +1,53 @@
-import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
-
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
+import { useState, FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
+import ReactAuthLayout from '@/layouts/auth/react-auth-layout';
+import { AuthService } from '@/lib/auth/auth-service';
 
-type RegisterForm = {
-    name: string;
-    email: string;
-    password: string;
-    password_confirmation: string;
-};
-
-export default function Register() {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<RegisterForm>>({
+export default function RegisterPage() {
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
         password_confirmation: '',
     });
+    const [processing, setProcessing] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const submit: FormEventHandler = (e) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        post(route('register'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
+
+        setProcessing(true);
+        setErrors({});
+
+        try {
+            await AuthService.register(formData);
+
+            // Redirect to dashboard on success
+            navigate('/dashboard');
+        } catch (error) {
+            setErrors({
+                general: error instanceof Error ? error.message : 'Failed to register'
+            });
+        } finally {
+            setProcessing(false);
+        }
     };
 
     return (
-        <AuthLayout title="Create an account" description="Enter your details below to create your account">
-            <Head title="Register" />
-            <form className="flex flex-col gap-6" onSubmit={submit}>
+        <ReactAuthLayout title="Create an account" description="Enter your details below to create your account">
+            <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+                {/* General Error */}
+                {errors.general && (
+                    <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
+                        {errors.general}
+                    </div>
+                )}
+
                 <div className="grid gap-6">
                     <div className="grid gap-2">
                         <Label htmlFor="name">Name</Label>
@@ -45,12 +58,11 @@ export default function Register() {
                             autoFocus
                             tabIndex={1}
                             autoComplete="name"
-                            value={data.name}
-                            onChange={(e) => setData('name', e.target.value)}
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             disabled={processing}
                             placeholder="Full name"
                         />
-                        <InputError message={errors.name} className="mt-2" />
                     </div>
 
                     <div className="grid gap-2">
@@ -61,12 +73,11 @@ export default function Register() {
                             required
                             tabIndex={2}
                             autoComplete="email"
-                            value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             disabled={processing}
                             placeholder="email@example.com"
                         />
-                        <InputError message={errors.email} />
                     </div>
 
                     <div className="grid gap-2">
@@ -77,12 +88,11 @@ export default function Register() {
                             required
                             tabIndex={3}
                             autoComplete="new-password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             disabled={processing}
                             placeholder="Password"
                         />
-                        <InputError message={errors.password} />
                     </div>
 
                     <div className="grid gap-2">
@@ -93,27 +103,26 @@ export default function Register() {
                             required
                             tabIndex={4}
                             autoComplete="new-password"
-                            value={data.password_confirmation}
-                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            value={formData.password_confirmation}
+                            onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
                             disabled={processing}
                             placeholder="Confirm password"
                         />
-                        <InputError message={errors.password_confirmation} />
                     </div>
 
                     <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                        {processing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         Create account
                     </Button>
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
                     Already have an account?{' '}
-                    <TextLink href={route('login')} tabIndex={6}>
+                    <Link to="/login" className="text-primary hover:underline" tabIndex={6}>
                         Log in
-                    </TextLink>
+                    </Link>
                 </div>
             </form>
-        </AuthLayout>
+        </ReactAuthLayout>
     );
 }
