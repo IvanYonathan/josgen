@@ -1,11 +1,12 @@
-import { useState, type FC } from 'react';
-import { User, Users } from 'lucide-react';
-import { usePage } from '@inertiajs/react';
+import { useEffect, useState, type FC } from 'react';
+import { User as UserIcon, Users } from 'lucide-react';
 import { Task } from '@/types/todo-list/task';
 import { DateDetailView } from './components/date-detail-view';
 import { Calendar } from './components/calendar';
 import { TaskManager } from './components/task-manager';
 import { personalTasks, divisionTasks } from '@/data/mock-tasks';
+import { me } from '@/lib/api/auth';
+import { User } from '@/types/user/user';
 
 const AppLayout: FC<{ children: React.ReactNode }> = ({ children }) => (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 font-sans">
@@ -27,8 +28,7 @@ const Link: FC<{ href: string; children: React.ReactNode; className?: string }> 
 );
 
 export default function Dashboard() {
-    const { auth } = usePage<{ auth: { user: { name: string } } }>().props;
-    const userName = auth?.user?.name || 'User';
+    const [user, setUser] = useState<User | null>(null);
 
     const [activeView, setActiveView] = useState('personal');
     
@@ -36,6 +36,12 @@ export default function Dashboard() {
         selectedDate: '',
         selectedTasks: []
     });
+
+    useEffect(() => {
+        me().then(
+            userData => setUser(userData.user))
+            .catch(err => console.error('Failed to fetch user data:', err));
+    }, []);
 
     const handleDateClick = (date: string, tasks: Task[]) => {
         if (dateDetail.selectedDate === date) {
@@ -59,7 +65,7 @@ export default function Dashboard() {
     return (
         <AppLayout>
             <Head title="Dashboard" />
-            <div className="flex flex-col p-6 rounded-xl"><h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Welcome, {userName}</h1><p className="text-sm text-neutral-600 dark:text-neutral-400">Here's your schedule for {today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.</p></div>
+            <div className="flex flex-col p-6 rounded-xl"><h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Welcome, {`${user?.name}`}</h1><p className="text-sm text-neutral-600 dark:text-neutral-400">Here's your schedule for {today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.</p></div>
             
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 mt-6">
                 <div className="grid md:grid-cols-3 gap-4">
@@ -71,7 +77,7 @@ export default function Dashboard() {
                                 <p className="text-sm text-gray-600 dark:text-gray-400">{activeView === 'personal' ? 'Your personal tasks' : 'Team & division tasks'}</p>
                             </div>
                             <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                                <button onClick={() => setActiveView('personal')} className={`flex items-center px-3 py-1 rounded text-xs font-medium transition-colors ${activeView === 'personal' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'}`}><User className="w-3 h-3 mr-1" />Personal</button>
+                                <button onClick={() => setActiveView('personal')} className={`flex items-center px-3 py-1 rounded text-xs font-medium transition-colors ${activeView === 'personal' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'}`}><UserIcon className="w-3 h-3 mr-1" />Personal</button>
                                 <button onClick={() => setActiveView('division')} className={`flex items-center px-3 py-1 rounded text-xs font-medium transition-colors ${activeView === 'division' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'}`}><Users className="w-3 h-3 mr-1" />Division</button>
                             </div>
                         </div>
