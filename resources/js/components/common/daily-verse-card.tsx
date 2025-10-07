@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface DailyVerseCardProps {
     reference: string;
@@ -8,6 +9,7 @@ interface DailyVerseCardProps {
 }
 
 export function DailyVerseCard({ reference, text, url }: Readonly<DailyVerseCardProps>) {
+    const {t} = useTranslation('components/common/daily-verse-card');
     const [copied, setCopied] = useState(false);
 
     const handleCopy = async () => {
@@ -27,7 +29,7 @@ export function DailyVerseCard({ reference, text, url }: Readonly<DailyVerseCard
             <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                     <h3 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-3">
-                        Verse of the Day
+                        {t('title')}
                     </h3>
                     <blockquote className="text-base leading-relaxed text-gray-800 dark:text-gray-100 mb-4 italic">
                         "{text}"
@@ -58,7 +60,7 @@ export function DailyVerseCard({ reference, text, url }: Readonly<DailyVerseCard
                     rel="noopener noreferrer"
                     className="inline-block mt-3 text-xs text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                    Read on Bible.com →
+                    {t('readOnBibleCom')}
                 </a>
             )}
         </div>
