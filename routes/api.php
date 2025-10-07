@@ -20,6 +20,13 @@ Route::prefix('auth')->group(function () {
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
 });
 
+// Daily Verse endpoints (public - no auth required)
+Route::prefix('daily-verse')->group(function () {
+    Route::get('/', [DailyVerseController::class, 'index']);
+    Route::get('/by-date', [DailyVerseController::class, 'getByDate']);
+    Route::get('/upcoming', [DailyVerseController::class, 'upcoming']);
+});
+
 // Protected endpoints (require authentication)
 Route::middleware(['auth:web,sanctum'])->group(function () {
 
@@ -29,13 +36,6 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('me', [AuthController::class, 'me']);
         Route::post('update-profile', [AuthController::class, 'updateProfile']);
         Route::post('change-password', [AuthController::class, 'changePassword']);
-    });
-
-    // Daily Verse endpoints
-    Route::prefix('daily-verse')->group(function () {
-        Route::get('/', [DailyVerseController::class, 'index']);
-        Route::get('/by-date', [DailyVerseController::class, 'getByDate']);
-        Route::get('/upcoming', [DailyVerseController::class, 'upcoming']);
     });
 
     // User endpoints
