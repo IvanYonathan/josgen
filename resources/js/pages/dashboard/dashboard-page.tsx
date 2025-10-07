@@ -1,5 +1,5 @@
 import { useEffect, useState, type FC } from 'react';
-import { User as UserIcon, Users } from 'lucide-react';
+import { UserIcon, Users } from 'lucide-react';
 import { Task } from '@/types/todo-list/task';
 import { DateDetailView } from './components/date-detail-view';
 import { Calendar } from './components/calendar';
