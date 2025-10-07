@@ -2,25 +2,26 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link } from 'react-router-dom';
 import { type PropsWithChildren } from 'react';
 
-const sidebarNavItems: NavItem[] = [
+interface SettingsNavItem {
+    title: string;
+    href: string;
+}
+
+const sidebarNavItems: SettingsNavItem[] = [
     {
         title: 'Profile',
         href: '/settings/profile',
-        icon: null,
     },
     {
         title: 'Password',
         href: '/settings/password',
-        icon: null,
     },
     {
         title: 'Appearance',
         href: '/settings/appearance',
-        icon: null,
     },
 ];
 
@@ -45,11 +46,12 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                 size="sm"
                                 variant="ghost"
                                 asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': currentPath === item.href,
-                                })}
+                                className={cn(
+                                    'w-full justify-start',
+                                    currentPath === item.href && 'bg-muted'
+                                )}
                             >
-                                <Link href={item.href} prefetch>
+                                <Link to={item.href}>
                                     {item.title}
                                 </Link>
                             </Button>

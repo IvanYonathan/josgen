@@ -30,6 +30,12 @@ export function DashboardLayout() {
       breadcrumbs.push({ title: 'Personal To-Do', href: '/toDoList/personal' });
     } else if (path === '/toDoList/division') {
       breadcrumbs.push({ title: 'Division To-Do', href: '/toDoList/division' });
+    } else if (path === '/settings/profile') {
+      breadcrumbs.push({ title: 'Profile settings', href: '/settings/profile' });
+    } else if (path === '/settings/password') {
+      breadcrumbs.push({ title: 'Password settings', href: '/settings/password' });
+    } else if (path === '/settings/appearance') {
+      breadcrumbs.push({ title: 'Appearance settings', href: '/settings/appearance' });
     }
 
     return breadcrumbs;

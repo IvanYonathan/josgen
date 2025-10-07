@@ -20,3 +20,8 @@ export interface ChangePasswordRequest {
   password: string;
   password_confirmation: string;
 }
+
+export interface UpdateProfileRequest {
+  name: string;
+  email: string;
+}

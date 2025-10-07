@@ -3,5 +3,6 @@ export { register } from './register';
 export { logout } from './logout';
 export { me } from './me';
 export { changePassword } from './change-password';
+export { updateProfile } from './update-profile';
 export { forgotPassword } from './forgot-password';
 export { resetPassword } from './reset-password';

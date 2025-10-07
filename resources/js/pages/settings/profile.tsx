@@ -1,52 +1,61 @@
-import { type BreadcrumbItem, type SharedData } from '@/types';
-import { Transition } from '@headlessui/react';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
-
+import { FormEventHandler, useEffect, useState } from 'react';
 import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import { me, updateProfile } from '@/lib/api/auth';
+import { User } from '@/types/user/user';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Profile settings',
-        href: '/settings/profile',
-    },
-];
+export default function Profile() {
+    const [user, setUser] = useState<User | null>(null);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
+    const [processing, setProcessing] = useState(false);
+    const [recentlySuccessful, setRecentlySuccessful] = useState(false);
 
-interface ProfileForm {
-    name: string;
-    email: string;
-}
+    useEffect(() => {
+        document.title = 'Profile settings';
 
-export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
-    const { auth } = usePage<SharedData>().props;
+        me().then(data => {
+            setUser(data.user);
+            setName(data.user.name);
+            setEmail(data.user.email);
+        }).catch(err => console.error('Failed to fetch user data:', err));
+    }, []);
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
-        name: auth.user.name,
-        email: auth.user.email,
-    });
-
-    const submit: FormEventHandler = (e) => {
+    const submit: FormEventHandler = async (e) => {
         e.preventDefault();
+        setProcessing(true);
+        setErrors({});
 
-        patch(route('profile.update'), {
-            preserveScroll: true,
-        });
+        try {
+            const updatedUser = await updateProfile({ name, email });
+            setUser(updatedUser);
+            setRecentlySuccessful(true);
+            setTimeout(() => setRecentlySuccessful(false), 2000);
+        } catch (error: any) {
+            if (error.response?.data?.errors) {
+                setErrors(error.response.data.errors);
+            } else {
+                console.error('Failed to update profile:', error);
+            }
+        } finally {
+            setProcessing(false);
+        }
     };
 
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Profile settings" />
+    if (!user) {
+        return null;
+    }
 
-            <SettingsLayout>
-                <div className="space-y-6">
-                    <HeadingSmall title="Profile information" description="Update your name and email address" />
+    return (
+        <SettingsLayout>
+            <div className="space-y-6">
+                <HeadingSmall title="Profile information" description="Update your name and email address" />
 
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">
@@ -55,8 +64,8 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                             <Input
                                 id="name"
                                 className="mt-1 block w-full"
-                                value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 required
                                 autoComplete="name"
                                 placeholder="Full name"
@@ -72,8 +81,8 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 id="email"
                                 type="email"
                                 className="mt-1 block w-full"
-                                value={data.email}
-                                onChange={(e) => setData('email', e.target.value)}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                                 autoComplete="username"
                                 placeholder="Email address"
@@ -82,46 +91,17 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                             <InputError className="mt-2" message={errors.email} />
                         </div>
 
-                        {mustVerifyEmail && auth.user.email_verified_at === null && (
-                            <div>
-                                <p className="text-muted-foreground -mt-4 text-sm">
-                                    Your email address is unverified.{' '}
-                                    <Link
-                                        href={route('verification.send')}
-                                        method="post"
-                                        as="button"
-                                        className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                    >
-                                        Click here to resend the verification email.
-                                    </Link>
-                                </p>
-
-                                {status === 'verification-link-sent' && (
-                                    <div className="mt-2 text-sm font-medium text-green-600">
-                                        A new verification link has been sent to your email address.
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
                         <div className="flex items-center gap-4">
                             <Button disabled={processing}>Save</Button>
 
-                            <Transition
-                                show={recentlySuccessful}
-                                enter="transition ease-in-out"
-                                enterFrom="opacity-0"
-                                leave="transition ease-in-out"
-                                leaveTo="opacity-0"
-                            >
+                            {recentlySuccessful && (
                                 <p className="text-sm text-neutral-600">Saved</p>
-                            </Transition>
-                        </div>
-                    </form>
-                </div>
+                            )}
+                    </div>
+                </form>
+            </div>
 
-                <DeleteUser />
-            </SettingsLayout>
-        </AppLayout>
+            <DeleteUser />
+        </SettingsLayout>
     );
 }

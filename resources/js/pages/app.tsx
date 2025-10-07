@@ -18,6 +18,9 @@ import { NotFoundPage } from './not-found-page';
 import { ErrorPage } from './error-page';
 import LoginPage from './auth/login-page';
 import RegisterPage from './auth/register-page';
+import AppearancePage from './settings/appearance';
+import ProfilePage from './settings/profile';
+import PasswordPage from './settings/password';
 import { useEffect } from 'react';
 
 function App() {
@@ -57,6 +60,11 @@ function App() {
             {/* Todo List Routes */}
             <Route path="/toDoList/personal" element={<PersonalTodoListPage />} />
             <Route path="/toDoList/division" element={<DivisionTodoListPage />} />
+
+            {/* Settings Routes */}
+            <Route path="/settings/appearance" element={<AppearancePage />} />
+            <Route path="/settings/profile" element={<ProfilePage />} />
+            <Route path="/settings/password" element={<PasswordPage />} />
           </Route>
         </Route>
 
