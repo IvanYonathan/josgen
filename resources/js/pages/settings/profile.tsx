@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import SettingsLayout from '@/layouts/settings/layout';
-import { me, updateProfile } from '@/lib/api/auth';
+import { updateProfile } from '@/lib/api/auth/update-profile';
+import { me } from '@/lib/api/auth/me';
 import { User } from '@/types/user/user';
 
 export default function Profile() {

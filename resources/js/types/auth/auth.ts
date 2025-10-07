@@ -8,6 +8,12 @@ export interface AuthResponse {
   expires_in: number;
 }
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+  remember?: boolean;
+}
+
 export interface RegisterRequest {
   name: string;
   email: string;

@@ -5,7 +5,7 @@ import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { changePassword } from '@/lib/api/auth';
+import { changePassword } from '@/lib/api/auth/change-password';
 
 export default function Password() {
     const passwordInput = useRef<HTMLInputElement>(null);
