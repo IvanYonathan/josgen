@@ -18,13 +18,15 @@ class DailyVerseSeeder extends Seeder
             ['name' => 'New International Version', 'language' => 'en']
         );
 
-        // Read CSV file
-        $csvPath = base_path('Upcoming Verse of the Day .csv');
+        // Find CSV file - supports dynamic filenames
+        $csvPath = $this->findVerseCSV();
 
-        if (!file_exists($csvPath)) {
-            $this->command->error('CSV file not found');
+        if (!$csvPath) {
+            $this->command->error('CSV file not found. Expected pattern: "*VOTD*.csv" in project root');
             return;
         }
+
+        $this->command->info("Found CSV: " . basename($csvPath));
 
         $file = fopen($csvPath, 'r');
 
@@ -99,5 +101,24 @@ class DailyVerseSeeder extends Seeder
 
         fclose($file);
         $this->command->info("Seeded {$count} daily verses!");
+    }
+
+    /**
+     * Find the verse CSV file (supports dynamic filenames)
+     */
+    private function findVerseCSV(): ?string
+    {
+        $basePath = base_path();
+
+        // Pattern: Any CSV with "VOTD" (Verse of the Day) in the name
+        $pattern = $basePath . '/*VOTD*.csv';
+        $files = glob($pattern);
+
+        if (empty($files)) {
+            return null;
+        }
+
+        // Return the first matching file (or most recent if multiple)
+        return $files[0];
     }
 }

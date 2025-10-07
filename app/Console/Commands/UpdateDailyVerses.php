@@ -33,13 +33,13 @@ class UpdateDailyVerses extends Command
         $this->newLine();
 
         // Step 1: Check CSV exists
-        $csvPath = base_path('Upcoming Verse of the Day .csv');
-        if (!file_exists($csvPath)) {
-            $this->error('❌ CSV file not found: ' . $csvPath);
+        $csvPath = $this->findVerseCSV();
+        if (!$csvPath) {
+            $this->error('❌ CSV file not found. Expected pattern: "*VOTD*.csv" in project root');
             return Command::FAILURE;
         }
 
-        $this->info('✅ CSV file found');
+        $this->info('✅ CSV file found: ' . basename($csvPath));
 
         // Step 2: Count old verses
         $oldCount = DailyVerse::whereDate('scheduled_date', '<', now())->count();
@@ -97,5 +97,24 @@ class UpdateDailyVerses extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Find the verse CSV file (supports dynamic filenames)
+     */
+    private function findVerseCSV(): ?string
+    {
+        $basePath = base_path();
+
+        // Pattern: Any CSV with "VOTD" in the name
+        $pattern = $basePath . '/*VOTD*.csv';
+        $files = glob($pattern);
+
+        if (empty($files)) {
+            return null;
+        }
+
+        // Return the first matching file
+        return $files[0];
     }
 }
