@@ -5,8 +5,9 @@ import { DateDetailView } from './components/date-detail-view';
 import { Calendar } from './components/calendar';
 import { TaskManager } from './components/task-manager';
 import { personalTasks, divisionTasks } from '@/data/mock-tasks';
-import { me } from '@/lib/api/auth';
+
 import { User } from '@/types/user/user';
+import { me } from '@/lib/api/auth/me';
 
 const AppLayout: FC<{ children: React.ReactNode }> = ({ children }) => (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 font-sans">

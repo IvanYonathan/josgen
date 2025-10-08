@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getDailyVerse } from '@/lib/api/daily-verse';
+import { getDailyVerse } from '@/lib/api/daily-verse/get-daily-verse';
 import { DailyVerse } from '@/types/daily-verse/daily-verse';
 
 export function useDailyVerse() {
