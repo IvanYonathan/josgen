@@ -17,6 +17,8 @@ class UsersSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'phone' => '081234567890',
+            'role' => 'Sysadmin',
+            'birthday' => now(),
         ]);
         $adminUser->assignRole('admin');
         
@@ -27,6 +29,8 @@ class UsersSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'phone' => '081234567891',
+            'role' => 'Treasurer',
+            'birthday' => now(),
         ]);
         $treasurerUser->assignRole('treasurer');
         
@@ -37,6 +41,8 @@ class UsersSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'phone' => '081234567892',
+            'role' => 'Division_Leader',
+            'birthday' => now(),
         ]);
         $leaderUser->assignRole('division_leader');
         
@@ -47,6 +53,8 @@ class UsersSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'phone' => '081234567893',
+            'role' => 'Member',
+            'birthday' => now(),
         ]);
         $memberUser->assignRole('member');
     }

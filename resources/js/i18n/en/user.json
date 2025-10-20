@@ -1,0 +1,129 @@
+{
+    "users": "Users",
+    "create_user": "Create User",
+    "edit_user": "Edit User",
+    "delete_user": "Delete User",
+    "avatar": "Avatar",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "new_password": "New Password",
+    "confirm_password": "Confirm Password",
+    "role": "Role",
+    "division": "Division",
+    "phone": "Phone",
+    "birthday": "Birthday",
+    "actions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "loading": "Loading...",
+    "confirm_delete": "Are you sure you want to delete this user?",
+    "user_deleted": "User deleted successfully",
+    "delete_error": "Failed to delete user",
+    "create_success": "User created successfully",
+    "update_success": "User updated successfully",
+    "required_field": "This field is required",
+    "invalid_email": "Please enter a valid email address",
+    "password_min": "Password must be at least 8 characters",
+    "passwords_dont_match": "Passwords don't match",
+    "select_role": "Select a role",
+    "select_division": "Select a division",
+    "no_division": "No division",   
+
+
+
+    "title": "Users",
+    "description": "View and Manage Users here",
+    "createUser":{
+        "title": "Create New User",
+        "description": "Fill the form below to add a new user",
+        "form": {
+            "name": {
+                "label": "Full Name",
+                "placeholder": "Enter full name"
+            },
+            "email": {
+                "label": "Email Address",
+                "placeholder": "Enter email address"
+            },
+            "password": {
+                "label": "Password",
+                "placeholder": "Enter password"
+            },
+            "confirm_password": {
+                "label": "Confirm Password",
+                "placeholder": "Re-enter password"
+            },
+            "role": {
+                "label": "User Role",
+                "placeholder": "Select a role"
+            },
+            "division": {
+                "label": "Division",
+                "placeholder": "Select a division"
+            },
+            "phone": {
+                "label": "Phone Number",
+                "placeholder": "Enter phone number"
+            },
+            "birthday": {
+                "label": "Birthday",
+                "placeholder": "Select birthday"
+            },
+            "avatar": {
+                "label": "Avatar",
+                "placeholder": "No file chosen"
+            }
+        },
+        "button":{
+            "create": "Create User",
+            "cancel": "Cancel"
+        }
+    },
+    "editUser":{
+        "title": "Edit User",
+        "description": "Update user information",
+        "form": {
+            "name": {
+                "label": "Full Name",
+                "placeholder": "Enter full name"
+            },
+            "email": {
+                "label": "Email Address",
+                "placeholder": "Enter email address"
+            },
+            "password": {
+                "label": "New Password",
+                "placeholder": "Enter new password (optional)"
+            },
+            "role": {
+                "label": "User Role",
+                "placeholder": "Select a role"
+            },
+            "division": {
+                "label": "Division",
+                "placeholder": "Select a division"
+            },
+            "phone": {
+                "label": "Phone Number",
+                "placeholder": "Enter phone number"
+            },
+            "birthday": {
+                "label": "Birthday",
+                "placeholder": "Select birthday"
+            },
+            "avatar": {
+                "label": "Avatar",
+                "placeholder": "No file chosen"
+            }
+        },
+        "button":{
+            "update": "Update User",
+            "delete": "Delete User",
+            "cancel": "Cancel"
+        }
+    }   
+}
+
+

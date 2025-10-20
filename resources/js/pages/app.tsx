@@ -7,6 +7,7 @@ import {
 import { ApplicationLayout } from '@/layouts/application-layout';
 import { DashboardLayout } from '@/layouts/dashboard-layout';
 import DivisionPage from './division/division-page';
+import UserPage from './user/user-page';
 import DashboardPage from './dashboard/dashboard-page';
 import EventPage from './event/event-page';
 import { PersonalTodoListPage } from './todo-list/personal/personal-todo-list-page';
@@ -50,6 +51,7 @@ function App() {
         <Route element={<ApplicationLayout />} errorElement={<ErrorPage />}>
           <Route element={<DashboardLayout />}>
             <Route path="/" index element={<DashboardPage />} />
+            <Route path='/users' element={<UserPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/divisions" element={<DivisionPage />} />
             <Route path="/event" element={<EventPage />} />
