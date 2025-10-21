@@ -165,10 +165,10 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: EditU
                     <SelectValue placeholder={t("editUser.form.role.placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                   <SelectItem value="Member">{t('member')}</SelectItem>
-                    <SelectItem value="Division_Leader">{t('division_leader')}</SelectItem>
-                    <SelectItem value="Treasurer">{t('treasurer')}</SelectItem>
-                    <SelectItem value="Sysadmin">{t('sysadmin')}</SelectItem>
+                   <SelectItem value="Member">{t('editUser.form.role.member')}</SelectItem>
+                    <SelectItem value="Division_Leader">{t('editUser.form.role.division_leader')}</SelectItem>
+                    <SelectItem value="Treasurer">{t('editUser.form.role.treasurer')}</SelectItem>
+                    <SelectItem value="Sysadmin">{t('editUser.form.role.sysadmin')}</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.role && <p className="text-sm text-red-600">{errors.role}</p>}
@@ -235,11 +235,11 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: EditU
           {/* Sticky footer */}
           <SheetFooter className="mt-auto border-t pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-              {t("cancel")}
+              {t("editUser.button.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t("update")}
+              {t("editUser.button.update")}
             </Button>
           </SheetFooter>
         </form>

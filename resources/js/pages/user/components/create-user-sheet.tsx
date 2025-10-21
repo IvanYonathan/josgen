@@ -164,10 +164,10 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: CreateUse
                                         <SelectValue placeholder={t('createUser.form.role.placeholder')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Member">{t('member')}</SelectItem>
-                                        <SelectItem value="Division_Leader">{t('division_leader')}</SelectItem>
-                                        <SelectItem value="Treasurer">{t('treasurer')}</SelectItem>
-                                        <SelectItem value="Sysadmin">{t('sysadmin')}</SelectItem>
+                                        <SelectItem value="Member">{t('createUser.form.role.member')}</SelectItem>
+                                        <SelectItem value="Division_Leader">{t('createUser.form.role.division_leader')}</SelectItem>
+                                        <SelectItem value="Treasurer">{t('createUser.form.role.treasurer')}</SelectItem>
+                                        <SelectItem value="Sysadmin">{t('createUser.form.role.sysadmin')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 {errors.role && <p className="text-sm text-red-600">{errors.role}</p>}

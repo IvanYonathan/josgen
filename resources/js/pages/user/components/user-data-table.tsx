@@ -34,7 +34,7 @@ interface UserDataTableProps {
     onView?: (user: User) => void;
 }
 
-export function UserDataTable({ users, loading, onEdit, onDelete, onView }: UserDataTableProps) {
+export function UserDataTable({ users, loading, onEdit, onDelete, onView }: Readonly<UserDataTableProps>) {
     const { t } = useTranslation('user');
     const { toast } = useToast();
     const [deletingId, setDeletingId] = useState<number | null>(null);

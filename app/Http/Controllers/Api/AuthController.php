@@ -96,6 +96,10 @@ class AuthController extends ApiController
                 'can_create_divisions' => $user->can('create divisions'),
                 'can_edit_divisions' => $user->can('edit divisions'),
                 'can_delete_divisions' => $user->can('delete divisions'),
+                'can_view_users' => $user->can('view users'),
+                'can_create_users' => $user->can('create users'),
+                'can_edit_users' => $user->can('edit users'),
+                'can_delete_users' => $user->can('delete users'),
             ],
         ], 'User profile retrieved successfully');
     }

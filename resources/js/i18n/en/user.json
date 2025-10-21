@@ -57,7 +57,11 @@
             },
             "role": {
                 "label": "User Role",
-                "placeholder": "Select a role"
+                "placeholder": "Select a role",
+                "member": "Member",
+                "division_leader": "Division Leader",
+                "sysadmin": "System Admin",
+                "treasurer": "Treasurer"
             },
             "division": {
                 "label": "Division",
@@ -99,7 +103,11 @@
             },
             "role": {
                 "label": "User Role",
-                "placeholder": "Select a role"
+                "placeholder": "Select a role",
+                "member": "Member",
+                "division_leader": "Division Leader",
+                "sysadmin": "System Admin",
+                "treasurer": "Treasurer"
             },
             "division": {
                 "label": "Division",

@@ -24,7 +24,7 @@ interface UserDetailViewProps {
     onBack: () => void;
 }
 
-export function UserDetailView({ user, onUserUpdated, onBack }: UserDetailViewProps) {
+export function UserDetailView({ user, onUserUpdated, onBack }: Readonly<UserDetailViewProps>) {
     const { t } = useTranslation('user');
     const [editSheetOpen, setEditSheetOpen] = useState(false);
 
@@ -86,7 +86,7 @@ export function UserDetailView({ user, onUserUpdated, onBack }: UserDetailViewPr
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                                            {t('Email')}
+                                            {t('email')}
                                         </p>
                                         <p className="font-medium truncate">{user.email}</p>
                                     </div>
@@ -99,7 +99,7 @@ export function UserDetailView({ user, onUserUpdated, onBack }: UserDetailViewPr
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                                            {t('Phone')}
+                                            {t('phone')}
                                         </p>
                                         <p className="font-medium truncate">{user.phone || '-'}</p>
                                     </div>
@@ -114,7 +114,7 @@ export function UserDetailView({ user, onUserUpdated, onBack }: UserDetailViewPr
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                                                {t('Birthday')}
+                                                {t('birthday')}
                                             </p>
                                             <p className="font-medium text-sm truncate">
                                                 {formatDate(user.birthday)}
@@ -129,7 +129,7 @@ export function UserDetailView({ user, onUserUpdated, onBack }: UserDetailViewPr
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                                                {t('Division')}
+                                                {t('division')}
                                             </p>
                                             <p className="font-medium text-sm truncate">
                                                 {user.division?.name || '-'}
