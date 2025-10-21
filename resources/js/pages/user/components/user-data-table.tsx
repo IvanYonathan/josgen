@@ -12,7 +12,7 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { UserAvatar } from "@/components/user/user-avatar";
 import { RoleBadge } from "@/components/user/role-badge";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/hooks/use-translation";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -137,9 +137,7 @@ export function UserDataTable({ users, loading, onEdit, onDelete, onView }: Read
                                                 {t('Delete User')}
                                             </AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                {t('Are you sure you want to delete')}{" "}
-                                                <strong>{user.name}</strong>?{" "}
-                                                {t('This action cannot be undone.')}
+                                                {t.rich('confirm_delete', { userName: user.name })}
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
