@@ -24,7 +24,9 @@ class UserController extends ApiController
             ->get()
             ->makeHidden(['password', 'remember_token']);
 
-        return $this->success($users, 'Users retrieved successfully', $users->count());
+        return $this->success([
+            'users' => $users,
+        ], 'Users retrieved successfully', $users->count());
     }
 
     public function get(Request $request): JsonResponse

@@ -63,8 +63,8 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: CreateUse
         setErrors({});
 
         try {
-            const newUser = await createUser(formData, avatarFile ?? undefined);
-            onUserCreated(newUser);
+            const response = await createUser(formData, avatarFile ?? undefined);
+            onUserCreated(response.user);
             onOpenChange(false);
             toast({
                 title: 'Success',

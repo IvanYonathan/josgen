@@ -32,11 +32,6 @@ export interface UserPermissions {
     can_delete_divisions: boolean;
 }
 
-export interface UserResponse {
-    user: User;
-    permissions: UserPermissions;
-}
-
 export interface GetUserRequest {
     id: number;
 }
@@ -70,6 +65,10 @@ export interface DeleteUserRequest{
 
 export interface UserResponse {
     user: User;
+}
+
+export interface UserListResponse {
+    users: User[];
 }
 
 

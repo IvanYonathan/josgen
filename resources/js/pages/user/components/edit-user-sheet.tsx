@@ -77,8 +77,8 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: EditU
     setErrors({});
 
     try {
-      const updatedUser = await updateUser(formData, avatarFile ?? undefined);
-      onUserUpdated(updatedUser);
+      const response = await updateUser(formData, avatarFile ?? undefined);
+      onUserUpdated(response.user);
       onOpenChange(false);
       toast({
         title: "Success",

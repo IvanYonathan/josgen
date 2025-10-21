@@ -104,8 +104,8 @@ export default function UserPage() {
 
     const handleViewUser = async (user: User) => {
         try {
-            const fetched = await getUser({ id: user.id });
-            setDetailUser(fetched);
+            const response = await getUser({ id: user.id });
+            setDetailUser(response.user);
         } catch (error: any) {
             toast({
                 variant: "destructive",
