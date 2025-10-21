@@ -12,11 +12,21 @@ use Illuminate\Validation\Rule;
 
 class UserController extends ApiController
 {
+    const NOT_AUTHENTICATED = 'Not authenticated';
     public function list(Request $request): JsonResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if (!$user || !$user->can('view users')) {
+        if (!$user) {
+            return $this->unauthorized(NOT_AUTHENTICATED);
+        }
+
+        // Temporarily set default guard to 'web' for permission checks
+        // And also the same for the rest of the methods
+        config(['auth.defaults.guard' => 'web']);
+
+        if (!$user->can('view users')) {
             return $this->forbidden('You do not have permission to view users');
         }
 
@@ -39,9 +49,16 @@ class UserController extends ApiController
             return $this->validationError($validator->errors());
         }
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if (!$user || !$user->can('view users')) {
+        if (!$user) {
+            return $this->unauthorized(NOT_AUTHENTICATED);
+        }
+
+        config(['auth.defaults.guard' => 'web']);
+
+        if (!$user->can('view users')) {
             return $this->forbidden('You do not have permission to view users');
         }
 
@@ -56,9 +73,16 @@ class UserController extends ApiController
 
     public function create(Request $request): JsonResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if (!$user || !$user->can('create users')) {
+        if (!$user) {
+            return $this->unauthorized(NOT_AUTHENTICATED);
+        }
+
+        config(['auth.defaults.guard' => 'web']);
+
+        if (!$user->can('create users')) {
             return $this->forbidden('You do not have permission to create users');
         }
 
@@ -113,9 +137,16 @@ class UserController extends ApiController
 
     public function update(Request $request): JsonResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if (!$user || !$user->can('edit users')) {
+        if (!$user) {
+            return $this->unauthorized(NOT_AUTHENTICATED);
+        }
+
+        config(['auth.defaults.guard' => 'web']);
+
+        if (!$user->can('edit users')) {
             return $this->forbidden('You do not have permission to edit users');
         }
 
@@ -187,9 +218,16 @@ class UserController extends ApiController
             return $this->validationError($validator->errors());
         }
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if (!$user || !$user->can('delete users')) {
+        if (!$user) {
+            return $this->unauthorized(NOT_AUTHENTICATED);
+        }
+
+        config(['auth.defaults.guard' => 'web']);
+
+        if (!$user->can('delete users')) {
             return $this->forbidden('You do not have permission to delete users');
         }
 

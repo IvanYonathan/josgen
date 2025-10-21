@@ -78,29 +78,47 @@ class AuthController extends ApiController
             $user->currentAccessToken()->delete();
         }
 
-        // Also logout from web session
-        Auth::guard('web')->logout();
+        // Logout from web session (only if session exists)
+        if (Auth::guard('web')->check()) {
+            Auth::guard('web')->logout();
+        }
+
+        // Invalidate session only if it exists (for cookie-based auth)
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return $this->success(null, 'Logout successful');
     }
 
     public function me(Request $request): JsonResponse
     {
+        /** @var \App\Models\User $user */
         $user = $request->user();
         $user->load('roles', 'permissions');
 
+        // Temporarily set default guard to 'web' for permission checks
+        $originalGuard = config('auth.defaults.guard');
+        config(['auth.defaults.guard' => 'web']);
+
+        $permissions = [
+            'can_view_divisions' => $user->can('view divisions'),
+            'can_create_divisions' => $user->can('create divisions'),
+            'can_edit_divisions' => $user->can('edit divisions'),
+            'can_delete_divisions' => $user->can('delete divisions'),
+            'can_view_users' => $user->can('view users'),
+            'can_create_users' => $user->can('create users'),
+            'can_edit_users' => $user->can('edit users'),
+            'can_delete_users' => $user->can('delete users'),
+        ];
+
+        // Restore original guard
+        config(['auth.defaults.guard' => $originalGuard]);
+
         return $this->success([
             'user' => $user,
-            'permissions' => [
-                'can_view_divisions' => $user->can('view divisions'),
-                'can_create_divisions' => $user->can('create divisions'),
-                'can_edit_divisions' => $user->can('edit divisions'),
-                'can_delete_divisions' => $user->can('delete divisions'),
-                'can_view_users' => $user->can('view users'),
-                'can_create_users' => $user->can('create users'),
-                'can_edit_users' => $user->can('edit users'),
-                'can_delete_users' => $user->can('delete users'),
-            ],
+            'permissions' => $permissions,
         ], 'User profile retrieved successfully');
     }
 
