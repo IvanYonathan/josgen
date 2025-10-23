@@ -19,7 +19,7 @@ class UserController extends ApiController
         $user = Auth::user();
 
         if (!$user) {
-            return $this->unauthorized(NOT_AUTHENTICATED);
+            return $this->unauthorized(self::NOT_AUTHENTICATED);
         }
 
         // Temporarily set default guard to 'web' for permission checks
@@ -30,13 +30,86 @@ class UserController extends ApiController
             return $this->forbidden('You do not have permission to view users');
         }
 
-        $users = User::with(['roles', 'division:id,name'])
+        $validator = Validator::make($request->all(), [
+            'page' => 'nullable|integer|min:1',
+            'limit' => 'nullable|integer|min:1|max:100',
+            'filters' => 'nullable|array',
+            'filters.name' => 'nullable|string',
+            'filters.email' => 'nullable|string',
+            'filters.role' => ['nullable', Rule::in(['Sysadmin', 'Division_Leader', 'Treasurer', 'Member'])],
+            'filters.division_id' => 'nullable|integer|exists:divisions,id',
+            'sort' => 'nullable|array',
+            'sort.*' => ['nullable', Rule::in(['asc', 'desc'])],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationError($validator->errors());
+        }
+
+        $validated = $validator->validated();
+
+        $page = (int) ($validated['page'] ?? 1);
+        $limit = (int) min($validated['limit'] ?? 10, 100);
+        $filters = $validated['filters'] ?? [];
+        $sort = $validated['sort'] ?? [];
+
+        $query = User::query()->with(['roles', 'division:id,name']);
+
+        $search = $filters['name'] ??  null;
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($filters['email'])) {
+            $query->where('email', 'like', '%' . $filters['email'] . '%');
+        }
+
+        if (!empty($filters['role'])) {
+            $query->where('role', $filters['role']);
+        }
+
+        if (!empty($filters['division_id'])) {
+            $query->where('division_id', $filters['division_id']);
+        }
+
+        $sortableColumns = [
+            'name' => 'name',
+            'created_at' => 'created_at',
+            'updated_at' => 'updated_at',
+        ];
+
+        $appliedSort = false;
+        foreach ($sort as $field => $direction) {
+            if (isset($sortableColumns[$field])) {
+                $query->orderBy(
+                    $sortableColumns[$field],
+                    strtolower($direction) === 'asc' ? 'asc' : 'desc'
+                );
+                $appliedSort = true;
+            }
+        }
+
+        if (!$appliedSort) {
+            $query->orderBy('created_at', 'asc');
+        }
+
+        $total = (clone $query)->count();
+
+        $page = max(1, $page);
+        $offset = ($page - 1) * $limit;
+
+        $users = (clone $query)
+            ->skip($offset)
+            ->take($limit)
             ->get()
             ->makeHidden(['password', 'remember_token']);
 
         return $this->success([
             'users' => $users,
-        ], 'Users retrieved successfully', $users->count());
+        ], 'Users retrieved successfully', $total);
     }
 
     public function get(Request $request): JsonResponse
@@ -53,7 +126,7 @@ class UserController extends ApiController
         $user = Auth::user();
 
         if (!$user) {
-            return $this->unauthorized(NOT_AUTHENTICATED);
+            return $this->unauthorized(self::NOT_AUTHENTICATED);
         }
 
         config(['auth.defaults.guard' => 'web']);
@@ -77,7 +150,7 @@ class UserController extends ApiController
         $user = Auth::user();
 
         if (!$user) {
-            return $this->unauthorized(NOT_AUTHENTICATED);
+            return $this->unauthorized(self::NOT_AUTHENTICATED);
         }
 
         config(['auth.defaults.guard' => 'web']);
@@ -113,10 +186,8 @@ class UserController extends ApiController
         unset($data['avatar']);
         $data['password'] = Hash::make($data['password']);
 
-        // Create user first
         $newUser = User::create($data);
 
-        // Role mapping (same as in update)
         $roleMap = [
             'Sysadmin' => 'sysadmin',
             'Division_Leader' => 'division_leader',
@@ -141,7 +212,7 @@ class UserController extends ApiController
         $user = Auth::user();
 
         if (!$user) {
-            return $this->unauthorized(NOT_AUTHENTICATED);
+            return $this->unauthorized(self::NOT_AUTHENTICATED);
         }
 
         config(['auth.defaults.guard' => 'web']);
@@ -160,13 +231,12 @@ class UserController extends ApiController
                 'max:255',
                 Rule::unique('users')->ignore($request->id),
             ],
-            'password' => 'nullable|string|min:8',
             'phone' => 'nullable|string|max:20',
             'role' => 'required|in:Sysadmin,Division_Leader,Treasurer,Member',
             'birthday' => 'nullable|date',
             'division_id' => 'nullable|exists:divisions,id',
             'ava' => 'nullable|string',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // ✅ add this
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -176,19 +246,11 @@ class UserController extends ApiController
         $data = $validator->validated();
         $userToUpdate = User::findOrFail($data['id']);
 
-        // ✅ Handle avatar upload
         if ($request->hasFile('avatar')) {
             $avatarPath = $request->file('avatar')->store('avatars', 'public');
             $data['ava'] = basename($avatarPath);
         }
         unset($data['avatar']);
-
-        // Handle password
-        if (empty($data['password'])) {
-            unset($data['password']);
-        } else {
-            $data['password'] = Hash::make($data['password']);
-        }
 
         $userToUpdate->update($data);
 
@@ -222,7 +284,7 @@ class UserController extends ApiController
         $user = Auth::user();
 
         if (!$user) {
-            return $this->unauthorized(NOT_AUTHENTICATED);
+            return $this->unauthorized(self::NOT_AUTHENTICATED);
         }
 
         config(['auth.defaults.guard' => 'web']);

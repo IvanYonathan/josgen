@@ -34,10 +34,8 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: EditU
     role: user.role,
     phone: user.phone || "",
     birthday: user.birthday || "",
-    password: "",
   });
 
-  // ✅ Initialize with user's current avatar
   useEffect(() => {
     setFormData({
       id: user.id,
@@ -46,7 +44,6 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: EditU
       role: user.role,
       phone: user.phone || "",
       birthday: user.birthday || "",
-      password: "",
     });
 
     const existingAvatar = resolveAvatarSrc(user.avatar || user.ava);
@@ -81,15 +78,15 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: EditU
       onUserUpdated(response.user);
       onOpenChange(false);
       toast({
-        title: "Success",
+        title: t("success"),
         description: t("update_success"),
       });
     } catch (error: any) {
-      setErrors(error.response?.data?.errors || { general: t("Update Error!") });
+      setErrors(error.response?.data?.errors || { general: t("update_error") });
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || t("Update Error!"),
+        title: t("error"),
+        description: error.response?.data?.message || t("update_error"),
       });
     } finally {
       setLoading(false);
@@ -98,7 +95,7 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: EditU
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="h-full overflow-y-auto p-6 sm:max-w-md">
+      <SheetContent className="h-full overflow-y-auto p-6 sm:max-w-md [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <form onSubmit={handleSubmit} className="flex h-full flex-col">
           {/* Scrollable area */}
           <div className="flex-1 overflow-y-auto">
@@ -140,19 +137,6 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: EditU
                   required
                 />
                 {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
-              </div>
-
-              <div className="mr-2 mb-2 ml-2 grid gap-2">
-                <Label htmlFor="password">{t("editUser.form.password.label")}</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password || ""}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-                  placeholder={t("editUser.form.password.placeholder")}
-                  className={errors.password ? "border-red-500" : ""}
-                />
-                {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
               </div>
 
               <div className="mr-2 mb-2 ml-2 grid gap-2">

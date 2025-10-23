@@ -69,6 +69,6 @@ export interface UserResponse {
 
 export interface UserListResponse {
     users: User[];
+    total?: number;
 }
-
 

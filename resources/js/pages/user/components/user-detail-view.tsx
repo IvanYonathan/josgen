@@ -7,16 +7,9 @@ import { UserAvatar } from "@/components/user/user-avatar";
 import { RoleBadge } from "@/components/user/role-badge";
 import { EditUserSheet } from "./edit-user-sheet";
 import { ArrowLeft, Mail, Phone, Calendar, Building2, CheckCircle2, Edit3 } from "lucide-react";
+import { formatDate } from "@/utils/date";
 
-const formatDate = (iso?: string | null): string => {
-    if (!iso) return '-';
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '-';
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yyyy = d.getFullYear();
-    return `${dd}/${mm}/${yyyy}`;
-};
+
 
 interface UserDetailViewProps {
     user: User;
@@ -38,14 +31,14 @@ export function UserDetailView({ user, onUserUpdated, onBack }: Readonly<UserDet
                     className="flex items-center gap-2"
                 >
                     <ArrowLeft className="h-4 w-4" />
-                    {t('Back to Users List')}
+                    {t('back_to_user_list')}
                 </Button>
                 <Button 
                     onClick={() => setEditSheetOpen(true)}
                     className="flex items-center gap-2"
                 >
                     <Edit3 className="h-4 w-4" />
-                    {t('Edit User')}
+                    {t('edit_user')}
                 </Button>
             </div>
 
@@ -117,7 +110,7 @@ export function UserDetailView({ user, onUserUpdated, onBack }: Readonly<UserDet
                                                 {t('birthday')}
                                             </p>
                                             <p className="font-medium text-sm truncate">
-                                                {formatDate(user.birthday)}
+                                                {user.birthday}
                                             </p>
                                         </div>
                                     </div>

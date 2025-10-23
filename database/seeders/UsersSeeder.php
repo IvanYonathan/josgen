@@ -20,8 +20,8 @@ class UsersSeeder extends Seeder
             'role' => 'Sysadmin',
             'birthday' => now(),
         ]);
-        $adminUser->assignRole('admin');
-        
+        $adminUser->assignRole('sysadmin');
+
         // Create treasurer
         $treasurerUser = User::create([
             'name' => 'Treasurer',
@@ -33,7 +33,7 @@ class UsersSeeder extends Seeder
             'birthday' => now(),
         ]);
         $treasurerUser->assignRole('treasurer');
-        
+
         // Create a division leader
         $leaderUser = User::create([
             'name' => 'Division Leader',
@@ -45,7 +45,7 @@ class UsersSeeder extends Seeder
             'birthday' => now(),
         ]);
         $leaderUser->assignRole('division_leader');
-        
+
         // Create a regular member
         $memberUser = User::create([
             'name' => 'Regular Member',

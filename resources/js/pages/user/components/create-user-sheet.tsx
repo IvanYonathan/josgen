@@ -67,7 +67,7 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: CreateUse
             onUserCreated(response.user);
             onOpenChange(false);
             toast({
-                title: 'Success',
+                title: t('success'),
                 description: t('create_success'),
             });
 
@@ -88,7 +88,7 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: CreateUse
             setErrors(error.response?.data?.errors || { general: t('create_error') });
             toast({
                 variant: 'destructive',
-                title: 'Error',
+                title: t('error'),
                 description: error.response?.data?.message || t('create_error'),
             });
         } finally {
