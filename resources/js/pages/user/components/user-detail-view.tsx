@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { User } from "@/types/user/user";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from '@/hooks/use-translation';
 import { UserAvatar } from "@/components/user/user-avatar";
 import { RoleBadge } from "@/components/user/role-badge";
 import { EditUserSheet } from "./edit-user-sheet";

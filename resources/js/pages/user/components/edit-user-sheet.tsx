@@ -7,7 +7,7 @@ import { updateUser } from "@/lib/api/user/update-user";
 import { UpdateUserRequest, User, UserRole } from "@/types/user/user";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from '@/hooks/use-translation';
 import { useToast } from "@/components/ui/use-toast";
 import { resolveAvatarSrc } from "@/components/user/user-avatar";
 
@@ -18,7 +18,7 @@ interface EditUserSheetProps {
   onUserUpdated: (user: User) => void;
 }
 
-export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: EditUserSheetProps) {
+export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Readonly<EditUserSheetProps>) {
   const { t } = useTranslation("user");
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);

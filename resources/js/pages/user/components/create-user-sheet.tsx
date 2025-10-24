@@ -8,7 +8,7 @@ import { createUser } from '@/lib/api/user/create-user';
 import { CreateUserRequest, User, UserRole } from '@/types/user/user';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface CreateUserSheetProps {
     open: boolean;
@@ -16,7 +16,7 @@ interface CreateUserSheetProps {
     onUserCreated: (user: User) => void;
 }
 
-export function CreateUserSheet({ open, onOpenChange, onUserCreated }: CreateUserSheetProps) {
+export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<CreateUserSheetProps>) {
     const { t } = useTranslation('user');
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
