@@ -1,4 +1,4 @@
-﻿import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
@@ -7,12 +7,14 @@ import { deleteUser } from '@/lib/api/user/delete-user';
 import { getUser } from '@/lib/api/user/get-user';
 import { listUsers } from '@/lib/api/user/list-users';
 import { User, UserRole } from '@/types/user/user';
-import { Loader2, PlusCircle, RefreshCcwDot, RefreshCw } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { Loader2, PlusCircle, RefreshCcwDot, RefreshCw, Download, Trash2 } from 'lucide-react';
+import { useCallback, useEffect } from 'react';
 import { CreateUserSheet } from './components/create-user-sheet';
 import { EditUserSheet } from './components/edit-user-sheet';
 import { UserDataTable } from './components/user-data-table';
 import { UserDetailView } from './components/user-detail-view';
+import { UserManagementProvider, useUserManagementStore } from './store/user-management-store';
+import { useFeatureFlags } from '@/stores/feature-flags-store';
 
 const FALLBACK_ROLE_LABELS: Partial<Record<UserRole, string>> = {
     Sysadmin: 'System Admin',
@@ -28,7 +30,7 @@ const formatRoleLabel = (role: string) =>
 
 const LIMIT_OPTIONS = [10, 25, 50, 100];
 
-type SortField = 'created_at' | 'updated_at' | 'name';
+type SortField = 'created_at' | 'updated_at' | 'name' | 'email';
 type SortDirection = 'asc' | 'desc';
 type SortSelection = `${SortField}:${SortDirection}`;
 
@@ -39,90 +41,98 @@ const SORT_OPTIONS: Array<{ value: SortSelection; label: string }> = [
     { value: 'updated_at:asc', label: 'Least recently updated' },
     { value: 'name:asc', label: 'Name A-Z' },
     { value: 'name:desc', label: 'Name Z-A' },
+    { value: 'email:asc', label: 'Email A-Z' },
+    { value: 'email:desc', label: 'Email Z-A' },
 ];
 
-export default function UserPage() {
+function UserPage() {
     const { t } = useTranslation('user');
     const { toast } = useToast();
 
-    // State
-    const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [createSheetOpen, setCreateSheetOpen] = useState(false);
-    const [editSheetOpen, setEditSheetOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const [detailUser, setDetailUser] = useState<User | null>(null);
-    const [roleLabels, setRoleLabels] = useState<Record<string, string>>(
-        Object.fromEntries(Object.entries(FALLBACK_ROLE_LABELS).map(([key, value]) => [key, value as string])),
-    );
-    const [availableRoles, setAvailableRoles] = useState<UserRole[]>(DEFAULT_ROLE_ORDER);
+    // Feature flags for conditional features
+    const { userExportEnabled, userBulkActionsEnabled, userAdvancedFiltersEnabled } = useFeatureFlags();
+    const store = useUserManagementStore();
+    const {
+        users,
+        loading,
+        error,
+        pagination,
+        filters,
+        searchInput,
+        sorting,
+        createSheetOpen,
+        editSheetOpen,
+        selectedUser,
+        detailUser,
+        roleLabels = {},
+        availableRoles = [],
+    } = store;
 
-    // Example template to hydrate labels from an API in the future:
-    // useEffect(() => {
-    //     async function loadRoleLabels() {
-    //         try {
-    //             const response = await listRoles();
-    //             setRoleLabels(
-    //                 response.roles.reduce((acc, role) => {
-    //                     acc[role.slug] = role.display_name;
-    //                     return acc;
-    //                 }, {} as Record<string, string>),
-    //             );
-    //             setAvailableRoles(response.roles.map((role) => role.slug as UserRole));
-    //         } catch (error) {
-    //             console.error('Failed to load roles', error);
-    //         }
-    //     }
-    //     loadRoleLabels();
-    // }, []);
-
-    // Query state
-    const [searchInput, setSearchInput] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
-    const [sortSelection, setSortSelection] = useState<SortSelection | undefined>(undefined);
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
-    const [hasNextPage, setHasNextPage] = useState(false);
-    const [totalUsers, setTotalUsers] = useState<number | null>(null);
+    const {
+        setUsers,
+        setLoading,
+        setError,
+        setPagination,
+        setSearchInput,
+        setSearchTerm,
+        setRoleFilter,
+        setSorting,
+        setPage,
+        setLimit,
+        nextPage,
+        previousPage,
+        setCreateSheetOpen,
+        openEditSheet,
+        closeEditSheet,
+        setDetailUser,
+        resetFilters,
+        setRoleLabels,
+        setAvailableRoles,
+    } = store;
 
     // Debounce search input
     useEffect(() => {
         const timer = setTimeout(() => {
-            setPage(1);
             setSearchTerm(searchInput.trim());
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [searchInput]);
+    }, [searchInput, setSearchTerm]);
 
     const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
 
-            const [sortField, sortDirection] = (sortSelection ?? 'created_at:asc').split(':') as [SortField, SortDirection];
+            // Determine sort field and direction from TanStack Table sorting
+            let sortField: SortField = 'created_at';
+            let sortDirection: SortDirection = 'asc';
 
-            const filters: Record<string, string | number | Array<string | number>> = {};
-
-            if (searchTerm) {
-                filters.name = searchTerm;
+            if (sorting && sorting.length > 0) {
+                const sort = sorting[0];
+                sortField = sort.id as SortField;
+                sortDirection = sort.desc ? 'desc' : 'asc';
             }
 
-            if (roleFilter !== 'all') {
-                filters.role = roleFilter;
+            const apiFilters: Record<string, string | number | Array<string | number>> = {};
+
+            if (filters.searchTerm) {
+                apiFilters.name = filters.searchTerm;
+            }
+
+            if (filters.roleFilter !== 'all') {
+                apiFilters.role = filters.roleFilter;
             }
 
             const response = await listUsers({
-                page,
-                limit,
+                page: pagination.page,
+                limit: pagination.limit,
                 sort: { [sortField]: sortDirection },
-                filters: Object.keys(filters).length > 0 ? filters : undefined,
+                filters: Object.keys(apiFilters).length > 0 ? apiFilters : undefined,
             });
 
-            if (page > 1 && response.users.length === 0) {
-                setPage((prev) => Math.max(1, prev - 1));
+            if (pagination.page > 1 && response.users.length === 0) {
+                setPage(Math.max(1, pagination.page - 1));
                 return;
             }
 
@@ -131,46 +141,47 @@ export default function UserPage() {
             const uniqueRoles = Array.from(new Set(response.users.map((user) => user.role))) as UserRole[];
 
             if (uniqueRoles.length > 0) {
-                setAvailableRoles((prev) => {
-                    const merged = Array.from(new Set([...prev, ...uniqueRoles])) as UserRole[];
-                    return merged.sort((a, b) => {
-                        const orderA = DEFAULT_ROLE_ORDER.indexOf(a);
-                        const orderB = DEFAULT_ROLE_ORDER.indexOf(b);
-                        if (orderA === -1 && orderB === -1) {
-                            return a.localeCompare(b);
-                        }
-                        if (orderA === -1) return 1;
-                        if (orderB === -1) return -1;
-                        return orderA - orderB;
-                    });
+                const merged = Array.from(new Set([...availableRoles, ...uniqueRoles])) as UserRole[];
+                const sortedRoles = merged.sort((a, b) => {
+                    const orderA = DEFAULT_ROLE_ORDER.indexOf(a);
+                    const orderB = DEFAULT_ROLE_ORDER.indexOf(b);
+                    if (orderA === -1 && orderB === -1) {
+                        return a.localeCompare(b);
+                    }
+                    if (orderA === -1) return 1;
+                    if (orderB === -1) return -1;
+                    return orderA - orderB;
                 });
+                setAvailableRoles(sortedRoles);
 
-                setRoleLabels((prev) => {
-                    const next = { ...prev };
-                    uniqueRoles.forEach((role) => {
-                        if (!next[role]) {
-                            next[role] = FALLBACK_ROLE_LABELS[role] ?? formatRoleLabel(role);
-                        }
-                    });
-                    return next;
+                const updatedLabels = { ...roleLabels };
+                uniqueRoles.forEach((role) => {
+                    if (!updatedLabels[role]) {
+                        updatedLabels[role] = FALLBACK_ROLE_LABELS[role] ?? formatRoleLabel(role);
+                    }
                 });
+                setRoleLabels(updatedLabels);
             }
 
             if (typeof response.total === 'number') {
-                setTotalUsers(response.total);
-                setHasNextPage(page * limit < response.total);
+                setPagination({
+                    total: response.total,
+                    hasNextPage: pagination.page * pagination.limit < response.total,
+                });
             } else {
-                setTotalUsers(null);
-                setHasNextPage(response.users.length === limit);
+                setPagination({
+                    total: null,
+                    hasNextPage: response.users.length === pagination.limit,
+                });
             }
         } catch (error: any) {
             setError(error.message || 'Failed to load users');
             setUsers([]);
-            setHasNextPage(false);
+            setPagination({ hasNextPage: false });
         } finally {
             setLoading(false);
         }
-    }, [limit, page, roleFilter, searchTerm, sortSelection]);
+    }, [pagination.limit, pagination.page, filters.roleFilter, filters.searchTerm, sorting]);
 
     useEffect(() => {
         fetchUsers();
@@ -179,7 +190,7 @@ export default function UserPage() {
     // Handlers
     const handleUserCreated = async (_user: User) => {
         try {
-            if (page !== 1) {
+            if (pagination.page !== 1) {
                 setPage(1);
             } else {
                 await fetchUsers();
@@ -247,45 +258,42 @@ export default function UserPage() {
     };
 
     const handleRoleFilterChange = (value: string) => {
-        setPage(1);
         setRoleFilter((value as UserRole) ?? 'all');
     };
 
     const handleSortChange = (value: SortSelection) => {
-        setPage(1);
-        setSortSelection(value);
+        const [field, direction] = value.split(':') as [SortField, SortDirection];
+        setSorting([{ id: field, desc: direction === 'desc' }]);
     };
 
     const handleLimitChange = (value: string) => {
-        setPage(1);
         setLimit(Number(value));
     };
 
-    const handlePreviousPage = () => {
-        setPage((prev) => Math.max(1, prev - 1));
+    // Feature flag handlers (placeholder implementations)
+    const handleExportUsers = () => {
+        toast({
+            title: 'Export Users',
+            description: 'Export feature coming soon!',
+        });
     };
 
-    const handleNextPage = () => {
-        if (hasNextPage) {
-            setPage((prev) => prev + 1);
-        }
+    const handleBulkDelete = () => {
+        toast({
+            title: 'Bulk Delete',
+            description: 'Bulk delete feature coming soon!',
+        });
     };
 
-    const resetFilters = useCallback(() => {
-        setSearchInput('');
-        setSearchTerm('');
-        setRoleFilter('all');
-        setSortSelection(undefined);
-        setLimit(10);
-        setPage(1);
-    }, []);
+    const sortSelection =
+        sorting && sorting.length > 0 ? (`${sorting[0].id}:${sorting[0].desc ? 'desc' : 'asc'}` as SortSelection) : undefined;
 
-    const sortLabel = sortSelection ? (SORT_OPTIONS.find((option) => option.value === sortSelection)?.label ?? '') : '';
+    const sortLabel = sortSelection ? SORT_OPTIONS.find((option) => option.value === sortSelection)?.label ?? '' : '';
 
-    const startItem = (page - 1) * limit + 1;
+    const startItem = (pagination.page - 1) * pagination.limit + 1;
     const endItem = startItem + users.length - 1;
-    const effectiveEnd = totalUsers !== null ? Math.min(endItem, totalUsers) : endItem;
-    const totalPages = totalUsers !== null ? Math.max(1, Math.ceil(totalUsers / limit)) : null;
+    const effectiveEnd = pagination.total !== null ? Math.min(endItem, pagination.total) : endItem;
+    const totalPages = pagination.total !== null ? Math.max(1, Math.ceil(pagination.total / pagination.limit)) : null;
 
     return (
         <div className="p-6">
@@ -309,10 +317,28 @@ export default function UserPage() {
                             </Button>
                         </div>
 
-                        <Button onClick={() => setCreateSheetOpen(true)} disabled={loading}>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            {t('create_user')}
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {/* Feature Flag: Export */}
+                            {userExportEnabled && (
+                                <Button variant="outline" size="sm" onClick={handleExportUsers} disabled={loading}>
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Export
+                                </Button>
+                            )}
+
+                            {/* Feature Flag: Bulk Actions */}
+                            {userBulkActionsEnabled && (
+                                <Button variant="outline" size="sm" onClick={handleBulkDelete} disabled={loading || users.length === 0}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Bulk Delete
+                                </Button>
+                            )}
+
+                            <Button onClick={() => setCreateSheetOpen(true)} disabled={loading}>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                {t('create_user')}
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Filters Row */}
@@ -329,8 +355,12 @@ export default function UserPage() {
 
                         <div className="min-w-[200px] flex-[1.3]">
                             <label className="text-muted-foreground mb-2 block text-sm font-medium">Role</label>
-                            <Select value={roleFilter === 'all' ? undefined : roleFilter} onValueChange={handleRoleFilterChange} disabled={loading}>
-                                <SelectTrigger className={!roleFilter || roleFilter === 'all' ? 'text-muted-foreground' : ''}>
+                            <Select
+                                value={filters.roleFilter === 'all' ? undefined : filters.roleFilter}
+                                onValueChange={handleRoleFilterChange}
+                                disabled={loading}
+                            >
+                                <SelectTrigger className={!filters.roleFilter || filters.roleFilter === 'all' ? 'text-muted-foreground' : ''}>
                                     <SelectValue placeholder="All roles" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -344,9 +374,28 @@ export default function UserPage() {
                             </Select>
                         </div>
 
+                        {/* Feature Flag: Advanced Filters (Sort dropdown) */}
+                        {userAdvancedFiltersEnabled && (
+                            <div className="min-w-[200px] flex-[1]">
+                                <label className="text-muted-foreground mb-2 block text-sm font-medium">Sort by</label>
+                                <Select value={sortSelection} onValueChange={handleSortChange} disabled={loading}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Default sorting" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {SORT_OPTIONS.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
                         <div className="min-w-[60px]">
                             <label className="text-muted-foreground mb-2 block text-sm font-medium">Items per page</label>
-                            <Select value={String(limit)} onValueChange={handleLimitChange} disabled={loading}>
+                            <Select value={String(pagination.limit)} onValueChange={handleLimitChange} disabled={loading}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Items per page" />
                                 </SelectTrigger>
@@ -370,7 +419,7 @@ export default function UserPage() {
 
                     {error && <div className="mb-6 rounded border border-red-200 bg-red-50 p-4 text-sm text-red-600">{error}</div>}
 
-                    {loading ? (
+                    {loading && users.length === 0 ? (
                         <div className="flex items-center justify-center py-12">
                             <Loader2 className="h-8 w-8 animate-spin" />
                         </div>
@@ -383,10 +432,15 @@ export default function UserPage() {
                             <UserDataTable
                                 users={users}
                                 loading={loading}
-                                onEdit={(user) => {
-                                    setSelectedUser(user);
-                                    setEditSheetOpen(true);
+                                sorting={sorting ?? []}
+                                onSortingChange={(newSorting) => {
+                                    if (typeof newSorting === 'function') {
+                                        setSorting(newSorting(sorting ?? []));
+                                    } else {
+                                        setSorting(newSorting);
+                                    }
                                 }}
+                                onEdit={openEditSheet}
                                 onDelete={handleUserDeleted}
                                 onView={handleViewUser}
                             />
@@ -394,17 +448,17 @@ export default function UserPage() {
                             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="text-muted-foreground text-sm">
                                     Showing {startItem}-{effectiveEnd}
-                                    {totalUsers !== null ? ` of ${totalUsers}` : ''} users {sortLabel}
+                                    {pagination.total !== null ? ` of ${pagination.total}` : ''} users {sortLabel}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Button variant="outline" size="sm" onClick={handlePreviousPage} disabled={page === 1 || loading}>
+                                    <Button variant="outline" size="sm" onClick={previousPage} disabled={pagination.page === 1 || loading}>
                                         Previous
                                     </Button>
                                     <span className="text-sm font-medium">
-                                        Page {page}
+                                        Page {pagination.page}
                                         {totalPages !== null ? ` of ${totalPages}` : ''}
                                     </span>
-                                    <Button variant="outline" size="sm" onClick={handleNextPage} disabled={!hasNextPage || loading}>
+                                    <Button variant="outline" size="sm" onClick={nextPage} disabled={!pagination.hasNextPage || loading}>
                                         Next
                                     </Button>
                                 </div>
@@ -416,9 +470,15 @@ export default function UserPage() {
 
             <CreateUserSheet open={createSheetOpen} onOpenChange={setCreateSheetOpen} onUserCreated={handleUserCreated} />
 
-            {selectedUser && (
-                <EditUserSheet open={editSheetOpen} onOpenChange={setEditSheetOpen} user={selectedUser} onUserUpdated={handleUserUpdated} />
-            )}
+            {selectedUser && <EditUserSheet open={editSheetOpen} onOpenChange={closeEditSheet} user={selectedUser} onUserUpdated={handleUserUpdated} />}
         </div>
     );
 }
+
+/**
+ * User Page Component
+ *
+ * Wrapped with UserManagementProvider for Zustand store access.
+ * This is the main export that provides scoped state management.
+ */
+export default UserManagementProvider(UserPage);

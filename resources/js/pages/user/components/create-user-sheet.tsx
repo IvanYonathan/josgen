@@ -5,10 +5,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/use-toast';
 import { createUser } from '@/lib/api/user/create-user';
-import { CreateUserRequest, User, UserRole } from '@/types/user/user';
+import { User } from '@/types/user/user';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createUserSchema, CreateUserFormData, cleanUserFormData } from '../schemas/user-schemas';
 
 interface CreateUserSheetProps {
     open: boolean;
@@ -19,19 +22,21 @@ interface CreateUserSheetProps {
 export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<CreateUserSheetProps>) {
     const { t } = useTranslation('user');
     const { toast } = useToast();
-    const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string>>({});
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 
-    const [formData, setFormData] = useState<CreateUserRequest>({
-        name: '',
-        email: '',
-        password: '',
-        role: 'Member',
-        phone: '',
-        birthday: '',
+    const form = useForm<CreateUserFormData>({
+        resolver: zodResolver(createUserSchema),
+        defaultValues: {
+            name: '',
+            email: '',
+            password: '',
+            role: 'Member',
+            phone: '',
+            birthday: '',
+        },
     });
 
     useEffect(() => {
@@ -57,13 +62,13 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setLoading(true);
-        setErrors({});
+    const handleSubmit = form.handleSubmit(async (values) => {
+        setServerErrors({});
 
         try {
-            const response = await createUser(formData, avatarFile ?? undefined);
+            const cleanedData = cleanUserFormData(values);
+
+            const response = await createUser(cleanedData as any, avatarFile ?? undefined);
             onUserCreated(response.user);
             onOpenChange(false);
             toast({
@@ -71,30 +76,24 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
                 description: t('create_success'),
             });
 
-            // Reset
-            setFormData({
-                name: '',
-                email: '',
-                password: '',
-                role: 'Member',
-                phone: '',
-                birthday: '',
-            });
+            form.reset();
             if (avatarPreview) URL.revokeObjectURL(avatarPreview);
             setAvatarFile(null);
             setAvatarPreview(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
         } catch (error: any) {
-            setErrors(error.response?.data?.errors || { general: t('create_error') });
+            const errors = error.response?.data?.errors || { general: t('create_error') };
+            setServerErrors(errors);
             toast({
                 variant: 'destructive',
                 title: t('error'),
                 description: error.response?.data?.message || t('create_error'),
             });
-        } finally {
-            setLoading(false);
         }
-    };
+    });
+
+    const { formState: { errors, isSubmitting } } = form;
+    const allErrors = { ...errors, ...serverErrors };
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -107,21 +106,23 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
                         </SheetHeader>
 
                         <div className="grid gap-4 py-4">
-                            {errors.general && (
-                                <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">{errors.general}</div>
+                            {serverErrors.general && (
+                                <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">{serverErrors.general}</div>
                             )}
 
                             <div className="mr-2 mb-2 ml-2 grid gap-2">
                                 <Label htmlFor="name">{t('createUser.form.name.label')} *</Label>
                                 <Input
                                     id="name"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                                    {...form.register('name')}
                                     placeholder={t('createUser.form.name.placeholder')}
-                                    className={errors.name ? 'border-red-500' : ''}
-                                    required
+                                    className={allErrors.name ? 'border-red-500' : ''}
                                 />
-                                {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
+                                {allErrors.name && (
+                                    <p className="text-sm text-red-600">
+                                        {typeof allErrors.name === 'string' ? allErrors.name : allErrors.name?.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="mr-2 mb-2 ml-2 grid gap-2">
@@ -129,13 +130,15 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
                                 <Input
                                     id="email"
                                     type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                                    {...form.register('email')}
                                     placeholder={t('createUser.form.email.placeholder')}
-                                    className={errors.email ? 'border-red-500' : ''}
-                                    required
+                                    className={allErrors.email ? 'border-red-500' : ''}
                                 />
-                                {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+                                {allErrors.email && (
+                                    <p className="text-sm text-red-600">
+                                        {typeof allErrors.email === 'string' ? allErrors.email : allErrors.email?.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="mr-2 mb-2 ml-2 grid gap-2">
@@ -143,51 +146,56 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
                                 <Input
                                     id="password"
                                     type="password"
-                                    value={formData.password}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            password: e.target.value,
-                                        }))
-                                    }
+                                    {...form.register('password')}
                                     placeholder={t('createUser.form.password.placeholder')}
-                                    className={errors.password ? 'border-red-500' : ''}
-                                    required
+                                    className={allErrors.password ? 'border-red-500' : ''}
                                 />
-                                {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
+                                {allErrors.password && (
+                                    <p className="text-sm text-red-600">
+                                        {typeof allErrors.password === 'string' ? allErrors.password : allErrors.password?.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="mr-2 mb-2 ml-2 grid gap-2">
                                 <Label htmlFor="role">{t('createUser.form.role.label')} *</Label>
-                                <Select value={formData.role} onValueChange={(value: UserRole) => setFormData((prev) => ({ ...prev, role: value }))}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={t('createUser.form.role.placeholder')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Member">{t('createUser.form.role.member')}</SelectItem>
-                                        <SelectItem value="Division_Leader">{t('createUser.form.role.division_leader')}</SelectItem>
-                                        <SelectItem value="Treasurer">{t('createUser.form.role.treasurer')}</SelectItem>
-                                        <SelectItem value="Sysadmin">{t('createUser.form.role.sysadmin')}</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {errors.role && <p className="text-sm text-red-600">{errors.role}</p>}
+                                <Controller
+                                    name="role"
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <Select value={field.value} onValueChange={field.onChange}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={t('createUser.form.role.placeholder')} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Member">{t('createUser.form.role.member')}</SelectItem>
+                                                <SelectItem value="Division_Leader">{t('createUser.form.role.division_leader')}</SelectItem>
+                                                <SelectItem value="Treasurer">{t('createUser.form.role.treasurer')}</SelectItem>
+                                                <SelectItem value="Sysadmin">{t('createUser.form.role.sysadmin')}</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                                {allErrors.role && (
+                                    <p className="text-sm text-red-600">
+                                        {typeof allErrors.role === 'string' ? allErrors.role : allErrors.role?.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="mr-2 mb-2 ml-2 grid gap-2">
                                 <Label htmlFor="phone">{t('createUser.form.phone.label')}</Label>
                                 <Input
                                     id="phone"
-                                    value={formData.phone}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            phone: e.target.value,
-                                        }))
-                                    }
+                                    {...form.register('phone')}
                                     placeholder={t('createUser.form.phone.placeholder')}
-                                    className={errors.phone ? 'border-red-500' : ''}
+                                    className={allErrors.phone ? 'border-red-500' : ''}
                                 />
-                                {errors.phone && <p className="text-sm text-red-600">{errors.phone}</p>}
+                                {allErrors.phone && (
+                                    <p className="text-sm text-red-600">
+                                        {typeof allErrors.phone === 'string' ? allErrors.phone : allErrors.phone?.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="mr-2 mb-2 ml-2 grid gap-2">
@@ -195,16 +203,14 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
                                 <Input
                                     id="birthday"
                                     type="date"
-                                    value={formData.birthday}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            birthday: e.target.value,
-                                        }))
-                                    }
-                                    className={errors.birthday ? 'border-red-500' : ''}
+                                    {...form.register('birthday')}
+                                    className={allErrors.birthday ? 'border-red-500' : ''}
                                 />
-                                {errors.birthday && <p className="text-sm text-red-600">{errors.birthday}</p>}
+                                {allErrors.birthday && (
+                                    <p className="text-sm text-red-600">
+                                        {typeof allErrors.birthday === 'string' ? allErrors.birthday : allErrors.birthday?.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="mr-2 mb-2 ml-2 grid gap-2">
@@ -223,22 +229,24 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
                                     onChange={handleAvatarChange}
                                     ref={fileInputRef}
                                     className={`
-                                        focus:ring-ring block w-full cursor-pointer rounded-md border border-slate-300 bg-white text-sm 
-                                        text-slate-900 file:mr-3 file:rounded-none file:border-0 file:bg-slate-100 file:px-4 file:py-2.5 file:font-medium file:text-slate-800 
+                                        focus:ring-ring block w-full cursor-pointer rounded-md border border-slate-300 bg-white text-sm
+                                        text-slate-900 file:mr-3 file:rounded-none file:border-0 file:bg-slate-100 file:px-4 file:py-2.5 file:font-medium file:text-slate-800
                                         hover:file:bg-slate-200 focus:ring-2 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:file:bg-slate-800 dark:file:text-slate-200 dark:hover:file:bg-slate-700`}
                                 />
 
-                                {(errors.avatar || errors.ava) && <p className="text-sm text-red-600">{errors.avatar || errors.ava}</p>}
+                                {(serverErrors.avatar || serverErrors.ava) && (
+                                    <p className="text-sm text-red-600">{serverErrors.avatar || serverErrors.ava}</p>
+                                )}
                             </div>
                         </div>
                     </div>
 
                     <SheetFooter className="mt-auto border-t pt-4">
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                             {t('createUser.button.cancel')}
                         </Button>
-                        <Button type="submit" disabled={loading}>
-                            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {t('createUser.button.create')}
                         </Button>
                     </SheetFooter>

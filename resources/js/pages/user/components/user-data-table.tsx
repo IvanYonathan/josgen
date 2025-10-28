@@ -11,14 +11,24 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/use-toast';
 import { RoleBadge } from '@/components/user/role-badge';
 import { UserAvatar } from '@/components/user/user-avatar';
 import { useTranslation } from '@/hooks/use-translation';
 import { User } from '@/types/user/user';
 import { Loader2, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { DataTable } from '@/components/common/tables/data-table';
+import { useMemo, useState } from 'react';
+import { SortingState, OnChangeFn } from '@tanstack/react-table';
+import { createUserColumns } from './users-table-columns';
+
+/**
+ * UserDataTable Component
+ *
+ * Responsive data table for user management.
+ * - Desktop: TanStack Table with sortable columns (name, email)
+ * - Mobile: Card-based UI (your existing design preserved)
+ */
 
 interface UserDataTableProps {
     users: User[];
@@ -26,9 +36,19 @@ interface UserDataTableProps {
     onEdit: (user: User) => void;
     onDelete: (userId: number) => Promise<void>;
     onView?: (user: User) => void;
+    sorting?: SortingState;
+    onSortingChange?: OnChangeFn<SortingState>;
 }
 
-export function UserDataTable({ users, loading, onEdit, onDelete, onView }: Readonly<UserDataTableProps>) {
+export function UserDataTable({
+    users,
+    loading,
+    sorting,
+    onSortingChange,
+    onEdit,
+    onDelete,
+    onView,
+}: Readonly<UserDataTableProps>) {
     const { t } = useTranslation('user');
     const { toast } = useToast();
     const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -53,21 +73,25 @@ export function UserDataTable({ users, loading, onEdit, onDelete, onView }: Read
         }
     };
 
-    const renderActions = (user: User, stacked = false) => (
-        <div
-            className={
-                stacked
-                    ? 'flex w-full flex-col items-stretch gap-2 text-center sm:flex-row sm:flex-wrap sm:justify-center'
-                    : 'flex flex-wrap items-center justify-center gap-2'
-            }
-        >
+    const columns = useMemo(
+        () =>
+            createUserColumns(t, {
+                onEdit,
+                onDelete: handleDelete,
+                onView,
+                deletingId,
+            }),
+        [t, onEdit, onView, deletingId]
+    );
+
+    const renderMobileActions = (user: User) => (
+        <div className="flex w-full flex-col items-stretch gap-2 text-center sm:flex-row sm:flex-wrap sm:justify-center">
             {onView && (
                 <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => onView(user)}
-                    className={stacked ? 'w-full sm:w-auto' : 'min-w-[80px]'}
-                >
+                    className="w-full sm:w-auto">
                     {t('view')}
                 </Button>
             )}
@@ -75,8 +99,7 @@ export function UserDataTable({ users, loading, onEdit, onDelete, onView }: Read
                 variant="outline"
                 size="sm"
                 onClick={() => onEdit(user)}
-                className={stacked ? 'w-full sm:w-auto' : 'min-w-[80px]'}
-            >
+                className="w-full sm:w-auto">
                 {t('edit')}
             </Button>
 
@@ -86,8 +109,7 @@ export function UserDataTable({ users, loading, onEdit, onDelete, onView }: Read
                         variant="destructive"
                         size="sm"
                         disabled={deletingId === user.id}
-                        className={stacked ? 'w-full sm:w-auto' : 'min-w-[80px]'}
-                    >
+                        className="w-full sm:w-auto">
                         {deletingId === user.id ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -123,53 +145,32 @@ export function UserDataTable({ users, loading, onEdit, onDelete, onView }: Read
         </div>
     );
 
-    if (loading) {
-        return <div>{t('loading')}</div>;
-    }
-
     return (
         <>
-            {/* Desktop Table */}
+            {/* Desktop Table - TanStack Table with sortable columns */}
             <div className="hidden md:block">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead aria-label={t('avatar')} />
-                            <TableHead className="text-left align-middle">{t('name')}</TableHead>
-                            <TableHead className="text-left align-middle">{t('email')}</TableHead>
-                            <TableHead className="text-left align-middle">{t('role')}</TableHead>
-                            <TableHead className="text-left align-middle">{t('division')}</TableHead>
-                            <TableHead className="min-w-[240px]">
-                                <div className="flex h-full items-center justify-center text-center">
-                                    {t('actions')}
-                                </div>
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {users.map((user) => (
-                            <TableRow key={user.id}>
-                                <TableCell>
-                                    <UserAvatar user={user} />
-                                </TableCell>
-                                <TableCell className="break-words whitespace-normal">{user.name}</TableCell>
-                                <TableCell className="break-words whitespace-normal">{user.email}</TableCell>
-                                <TableCell>
-                                    <RoleBadge role={user.role} />
-                                </TableCell>
-                                <TableCell className="break-words whitespace-normal">
-                                    {user.division?.name || '-'}
-                                </TableCell>
-                                <TableCell className="min-w-[240px]">{renderActions(user)}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                <DataTable
+                    columns={columns}
+                    data={users}
+                    sorting={sorting}
+                    onSortingChange={onSortingChange}
+                    manualSorting={true}
+                    loading={loading}
+                />
             </div>
 
             {/* Mobile Cards */}
             <div className="space-y-4 md:hidden">
-                {users.map((user) => (
+                {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                ) : users.length === 0 ? (
+                    <div className="py-8 text-center">
+                        <p className="text-muted-foreground">No users found</p>
+                    </div>
+                ) : (
+                    users.map((user) => (
                     <Card
                         key={user.id}
                         className="border-border border shadow-sm transition-shadow hover:shadow-md"
@@ -197,9 +198,10 @@ export function UserDataTable({ users, loading, onEdit, onDelete, onView }: Read
                                 </span>
                             </div>
                         </CardContent>
-                        <CardFooter className="pt-0">{renderActions(user, true)}</CardFooter>
+                        <CardFooter className="pt-0">{renderMobileActions(user)}</CardFooter>
                     </Card>
-                ))}
+                    ))
+                )}
             </div>
         </>
     );
