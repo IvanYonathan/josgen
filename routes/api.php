@@ -39,9 +39,26 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
     });
 
     // User endpoints
+    // Route::prefix('users')->group(function () {
+    //     Route::get('/', [UserController::class, 'list']);
+    //     Route::get('/profile', [UserController::class, 'profile']);
+    //     Route::post('/profile', [UserController::class, 'updateProfile']);
+    //     Route::get('/{id}', [UserController::class, 'get']);
+    //     Route::post('/create', [UserController::class, 'create']);
+    //     Route::put('/{id}', [UserController::class, 'update']);
+    //     Route::delete('/{id}', [UserController::class, 'delete']);
+    // });
+
     Route::prefix('user')->group(function () {
         Route::post('list', [UserController::class, 'list']);
+        Route::post('get', [UserController::class, 'get']);
+        Route::post('create', [UserController::class, 'create']);
+        Route::post('update', [UserController::class, 'update']);
+        Route::post('delete', [UserController::class, 'delete']);
+        Route::post('profile', [UserController::class, 'profile']);
+        Route::post('profile/update', [UserController::class, 'updateProfile']);
     });
+
 
     // Division endpoints
     Route::prefix('division')->group(function () {
