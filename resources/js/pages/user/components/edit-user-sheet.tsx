@@ -220,7 +220,6 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Reado
                                     placeholder={t('editUser.form.password.placeholder')}
                                     className={allErrors.password ? 'border-red-500' : ''}
                                 />
-                                <p className="text-xs text-muted-foreground">{t('editUser.form.password.hint')}</p>
                                 {allErrors.password && (
                                     <p className="text-sm text-red-600">
                                         {typeof allErrors.password === 'string' ? allErrors.password : allErrors.password?.message}
