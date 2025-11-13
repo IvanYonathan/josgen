@@ -16,6 +16,10 @@ export function DashboardLayout() {
     // Add specific breadcrumbs based on route
     if (path === '/dashboard' || path === '/') {
       breadcrumbs.push({ title: 'Dashboard', href: '/dashboard' });
+    } else if (path === '/users') {
+      breadcrumbs.push({ title: 'Users', href: '/users' });
+    } else if (path === '/roles') {
+      breadcrumbs.push({ title: 'Roles', href: '/roles' });
     } else if (path === '/divisions') {
       breadcrumbs.push({ title: 'Divisions', href: '/divisions' });
     } else if (path === '/event') {

@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DailyVerseController;
 use App\Http\Controllers\Api\DivisionController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\PermissionController;
 // use App\Http\Controllers\Api\EventController;
 // use App\Http\Controllers\Api\ProjectController;
 // use App\Http\Controllers\Api\TodoListController;
@@ -71,6 +73,24 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('members/add', [DivisionController::class, 'addMember']);
         Route::post('members/add-bulk', [DivisionController::class, 'addMembers']);
         Route::post('members/remove', [DivisionController::class, 'removeMember']);
+    });
+
+    // Role endpoints
+    Route::prefix('role')->group(function () {
+        Route::post('list', [RoleController::class, 'list']);
+        Route::post('get', [RoleController::class, 'get']);
+        Route::post('create', [RoleController::class, 'create']);
+        Route::post('update', [RoleController::class, 'update']);
+        Route::post('delete', [RoleController::class, 'delete']);
+    });
+
+    // Permission endpoints
+    Route::prefix('permission')->group(function () {
+        Route::post('list', [PermissionController::class, 'list']);
+        Route::post('get', [PermissionController::class, 'get']);
+        Route::post('create', [PermissionController::class, 'create']);
+        Route::post('update', [PermissionController::class, 'update']);
+        Route::post('delete', [PermissionController::class, 'delete']);
     });
 
     // TODO: Uncomment when controllers are created

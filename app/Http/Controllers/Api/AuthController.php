@@ -111,6 +111,14 @@ class AuthController extends ApiController
             'can_create_users' => $user->can('create users'),
             'can_edit_users' => $user->can('edit users'),
             'can_delete_users' => $user->can('delete users'),
+            'can_view_roles' => $user->can('view roles'),
+            'can_create_roles' => $user->can('create roles'),
+            'can_edit_roles' => $user->can('edit roles'),
+            'can_delete_roles' => $user->can('delete roles'),
+            'can_view_permissions' => $user->can('view permissions'),
+            'can_create_permissions' => $user->can('create permissions'),
+            'can_edit_permissions' => $user->can('edit permissions'),
+            'can_delete_permissions' => $user->can('delete permissions'),
         ];
 
         // Restore original guard

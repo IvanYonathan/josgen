@@ -6,27 +6,18 @@ import { useTranslation } from '@/hooks/use-translation';
 import { deleteUser } from '@/lib/api/user/delete-user';
 import { getUser } from '@/lib/api/user/get-user';
 import { listUsers } from '@/lib/api/user/list-users';
+import { listRoles } from '@/lib/api/role/list-role';
 import { User, UserRole } from '@/types/user/user';
 import { Loader2, PlusCircle, RefreshCcwDot, RefreshCw, Download, Trash2 } from 'lucide-react';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { CreateUserSheet } from './components/create-user-sheet';
 import { EditUserSheet } from './components/edit-user-sheet';
 import { UserDataTable } from './components/user-data-table';
 import { UserDetailView } from './components/user-detail-view';
 import { UserManagementProvider, useUserManagementStore } from './store/user-management-store';
 import { useFeatureFlags } from '@/stores/feature-flags-store';
-
-const FALLBACK_ROLE_LABELS: Partial<Record<UserRole, string>> = {
-    Sysadmin: 'System Admin',
-    Division_Leader: 'Division Leader',
-    Treasurer: 'Treasurer',
-    Member: 'Member',
-};
-
-const DEFAULT_ROLE_ORDER: UserRole[] = ['Sysadmin', 'Division_Leader', 'Treasurer', 'Member'];
-
-const formatRoleLabel = (role: string) =>
-    role.replace(/_/g, ' ').replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+import { formatRoleLabel } from '@/lib/utils/role-label';
+import { DEFAULT_ROLE_SLUGS } from '@/constants/default-roles';
 
 const LIMIT_OPTIONS = [10, 25, 50, 100];
 
@@ -138,31 +129,6 @@ function UserPage() {
 
             setUsers(response.users);
 
-            const uniqueRoles = Array.from(new Set(response.users.map((user) => user.role))) as UserRole[];
-
-            if (uniqueRoles.length > 0) {
-                const merged = Array.from(new Set([...availableRoles, ...uniqueRoles])) as UserRole[];
-                const sortedRoles = merged.sort((a, b) => {
-                    const orderA = DEFAULT_ROLE_ORDER.indexOf(a);
-                    const orderB = DEFAULT_ROLE_ORDER.indexOf(b);
-                    if (orderA === -1 && orderB === -1) {
-                        return a.localeCompare(b);
-                    }
-                    if (orderA === -1) return 1;
-                    if (orderB === -1) return -1;
-                    return orderA - orderB;
-                });
-                setAvailableRoles(sortedRoles);
-
-                const updatedLabels = { ...roleLabels };
-                uniqueRoles.forEach((role) => {
-                    if (!updatedLabels[role]) {
-                        updatedLabels[role] = FALLBACK_ROLE_LABELS[role] ?? formatRoleLabel(role);
-                    }
-                });
-                setRoleLabels(updatedLabels);
-            }
-
             if (typeof response.total === 'number') {
                 setPagination({
                     total: response.total,
@@ -186,6 +152,48 @@ function UserPage() {
     useEffect(() => {
         fetchUsers();
     }, [fetchUsers]);
+
+    useEffect(() => {
+        let mounted = true;
+
+        const loadRoles = async () => {
+            try {
+                const response = await listRoles();
+                if (!mounted) return;
+
+                const roleNames = Array.from(new Set(response.roles?.map((role) => role.name) ?? []));
+                const effectiveRoles = roleNames.length > 0 ? roleNames : DEFAULT_ROLE_SLUGS;
+                const sortedRoles = [...effectiveRoles].sort((a, b) =>
+                    formatRoleLabel(a).localeCompare(formatRoleLabel(b))
+                );
+
+                const labels: Record<string, string> = {};
+                sortedRoles.forEach((role) => {
+                    labels[role] = formatRoleLabel(role);
+                });
+
+                setAvailableRoles(sortedRoles as UserRole[]);
+                setRoleLabels(labels);
+            } catch (error) {
+                if (!mounted) return;
+                const fallbackLabels: Record<string, string> = {};
+                const sortedFallback = [...DEFAULT_ROLE_SLUGS].sort((a, b) =>
+                    formatRoleLabel(a).localeCompare(formatRoleLabel(b))
+                );
+                sortedFallback.forEach((role) => {
+                    fallbackLabels[role] = formatRoleLabel(role);
+                });
+                setAvailableRoles(sortedFallback as UserRole[]);
+                setRoleLabels(fallbackLabels);
+            }
+        };
+
+        void loadRoles();
+
+        return () => {
+            mounted = false;
+        };
+    }, [setAvailableRoles, setRoleLabels]);
 
     // Handlers
     const handleUserCreated = async (_user: User) => {
@@ -258,7 +266,11 @@ function UserPage() {
     };
 
     const handleRoleFilterChange = (value: string) => {
-        setRoleFilter((value as UserRole) ?? 'all');
+        if (value === 'all') {
+            setRoleFilter('all');
+            return;
+        }
+        setRoleFilter((value as UserRole) || 'all');
     };
 
     const handleSortChange = (value: SortSelection) => {

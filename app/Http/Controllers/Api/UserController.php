@@ -36,7 +36,7 @@ class UserController extends ApiController
             'filters' => 'nullable|array',
             'filters.name' => 'nullable|string',
             'filters.email' => 'nullable|string',
-            'filters.role' => ['nullable', Rule::in(['Sysadmin', 'Division_Leader', 'Treasurer', 'Member'])],
+            'filters.role' => ['nullable', 'string', 'max:255', Rule::exists('roles', 'name')],
             'filters.division_id' => 'nullable|integer|exists:divisions,id',
             'sort' => 'nullable|array',
             'sort.*' => ['nullable', Rule::in(['asc', 'desc'])],
@@ -107,6 +107,10 @@ class UserController extends ApiController
             ->get()
             ->makeHidden(['password', 'remember_token']);
 
+        $users->each(function (User $user) {
+            $this->appendPrimaryRole($user);
+        });
+
         return $this->success([
             'users' => $users,
         ], 'Users retrieved successfully', $total);
@@ -139,6 +143,8 @@ class UserController extends ApiController
             ->findOrFail($request->id)
             ->makeHidden(['password', 'remember_token']);
 
+        $this->appendPrimaryRole($userData);
+
         return $this->success([
             'user' => $userData,
         ], 'User retrieved successfully');
@@ -164,7 +170,7 @@ class UserController extends ApiController
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'phone' => 'nullable|string|max:20',
-            'role' => 'required|in:Sysadmin,Division_Leader,Treasurer,Member',
+            'role' => ['required', 'string', 'max:255', Rule::exists('roles', 'name')],
             'birthday' => 'nullable|date',
             'division_id' => 'nullable|exists:divisions,id',
             'ava' => 'nullable|string',
@@ -186,22 +192,17 @@ class UserController extends ApiController
         unset($data['avatar']);
         $data['password'] = Hash::make($data['password']);
 
+        $roleName = $data['role'];
+
         $newUser = User::create($data);
-
-        $roleMap = [
-            'Sysadmin' => 'sysadmin',
-            'Division_Leader' => 'division_leader',
-            'Treasurer' => 'treasurer',
-            'Member' => 'member',
-        ];
-
-        $roleName = $roleMap[$data['role']] ?? strtolower($data['role']);
 
         // Assign the correct role
         $newUser->assignRole($roleName);
+        $newUser->load('roles', 'division');
+        $this->appendPrimaryRole($newUser);
 
         return $this->success([
-            'user' => $newUser->load('roles', 'division'),
+            'user' => $newUser,
         ], 'User created successfully');
     }
 
@@ -232,7 +233,7 @@ class UserController extends ApiController
                 Rule::unique('users')->ignore($request->id),
             ],
             'phone' => 'nullable|string|max:20',
-            'role' => 'required|in:Sysadmin,Division_Leader,Treasurer,Member',
+            'role' => ['required', 'string', 'max:255', Rule::exists('roles', 'name')],
             'birthday' => 'nullable|date',
             'division_id' => 'nullable|exists:divisions,id',
             'ava' => 'nullable|string',
@@ -254,17 +255,13 @@ class UserController extends ApiController
 
         $userToUpdate->update($data);
 
-        $roleMap = [
-            'Sysadmin' => 'sysadmin',
-            'Division_Leader' => 'division_leader',
-            'Treasurer' => 'treasurer',
-            'Member' => 'member',
-        ];
-        $roleName = $roleMap[$data['role']] ?? strtolower($data['role']);
+        $roleName = $data['role'];
         $userToUpdate->syncRoles([$roleName]);
+        $userToUpdate->load('roles', 'division');
+        $this->appendPrimaryRole($userToUpdate);
 
         return $this->success([
-            'user' => $userToUpdate->load('roles', 'division'),
+            'user' => $userToUpdate,
         ], 'User updated successfully');
     }
 
@@ -311,6 +308,7 @@ class UserController extends ApiController
         $user = Auth::user();
 
         $user->load(['roles', 'division']);
+        $this->appendPrimaryRole($user);
         $user->makeHidden(['password', 'remember_token']);
 
         return $this->success([
@@ -346,8 +344,27 @@ class UserController extends ApiController
 
         $user->update($data);
 
+        $user->load('roles', 'division');
+        $this->appendPrimaryRole($user);
+
         return $this->success([
-            'user' => $user->load('roles', 'division'),
+            'user' => $user,
         ], 'Profile updated successfully');
+    }
+
+    /**
+     * Normalize the exposed role attribute so clients always receive the primary role slug.
+     */
+    private function appendPrimaryRole(User $user): void
+    {
+        $user->loadMissing('roles');
+        $primaryRole = $user->roles->pluck('name')->first();
+
+        if ($primaryRole) {
+            if ($user->getAttribute('role') !== $primaryRole) {
+                $user->forceFill(['role' => $primaryRole])->save();
+            }
+            $user->setAttribute('role', $primaryRole);
+        }
     }
 }

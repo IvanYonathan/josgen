@@ -6,13 +6,16 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { updateUser } from "@/lib/api/user/update-user";
 import { User} from "@/types/user/user";
 import { Loader2 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useTranslation } from '@/hooks/use-translation';
 import { useToast } from "@/components/ui/use-toast";
 import { resolveAvatarSrc } from "@/components/user/user-avatar";
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateUserSchema, UpdateUserFormData, cleanUserFormData } from '../schemas/user-schemas';
+import { useUserManagementStore } from "../store/user-management-store";
+import { DEFAULT_ROLE_SLUGS, LEGACY_ROLE_LABEL_MAP } from "@/constants/default-roles";
+import { formatRoleLabel } from "@/lib/utils/role-label";
 
 interface EditUserSheetProps {
   user: User;
@@ -28,6 +31,31 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Reado
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
+  const { availableRoles, roleLabels } = useUserManagementStore();
+
+    const roleOptions = useMemo(
+        () => (availableRoles.length > 0 ? availableRoles : DEFAULT_ROLE_SLUGS),
+        [availableRoles]
+    );
+
+    const normalizeRoleValue = useCallback(
+        (value: string) => {
+            if (!value) return value;
+            if (roleOptions.includes(value)) {
+                return value;
+            }
+
+            const match = Object.entries(roleLabels).find(([, label]) => label === value)?.[0];
+            if (match) return match;
+
+            if (LEGACY_ROLE_LABEL_MAP[value]) {
+                return LEGACY_ROLE_LABEL_MAP[value];
+            }
+
+            return value.toLowerCase().replace(/\s+/g, '_');
+        },
+        [roleLabels, roleOptions]
+    );
 
     const form = useForm<UpdateUserFormData>({
         resolver: zodResolver(updateUserSchema),
@@ -35,7 +63,7 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Reado
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.role,
+            role: normalizeRoleValue(user.role),
             phone: user.phone || '',
             birthday: user.birthday || '',
             password: '',
@@ -47,7 +75,7 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Reado
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.role,
+            role: normalizeRoleValue(user.role),
             phone: user.phone || '',
             birthday: user.birthday || '',
             password: '',
@@ -57,7 +85,7 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Reado
         setAvatarPreview(existingAvatar || null);
         setAvatarFile(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
-    }, [user, form]);
+    }, [user, form, normalizeRoleValue]);
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] ?? null;
@@ -161,15 +189,20 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Reado
                                     name="role"
                                     control={form.control}
                                     render={({ field }) => (
-                                        <Select value={field.value} onValueChange={field.onChange}>
+                                        <Select
+                                            value={field.value || undefined}
+                                            onValueChange={field.onChange}
+                                            disabled={roleOptions.length === 0}
+                                        >
                                             <SelectTrigger>
                                                 <SelectValue placeholder={t("editUser.form.role.placeholder")} />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="Member">{t('editUser.form.role.member')}</SelectItem>
-                                                <SelectItem value="Division_Leader">{t('editUser.form.role.division_leader')}</SelectItem>
-                                                <SelectItem value="Treasurer">{t('editUser.form.role.treasurer')}</SelectItem>
-                                                <SelectItem value="Sysadmin">{t('editUser.form.role.sysadmin')}</SelectItem>
+                                                {roleOptions.map((role) => (
+                                                    <SelectItem key={role} value={role}>
+                                                        {roleLabels[role] ?? formatRoleLabel(role)}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     )}

@@ -7,11 +7,14 @@ import { useToast } from '@/components/ui/use-toast';
 import { createUser } from '@/lib/api/user/create-user';
 import { User } from '@/types/user/user';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createUserSchema, CreateUserFormData, cleanUserFormData } from '../schemas/user-schemas';
+import { useUserManagementStore } from '../store/user-management-store';
+import { formatRoleLabel } from '@/lib/utils/role-label';
+import { DEFAULT_ROLE_SLUGS } from '@/constants/default-roles';
 
 interface CreateUserSheetProps {
     open: boolean;
@@ -27,13 +30,19 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 
+    const { availableRoles, roleLabels } = useUserManagementStore();
+    const roleOptions = useMemo(
+        () => (availableRoles.length > 0 ? availableRoles : DEFAULT_ROLE_SLUGS),
+        [availableRoles]
+    );
+
     const form = useForm<CreateUserFormData>({
         resolver: zodResolver(createUserSchema),
         defaultValues: {
             name: '',
             email: '',
             password: '',
-            role: 'Member',
+            role: '',
             phone: '',
             birthday: '',
         },
@@ -46,6 +55,14 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
             }
         };
     }, [avatarPreview]);
+
+    useEffect(() => {
+        if (!open) return;
+        const currentRole = form.getValues('role');
+        if (!currentRole && roleOptions.length > 0) {
+            form.setValue('role', roleOptions[0]);
+        }
+    }, [open, roleOptions, form]);
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] ?? null;
@@ -163,15 +180,20 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
                                     name="role"
                                     control={form.control}
                                     render={({ field }) => (
-                                        <Select value={field.value} onValueChange={field.onChange}>
-                                            <SelectTrigger>
+                                        <Select
+                                            value={field.value || undefined}
+                                            onValueChange={field.onChange}
+                                            disabled={isSubmitting || roleOptions.length === 0}
+                                        >
+                                            <SelectTrigger className={allErrors.role ? 'border-red-500' : ''}>
                                                 <SelectValue placeholder={t('createUser.form.role.placeholder')} />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="Member">{t('createUser.form.role.member')}</SelectItem>
-                                                <SelectItem value="Division_Leader">{t('createUser.form.role.division_leader')}</SelectItem>
-                                                <SelectItem value="Treasurer">{t('createUser.form.role.treasurer')}</SelectItem>
-                                                <SelectItem value="Sysadmin">{t('createUser.form.role.sysadmin')}</SelectItem>
+                                                {roleOptions.map((role) => (
+                                                    <SelectItem key={role} value={role}>
+                                                        {roleLabels[role] ?? formatRoleLabel(role)}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     )}
