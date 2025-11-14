@@ -1,4 +1,15 @@
 {
-    "title": "JOSGEN",
-    "description": "Deskripsi nya apa"
+    "dataTable": {
+    "noResult": "No results.",
+    "pagination": {
+      "rowsPerPage": "Rows per page",
+      "pageOf": "Page {{page}} of {{total}}"
+    },
+    "filter": {
+      "select": {
+        "nonePlaceholder": "None" 
+      },
+      "reset": "Reset"
+    }
+  }
 }

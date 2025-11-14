@@ -443,15 +443,8 @@ function UserPage() {
                         <>
                             <UserDataTable
                                 users={users}
+                                setUsers={setUsers}
                                 loading={loading}
-                                sorting={sorting ?? []}
-                                onSortingChange={(newSorting) => {
-                                    if (typeof newSorting === 'function') {
-                                        setSorting(newSorting(sorting ?? []));
-                                    } else {
-                                        setSorting(newSorting);
-                                    }
-                                }}
                                 onEdit={openEditSheet}
                                 onDelete={handleUserDeleted}
                                 onView={handleViewUser}

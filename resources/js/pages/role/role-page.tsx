@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
 import { CreateRoleSheet } from './components/create-role-sheet';
@@ -23,16 +22,13 @@ import { listRoles } from '@/lib/api/role/list-role';
 import { deleteRole } from '@/lib/api/role/delete-role';
 import { me } from '@/lib/api/auth/me';
 import { Role, RolePermission } from '@/types/role/role';
-import { Loader2, Pencil, PlusCircle, RefreshCw, Shield, ShieldAlert, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Loader2, PlusCircle, RefreshCw, Shield, ShieldAlert, Pencil, Trash2 } from 'lucide-react';
+import { DataTable } from '@/components/common/tables/data-table';
+import { useRoleColumns } from './columns/role-table-columns';
+import { formatRoleLabel } from '@/lib/utils/role-label';
+import { useDataTable } from '@/hooks/use-data-table';
 
 const sortRoles = (roles: Role[]) => [...roles].sort((a, b) => a.name.localeCompare(b.name));
-
-function formatRoleLabel(name: string): string {
-  return name
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
 
 export default function RolePage() {
   const { t } = useTranslation('role');
@@ -48,7 +44,6 @@ export default function RolePage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
 
   const [createSheetOpen, setCreateSheetOpen] = useState(false);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
@@ -62,12 +57,6 @@ export default function RolePage() {
   const [canDeleteRole, setCanDeleteRole] = useState(false);
 
   const selectedRole = selectedRoleId ? roles.find((role) => role.id === selectedRoleId) ?? null : null;
-
-  const filteredRoles = useMemo(() => {
-    if (!search.trim()) return roles;
-    const term = search.trim().toLowerCase();
-    return roles.filter((role) => role.name.toLowerCase().includes(term));
-  }, [roles, search]);
 
   const loadData = useCallback(async (silent = false) => {
     try {
@@ -160,29 +149,33 @@ export default function RolePage() {
     }
   };
 
-  const renderPermissionsPreview = (role: Role) => {
-    if (!role.permissions || role.permissions.length === 0) {
-      return <span className="text-sm text-muted-foreground">{t('detail.noPermissions')}</span>;
-    }
+  const columns = useRoleColumns({
+    onEdit: (role) => {
+      setSelectedRoleId(role.id);
+      setEditSheetOpen(true);
+    },
+    onDelete: openDeleteDialog,
+    onRowClick: (role) => setSelectedRoleId(role.id),
+    canEditRole,
+    canDeleteRole,
+    selectedRoleId,
+  });
 
-    const preview = role.permissions.slice(0, 3);
-    const remaining = role.permissions.length - preview.length;
-
-    return (
-      <div className="flex flex-wrap gap-1">
-        {preview.map((permission) => (
-          <Badge key={permission.id} variant="outline" className="text-xs font-normal">
-            {permission.name}
-          </Badge>
-        ))}
-        {remaining > 0 && (
-          <Badge variant="secondary" className="text-xs font-normal">
-            +{remaining}
-          </Badge>
-        )}
-      </div>
-    );
-  };
+  const { table } = useDataTable<Role>({
+    data: roles,
+    setData: setRoles,
+    columns,
+    manualProcessing: true,
+    replaceParamOnStateChange: false,
+    initialState: {
+      pagination: {
+        pageIndex: 1,
+        pageSize: 100,
+      },
+      sorting: [{ id: 'name', desc: false }],
+    },
+    getRowId: (originalRow) => String(originalRow.id),
+  });
 
   return (
     <div className="space-y-6 p-6">
@@ -210,95 +203,23 @@ export default function RolePage() {
       <div className="grid gap-6 lg:grid-cols-[3fr,2fr]">
         <Card>
           <CardHeader>
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <CardTitle>{t('table.title')}</CardTitle>
-                <CardDescription>{t('table.description')}</CardDescription>
-              </div>
-              <Input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder={t('table.searchPlaceholder')}
-                className="w-64"
-              />
+            <div>
+              <CardTitle>{t('table.title')}</CardTitle>
+              <CardDescription>{t('table.description')}</CardDescription>
             </div>
           </CardHeader>
           <CardContent>
-            {loading ? (
+            {loading && (
               <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 {t('table.loading')}
               </div>
-            ) : filteredRoles.length === 0 ? (
+            )}
+            {!loading && roles.length === 0 && (
               <div className="py-10 text-center text-sm text-muted-foreground">{t('table.empty')}</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t('table.role')}</TableHead>
-                      <TableHead>{t('table.permissions')}</TableHead>
-                      <TableHead>{t('table.updated')}</TableHead>
-                      <TableHead className="text-right">{t('table.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredRoles.map((role) => (
-                      <TableRow
-                        key={role.id}
-                        className={cn(
-                          'cursor-pointer',
-                          selectedRoleId === role.id ? 'bg-muted/60' : 'hover:bg-muted/40'
-                        )}
-                        onClick={() => setSelectedRoleId(role.id)}
-                      >
-                        <TableCell className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{formatRoleLabel(role.name)}</span>
-                            {role.is_protected && (
-                              <Badge variant="secondary" className="text-[10px] uppercase">
-                                {t('detail.protected')}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground">{role.guard_name}</p>
-                        </TableCell>
-                        <TableCell>{renderPermissionsPreview(role)}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {new Date(role.updated_at).toLocaleString()}
-                        </TableCell>
-                        <TableCell className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={!canEditRole}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setSelectedRoleId(role.id);
-                              setEditSheetOpen(true);
-                            }}
-                          >
-                            <Pencil className="mr-1 h-4 w-4" />
-                            {t('buttons.edit')}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            disabled={!canDeleteRole || role.is_protected}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openDeleteDialog(role);
-                            }}
-                          >
-                            <Trash2 className="mr-1 h-4 w-4" />
-                            {t('buttons.delete')}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+            )}
+            {!loading && roles.length > 0 && (
+              <DataTable table={table} hidePaginationControls={true} />
             )}
           </CardContent>
         </Card>

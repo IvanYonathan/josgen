@@ -19,8 +19,8 @@ import { User } from '@/types/user/user';
 import { Loader2, Trash2 } from 'lucide-react';
 import { DataTable } from '@/components/common/tables/data-table';
 import { useMemo, useState } from 'react';
-import { SortingState, OnChangeFn } from '@tanstack/react-table';
 import { createUserColumns } from './users-table-columns';
+import { useDataTable } from '@/hooks/use-data-table';
 
 /**
  * UserDataTable Component
@@ -32,19 +32,17 @@ import { createUserColumns } from './users-table-columns';
 
 interface UserDataTableProps {
     users: User[];
+    setUsers: (users: User[]) => void;
     loading: boolean;
     onEdit: (user: User) => void;
     onDelete: (userId: number) => Promise<void>;
     onView?: (user: User) => void;
-    sorting?: SortingState;
-    onSortingChange?: OnChangeFn<SortingState>;
 }
 
 export function UserDataTable({
     users,
+    setUsers,
     loading,
-    sorting,
-    onSortingChange,
     onEdit,
     onDelete,
     onView,
@@ -83,6 +81,22 @@ export function UserDataTable({
             }),
         [t, onEdit, onView, deletingId]
     );
+
+    const { table } = useDataTable<User>({
+        data: users,
+        setData: setUsers,
+        columns,
+        manualProcessing: true,
+        replaceParamOnStateChange: false,
+        initialState: {
+            pagination: {
+                pageIndex: 1,
+                pageSize: 10,
+            },
+            sorting: [{ id: 'name', desc: false }],
+        },
+        getRowId: (originalRow) => String(originalRow.id),
+    });
 
     const renderMobileActions = (user: User) => (
         <div className="flex w-full flex-col items-stretch gap-2 text-center sm:flex-row sm:flex-wrap sm:justify-center">
@@ -149,14 +163,19 @@ export function UserDataTable({
         <>
             {/* Desktop Table - TanStack Table with sortable columns */}
             <div className="hidden md:block">
-                <DataTable
-                    columns={columns}
-                    data={users}
-                    sorting={sorting}
-                    onSortingChange={onSortingChange}
-                    manualSorting={true}
-                    loading={loading}
-                />
+                {loading && (
+                    <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                )}
+                {!loading && users.length === 0 && (
+                    <div className="py-8 text-center">
+                        <p className="text-muted-foreground">{t('noUsersFound')}</p>
+                </div>
+                )}
+                {!loading && users.length > 0 && (
+                    <DataTable table={table} hidePaginationControls={false} />
+                )}
             </div>
 
             {/* Mobile Cards */}
