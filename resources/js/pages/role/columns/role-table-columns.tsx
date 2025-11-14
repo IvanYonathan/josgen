@@ -7,6 +7,14 @@ import { DataTableColumnHeader } from '@/components/common/tables/data-table-col
 import { Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRoleLabel } from '@/lib/utils/role-label';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 
 export interface RoleTableActions {
   onEdit: (role: Role) => void;
@@ -87,7 +95,7 @@ export const useRoleColumns = (actions: RoleTableActions): ColumnDef<Role>[] => 
   {
     id: 'actions',
     header: () => (
-      <div className="flex h-full items-center justify-end text-right">
+      <div className="flex h-full items-center justify-center">
         {t('table.actions')}
       </div>
     ),
@@ -96,31 +104,44 @@ export const useRoleColumns = (actions: RoleTableActions): ColumnDef<Role>[] => 
       const { onEdit, onDelete, canEditRole = true, canDeleteRole = true } = actions;
 
       return (
-        <div className="flex justify-end gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={!canEditRole}
-            onClick={(event) => {
-              event.stopPropagation();
-              onEdit(role);
-            }}
-          >
-            <Pencil className="mr-1 h-4 w-4" />
-            {t('buttons.edit')}
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            disabled={!canDeleteRole || role.is_protected}
-            onClick={(event) => {
-              event.stopPropagation();
-              onDelete(role);
-            }}
-          >
-            <Trash2 className="mr-1 h-4 w-4" />
-            {t('buttons.delete')}
-          </Button>
+        <div className="flex justify-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DotsHorizontalIcon className="h-4 w-4" />
+                <span className="sr-only">{t('table.actions')}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem
+                disabled={!canEditRole}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onEdit(role);
+                }}
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                {t('buttons.edit')}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={!canDeleteRole || role.is_protected}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDelete(role);
+                }}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t('buttons.delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       );
     },
