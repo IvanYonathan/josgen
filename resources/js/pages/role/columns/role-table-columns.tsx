@@ -52,7 +52,7 @@ export const useRoleColumns = (actions: RoleTableActions): ColumnDef<Role>[] => 
   },
   {
     id: 'permissions',
-    header: () => <div className="text-left">{t('table.permissions')}</div>,
+   header: ({ column }) => <DataTableColumnHeader column={column} title={t('table.permissions')} />,
     cell: ({ row }) => {
       const role = row.original;
 
@@ -95,11 +95,6 @@ export const useRoleColumns = (actions: RoleTableActions): ColumnDef<Role>[] => 
   {
     id: 'actions',
     size: 40,
-    header: () => (
-      <div className="flex h-full items-center justify-center">
-        {t('table.actions')}
-      </div>
-    ),
     cell: ({ row }) => {
       const role = row.original;
       const { onEdit, onDelete, canEditRole = true, canDeleteRole = true } = actions;

@@ -37,7 +37,7 @@ export interface UserTableActions {
 export const createUserColumns = (t: TFunction, actions: UserTableActions): ColumnDef<User>[] => [
     {
         id: 'avatar',
-        header: () => <div aria-label={t('avatar')} />,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('avatar')} />,
         cell: ({ row }) => <UserAvatar user={row.original} />,
         enableSorting: false,
     },
@@ -55,13 +55,13 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
     },
     {
         accessorKey: 'role',
-        header: () => <div className="text-left">{t('role')}</div>,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('role')} />,
         cell: ({ row }) => <RoleBadge role={row.original.role} />,
         enableSorting: false,
     },
     {
         id: 'division',
-        header: () => <div className="text-left">{t('division')}</div>,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('division')} />,
         cell: ({ row }) => (
             <div className="break-words whitespace-normal">{row.original.division?.name || '-'}</div>
         ),
@@ -70,11 +70,6 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
     {
         id: 'actions',
         size: 40,
-        header: () => (
-            <div className="flex h-full items-center justify-center">
-                {t('actions')}
-            </div>
-        ),
         cell: ({ row }) => {
             const user = row.original;
             const { onEdit, onDelete, onView, deletingId } = actions;
