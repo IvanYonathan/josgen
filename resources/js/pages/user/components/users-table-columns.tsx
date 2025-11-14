@@ -69,6 +69,7 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
     },
     {
         id: 'actions',
+        size: 40,
         header: () => (
             <div className="flex h-full items-center justify-center">
                 {t('actions')}

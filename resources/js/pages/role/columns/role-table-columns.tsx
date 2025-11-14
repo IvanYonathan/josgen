@@ -94,6 +94,7 @@ export const useRoleColumns = (actions: RoleTableActions): ColumnDef<Role>[] => 
   },
   {
     id: 'actions',
+    size: 40,
     header: () => (
       <div className="flex h-full items-center justify-center">
         {t('table.actions')}
