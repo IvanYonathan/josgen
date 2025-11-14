@@ -5,17 +5,6 @@ import { RoleBadge } from '@/components/user/role-badge';
 import { DataTableColumnHeader } from '@/components/common/tables/data-table-column-header';
 import { Button } from '@/components/ui/button';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -25,11 +14,10 @@ import {
 import { Loader2, Trash2, Eye, Pencil } from 'lucide-react';
 import { TFunction } from '@/hooks/use-translation';
 import { DotsHorizontalIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
 
 export interface UserTableActions {
     onEdit: (user: User) => void;
-    onDelete: (userId: number) => Promise<void>;
+    onDeleteClick: (user: User) => void;
     onView?: (user: User) => void;
     deletingId?: number | null;
 }
@@ -72,8 +60,7 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
         size: 40,
         cell: ({ row }) => {
             const user = row.original;
-            const { onEdit, onDelete, onView, deletingId } = actions;
-            const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+            const { onEdit, onDeleteClick, onView, deletingId } = actions;
 
             return (
                 <div className="flex justify-center">
@@ -109,7 +96,7 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                onClick={() => setDeleteDialogOpen(true)}
+                                onClick={() => onDeleteClick(user)}
                                 className="text-destructive focus:text-destructive"
                             >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -117,29 +104,6 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-
-                    <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>{t('delete_user')}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {t.rich('confirm_delete', { userName: user.name })}
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={() => {
-                                        onDelete(user.id);
-                                        setDeleteDialogOpen(false);
-                                    }}
-                                    className="bg-red-600 hover:bg-red-700"
-                                >
-                                    {t('delete')}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
                 </div>
             );
         },

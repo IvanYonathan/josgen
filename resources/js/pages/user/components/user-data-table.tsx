@@ -61,11 +61,20 @@ export function UserDataTable({
     const { t } = useTranslation('user');
     const { toast } = useToast();
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
-    const handleDelete = async (userId: number) => {
+    const handleDeleteClick = (user: User) => {
+        setUserToDelete(user);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!userToDelete) return;
+
         try {
-            setDeletingId(userId);
-            await onDelete(userId);
+            setDeletingId(userToDelete.id);
+            await onDelete(userToDelete.id);
             toast({
                 title: t('success'),
                 description: t('user_deleted'),
@@ -79,14 +88,21 @@ export function UserDataTable({
             });
         } finally {
             setDeletingId(null);
+            setDeleteDialogOpen(false);
+            setUserToDelete(null);
         }
+    };
+
+    const handleDeleteCancel = () => {
+        setDeleteDialogOpen(false);
+        setUserToDelete(null);
     };
 
     const columns = useMemo(
         () =>
             createUserColumns(t, {
                 onEdit,
-                onDelete: handleDelete,
+                onDeleteClick: handleDeleteClick,
                 onView,
                 deletingId,
             }),
@@ -145,46 +161,24 @@ export function UserDataTable({
                 className="w-full sm:w-auto">
                 {t('edit')}
             </Button>
-
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button
-                        variant="destructive"
-                        size="sm"
-                        disabled={deletingId === user.id}
-                        className="w-full sm:w-auto">
-                        {deletingId === user.id ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                {t('deleting')}
-                            </>
-                        ) : (
-                            <>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                {t('delete')}
-                            </>
-                        )}
-                    </Button>
-                </AlertDialogTrigger>
-
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>{t('delete_user')}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {t.rich('confirm_delete', { userName: user.name })}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => handleDelete(user.id)}
-                            className="bg-red-600 hover:bg-red-700"
-                        >
-                            {t('delete')}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <Button
+                variant="destructive"
+                size="sm"
+                disabled={deletingId === user.id}
+                onClick={() => handleDeleteClick(user)}
+                className="w-full sm:w-auto">
+                {deletingId === user.id ? (
+                    <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t('deleting')}
+                    </>
+                ) : (
+                    <>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {t('delete')}
+                    </>
+                )}
+            </Button>
         </div>
     );
 
@@ -206,6 +200,30 @@ export function UserDataTable({
                     <DataTable table={table} hidePaginationControls={false} pageSizeOptions={[10, 25, 50, 100]} />
                 )}
             </div>
+
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t('delete_user')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {userToDelete && t.rich('confirm_delete', { userName: userToDelete.name })}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={handleDeleteCancel}>
+                            {t('cancel')}
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeleteConfirm}
+                            className="bg-red-600 hover:bg-red-700"
+                            disabled={deletingId === userToDelete?.id}
+                        >
+                            {deletingId === userToDelete?.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {t('delete')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Mobile Cards */}
             <div className="space-y-4 md:hidden">
