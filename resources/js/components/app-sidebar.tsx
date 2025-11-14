@@ -19,7 +19,7 @@ const mainNavItems: NavItem[] = [
         icon: UserCog,
     },
     {
-        title: 'Authorization Management',
+        title: 'Role Management',
         href: '/roles',
         icon: ShieldCheck,
     },

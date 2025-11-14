@@ -405,22 +405,6 @@ function UserPage() {
                             </div>
                         )}
 
-                        <div className="min-w-[60px]">
-                            <label className="text-muted-foreground mb-2 block text-sm font-medium">Items per page</label>
-                            <Select value={String(pagination.limit)} onValueChange={handleLimitChange} disabled={loading}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Items per page" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {LIMIT_OPTIONS.map((option) => (
-                                        <SelectItem key={option} value={String(option)}>
-                                            {option}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
                         {/* Reset Button */}
                         <div className="flex items-end">
                             <Button variant="ghost" size="icon" onClick={resetFilters} disabled={loading} aria-label="Reset filters">
@@ -437,7 +421,7 @@ function UserPage() {
                         </div>
                     ) : users.length === 0 ? (
                         <div className="py-8 text-center">
-                            <p className="text-muted-foreground">No users found</p>
+                            <p className="text-muted-foreground">{t('noUsersFound')}</p>
                         </div>
                     ) : (
                         <>
@@ -448,26 +432,10 @@ function UserPage() {
                                 onEdit={openEditSheet}
                                 onDelete={handleUserDeleted}
                                 onView={handleViewUser}
+                                pagination={pagination}
+                                onPageChange={setPage}
+                                onPageSizeChange={setLimit}
                             />
-
-                            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="text-muted-foreground text-sm">
-                                    Showing {startItem}-{effectiveEnd}
-                                    {pagination.total !== null ? ` of ${pagination.total}` : ''} users {sortLabel}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Button variant="outline" size="sm" onClick={previousPage} disabled={pagination.page === 1 || loading}>
-                                        Previous
-                                    </Button>
-                                    <span className="text-sm font-medium">
-                                        Page {pagination.page}
-                                        {totalPages !== null ? ` of ${totalPages}` : ''}
-                                    </span>
-                                    <Button variant="outline" size="sm" onClick={nextPage} disabled={!pagination.hasNextPage || loading}>
-                                        Next
-                                    </Button>
-                                </div>
-                            </div>
                         </>
                     )}
                 </>

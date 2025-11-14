@@ -18,7 +18,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { User } from '@/types/user/user';
 import { Loader2, Trash2 } from 'lucide-react';
 import { DataTable } from '@/components/common/tables/data-table';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { createUserColumns } from './users-table-columns';
 import { useDataTable } from '@/hooks/use-data-table';
 
@@ -37,6 +37,14 @@ interface UserDataTableProps {
     onEdit: (user: User) => void;
     onDelete: (userId: number) => Promise<void>;
     onView?: (user: User) => void;
+    pagination: {
+        page: number;
+        limit: number;
+        total: number | null;
+        hasNextPage: boolean;
+    };
+    onPageChange: (page: number) => void;
+    onPageSizeChange: (pageSize: number) => void;
 }
 
 export function UserDataTable({
@@ -46,6 +54,9 @@ export function UserDataTable({
     onEdit,
     onDelete,
     onView,
+    pagination,
+    onPageChange,
+    onPageSizeChange,
 }: Readonly<UserDataTableProps>) {
     const { t } = useTranslation('user');
     const { toast } = useToast();
@@ -82,21 +93,39 @@ export function UserDataTable({
         [t, onEdit, onView, deletingId]
     );
 
-    const { table } = useDataTable<User>({
+    const {
+        table,
+        pagination: tablePagination,
+        setPageCount
+    } = useDataTable<User>({
         data: users,
         setData: setUsers,
         columns,
-        manualProcessing: true,
+        manualProcessing: false,
         replaceParamOnStateChange: false,
         initialState: {
             pagination: {
-                pageIndex: 1,
-                pageSize: 10,
+                pageIndex: pagination.page,
+                pageSize: pagination.limit,
             },
-            sorting: [{ id: 'name', desc: false }],
         },
         getRowId: (originalRow) => String(originalRow.id),
     });
+
+    useEffect(() => {
+        if (tablePagination.pageIndex !== pagination.page) {
+            onPageChange(tablePagination.pageIndex);
+        }
+        if (tablePagination.pageSize !== pagination.limit) {
+            onPageSizeChange(tablePagination.pageSize);
+        }
+    }, [tablePagination.pageIndex, tablePagination.pageSize]);
+
+    useEffect(() => {
+        if (pagination.total) {
+            setPageCount(Math.ceil(pagination.total / pagination.limit));
+        }
+    }, [pagination.total, pagination.limit, setPageCount]);
 
     const renderMobileActions = (user: User) => (
         <div className="flex w-full flex-col items-stretch gap-2 text-center sm:flex-row sm:flex-wrap sm:justify-center">
@@ -174,7 +203,7 @@ export function UserDataTable({
                 </div>
                 )}
                 {!loading && users.length > 0 && (
-                    <DataTable table={table} hidePaginationControls={false} />
+                    <DataTable table={table} hidePaginationControls={false} pageSizeOptions={[10, 25, 50, 100]} />
                 )}
             </div>
 
@@ -186,7 +215,7 @@ export function UserDataTable({
                     </div>
                 ) : users.length === 0 ? (
                     <div className="py-8 text-center">
-                        <p className="text-muted-foreground">No users found</p>
+                        <p className="text-muted-foreground">{t('noUsersFound')}</p>
                     </div>
                 ) : (
                     users.map((user) => (
