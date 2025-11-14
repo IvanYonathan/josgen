@@ -135,16 +135,15 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Reado
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className="h-full overflow-y-auto p-6 sm:max-w-md [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                <form onSubmit={handleSubmit} className="flex h-full flex-col">
-                    {/* Scrollable area */}
-                    <div className="flex-1 overflow-y-auto">
-                        <SheetHeader>
-                            <SheetTitle>{t("editUser.title")}</SheetTitle>
-                            <SheetDescription>{t("editUser.description")}</SheetDescription>
-                        </SheetHeader>
+            <SheetContent className="sm:max-w-md overflow-hidden">
+                <SheetHeader>
+                    <SheetTitle>{t("editUser.title")}</SheetTitle>
+                    <SheetDescription>{t("editUser.description")}</SheetDescription>
+                </SheetHeader>
 
-                        <div className="grid gap-4 py-4">
+                <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-simple px-6 py-4">
+                        <div className="grid gap-4">
                             {serverErrors.general && (
                                 <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">
                                     {serverErrors.general}
@@ -290,7 +289,7 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Reado
                         </div>
                     </div>
 
-                    <SheetFooter className="mt-auto border-t pt-4">
+                    <SheetFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                             {t("editUser.button.cancel")}
                         </Button>

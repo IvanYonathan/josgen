@@ -112,87 +112,94 @@ export function EditRoleSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent className="sm:max-w-md overflow-hidden">
         {roleId ? (
-          <form className="space-y-4" onSubmit={handleSubmit}>
+          <>
             <SheetHeader>
               <SheetTitle>{t('editRole.title')}</SheetTitle>
               <SheetDescription>{t('editRole.description')}</SheetDescription>
             </SheetHeader>
 
-            {error && (
-              <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">
-                {error}
+            <form className="flex flex-col flex-1 overflow-hidden" onSubmit={handleSubmit}>
+              <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-simple flex flex-col gap-3 px-6 py-4">
+                {error && (
+                  <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                    {error}
+                  </div>
+                )}
+
+                {loadingRole ? (
+                  <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('table.loading')}
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-role-name">{t('editRole.form.name.label')}</Label>
+                      <Input
+                        id="edit-role-name"
+                        value={name}
+                        onChange={(event) => setName(event.target.value)}
+                        disabled={!canSubmit || roleProtected || saving}
+                      />
+                      <p className="text-xs text-muted-foreground">{t('editRole.form.name.helper')}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-role-guard">{t('editRole.form.guard.label')}</Label>
+                      <Input
+                        id="edit-role-guard"
+                        value={guard}
+                        onChange={(event) => setGuard(event.target.value)}
+                        disabled={!canSubmit || saving}
+                      />
+                      <p className="text-xs text-muted-foreground">{t('editRole.form.guard.helper')}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>{t('editRole.form.permissions.label')}</Label>
+                      <PermissionSelector
+                        permissions={permissions}
+                        value={selectedPermissions}
+                        onChange={setSelectedPermissions}
+                        disabled={!canSubmit || saving}
+                      />
+                      <p className="text-xs text-muted-foreground">{t('editRole.form.permissions.helper')}</p>
+                    </div>
+                  </>
+                )}
               </div>
-            )}
 
-            {loadingRole ? (
-              <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t('table.loading')}
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-role-name">{t('editRole.form.name.label')}</Label>
-                  <Input
-                    id="edit-role-name"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    disabled={!canSubmit || roleProtected || saving}
-                  />
-                  <p className="text-xs text-muted-foreground">{t('editRole.form.name.helper')}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="edit-role-guard">{t('editRole.form.guard.label')}</Label>
-                  <Input
-                    id="edit-role-guard"
-                    value={guard}
-                    onChange={(event) => setGuard(event.target.value)}
-                    disabled={!canSubmit || saving}
-                  />
-                  <p className="text-xs text-muted-foreground">{t('editRole.form.guard.helper')}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>{t('editRole.form.permissions.label')}</Label>
-                  <PermissionSelector
-                    permissions={permissions}
-                    value={selectedPermissions}
-                    onChange={setSelectedPermissions}
-                    disabled={!canSubmit || saving}
-                  />
-                  <p className="text-xs text-muted-foreground">{t('editRole.form.permissions.helper')}</p>
-                </div>
-
-                <SheetFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => onOpenChange(false)}
-                    disabled={saving}
-                  >
-                    {t('editRole.button.cancel')}
-                  </Button>
-                  <Button type="submit" disabled={!canSubmit || saving}>
-                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {t('editRole.button.save')}
-                  </Button>
-                </SheetFooter>
-              </>
-            )}
-          </form>
+              <SheetFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={saving}
+                >
+                  {t('editRole.button.cancel')}
+                </Button>
+                <Button type="submit" disabled={!canSubmit || saving || loadingRole}>
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {t('editRole.button.save')}
+                </Button>
+              </SheetFooter>
+            </form>
+          </>
         ) : (
-          <div className="space-y-4">
+          <>
             <SheetHeader>
               <SheetTitle>{t('editRole.title')}</SheetTitle>
               <SheetDescription>{t('detail.helper')}</SheetDescription>
             </SheetHeader>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              {t('editRole.button.cancel')}
-            </Button>
-          </div>
+            <div className="flex-1 px-6 py-4"></div>
+            <div className="px-6 pb-6">
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                {t('editRole.button.cancel')}
+              </Button>
+            </div>
+          </>
         )}
       </SheetContent>
     </Sheet>

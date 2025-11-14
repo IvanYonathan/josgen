@@ -85,52 +85,54 @@ export function CreateRoleSheet({
 
   return (
     <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent className="sm:max-w-md">
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>{t('createRole.title')}</SheetTitle>
-            <SheetDescription>{t('createRole.description')}</SheetDescription>
-          </SheetHeader>
+      <SheetContent className="sm:max-w-md overflow-hidden">
+        <SheetHeader>
+          <SheetTitle>{t('createRole.title')}</SheetTitle>
+          <SheetDescription>{t('createRole.description')}</SheetDescription>
+        </SheetHeader>
 
-          {error && (
-            <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">
-              {error}
+        <form className="flex flex-col flex-1 overflow-hidden" onSubmit={handleSubmit}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-simple flex flex-col gap-3 px-6 py-4">
+            {error && (
+              <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="role-name">{t('createRole.form.name.label')}</Label>
+              <Input
+                id="role-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder={t('createRole.form.name.placeholder')}
+                disabled={!canSubmit || loading}
+              />
+              <p className="text-xs text-muted-foreground">{t('createRole.form.name.helper')}</p>
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="role-name">{t('createRole.form.name.label')}</Label>
-            <Input
-              id="role-name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder={t('createRole.form.name.placeholder')}
-              disabled={!canSubmit || loading}
-            />
-            <p className="text-xs text-muted-foreground">{t('createRole.form.name.helper')}</p>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="role-guard">{t('createRole.form.guard.label')}</Label>
+              <Input
+                id="role-guard"
+                value={guard}
+                onChange={(event) => setGuard(event.target.value)}
+                placeholder={t('createRole.form.guard.placeholder')}
+                disabled={!canSubmit || loading}
+              />
+              <p className="text-xs text-muted-foreground">{t('createRole.form.guard.helper')}</p>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="role-guard">{t('createRole.form.guard.label')}</Label>
-            <Input
-              id="role-guard"
-              value={guard}
-              onChange={(event) => setGuard(event.target.value)}
-              placeholder={t('createRole.form.guard.placeholder')}
-              disabled={!canSubmit || loading}
-            />
-            <p className="text-xs text-muted-foreground">{t('createRole.form.guard.helper')}</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('createRole.form.permissions.label')}</Label>
-            <PermissionSelector
-              permissions={permissions}
-              value={selectedPermissions}
-              onChange={setSelectedPermissions}
-              disabled={!canSubmit || loading}
-            />
-            <p className="text-xs text-muted-foreground">{t('createRole.form.permissions.helper')}</p>
+            <div className="space-y-2">
+              <Label>{t('createRole.form.permissions.label')}</Label>
+              <PermissionSelector
+                permissions={permissions}
+                value={selectedPermissions}
+                onChange={setSelectedPermissions}
+                disabled={!canSubmit || loading}
+              />
+              <p className="text-xs text-muted-foreground">{t('createRole.form.permissions.helper')}</p>
+            </div>
           </div>
 
           <SheetFooter>

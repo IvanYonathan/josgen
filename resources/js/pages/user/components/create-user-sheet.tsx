@@ -114,15 +114,15 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className="h-full overflow-y-auto p-6 sm:max-w-md">
-                <form onSubmit={handleSubmit} className="flex h-full flex-col">
-                    <div className="flex-1 overflow-y-auto">
-                        <SheetHeader>
-                            <SheetTitle>{t('createUser.title')}</SheetTitle>
-                            <SheetDescription>{t('createUser.description')}</SheetDescription>
-                        </SheetHeader>
+            <SheetContent className="sm:max-w-md overflow-hidden">
+                <SheetHeader>
+                    <SheetTitle>{t('createUser.title')}</SheetTitle>
+                    <SheetDescription>{t('createUser.description')}</SheetDescription>
+                </SheetHeader>
 
-                        <div className="grid gap-4 py-4">
+                <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-simple px-6 py-4">
+                        <div className="grid gap-4">
                             {serverErrors.general && (
                                 <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">{serverErrors.general}</div>
                             )}
@@ -263,7 +263,7 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
                         </div>
                     </div>
 
-                    <SheetFooter className="mt-auto border-t pt-4">
+                    <SheetFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                             {t('createUser.button.cancel')}
                         </Button>
