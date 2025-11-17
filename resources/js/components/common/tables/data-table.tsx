@@ -17,9 +17,19 @@ interface DataTableProps<T> extends React.HTMLAttributes<HTMLDivElement>
   table: TanstackTable<T>;
   hidePaginationControls? : boolean;
   pageSizeOptions?: number[]
+  onRowClick?: (row: T) => void;
+  isRowSelected?: (row: T) => boolean;
 }
 
-export function DataTable<T>({ table, hidePaginationControls = false, pageSizeOptions, className, ...props }: Readonly<DataTableProps<T>>)
+export function DataTable<T>({
+  table,
+  hidePaginationControls = false,
+  pageSizeOptions,
+  onRowClick,
+  isRowSelected,
+  className,
+  ...props
+}: Readonly<DataTableProps<T>>)
 {
   const { t } = useTranslation('common')
 
@@ -59,27 +69,32 @@ export function DataTable<T>({ table, hidePaginationControls = false, pageSizeOp
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  // className="min-h-[62px]"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      style={{
-                        ...getCommonPinningStyles({ column: cell.column, type: "cell" }),
-                      }}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const selected = isRowSelected ? isRowSelected(row.original) : row.getIsSelected();
+
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={selected && "selected"}
+                    className={cn(onRowClick ? "cursor-pointer" : "", selected ? "bg-muted/50" : "")}
+                    onClick={() => onRowClick?.(row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        style={{
+                          ...getCommonPinningStyles({ column: cell.column, type: "cell" }),
+                        }}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell

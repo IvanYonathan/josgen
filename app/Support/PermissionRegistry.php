@@ -11,9 +11,6 @@ class PermissionRegistry
      */
     public const DEFAULT_ROLES = [
         'sysadmin',
-        'division_leader',
-        'treasurer',
-        'member',
     ];
 
     /**
@@ -27,7 +24,6 @@ class PermissionRegistry
         'create users',
         'edit users',
         'delete users',
-        'askjdnasndasoidnasoidnasoidn',
 
         // Role management
         'view roles',
@@ -72,6 +68,9 @@ class PermissionRegistry
         'approve treasury requests',
         'process payments',
         'view treasury reports',
+
+        'aasijdbashbdasidbasiydgasyudasd',
+        'ausidasdialgsdoiugasddiuashdlukasddluhasdluasdlgasd',
     ];
 
     /**
@@ -79,42 +78,7 @@ class PermissionRegistry
      *
      * @var array<string, array<int, string>>
      */
-    private const ROLE_PERMISSION_MAP = [
-        'division_leader' => [
-            'view divisions',
-            'view events',
-            'create events',
-            'edit events',
-            'view projects',
-            'create projects',
-            'edit projects',
-            'view todo lists',
-            'create todo lists',
-            'edit todo lists',
-            'create treasury requests',
-            'view own treasury requests',
-        ],
-        'treasurer' => [
-            'view divisions',
-            'view events',
-            'view projects',
-            'view all treasury requests',
-            'approve treasury requests',
-            'process payments',
-            'view treasury reports',
-        ],
-        'member' => [
-            'view divisions',
-            'view users',
-            'view events',
-            'view projects',
-            'view todo lists',
-            'create todo lists',
-            'edit todo lists',
-            'create treasury requests',
-            'view own treasury requests',
-        ],
-    ];
+    private const ROLE_PERMISSION_MAP = [];
 
     /**
      * Returns the definitive map of permission => roles that should own it by default.

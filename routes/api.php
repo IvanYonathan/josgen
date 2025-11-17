@@ -88,9 +88,6 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
     Route::prefix('permission')->group(function () {
         Route::post('list', [PermissionController::class, 'list']);
         Route::post('get', [PermissionController::class, 'get']);
-        Route::post('create', [PermissionController::class, 'create']);
-        Route::post('update', [PermissionController::class, 'update']);
-        Route::post('delete', [PermissionController::class, 'delete']);
     });
 
     // TODO: Uncomment when controllers are created

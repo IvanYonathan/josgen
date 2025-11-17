@@ -5,12 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Permission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
-use Spatie\Permission\PermissionRegistrar;
-use App\Support\PermissionSynchronizer;
 use App\Support\PermissionRegistry;
 
 class PermissionController extends ApiController
@@ -20,8 +15,6 @@ class PermissionController extends ApiController
         if ($response = $this->ensurePermission('view permissions', 'You do not have permission to view permissions')) {
             return $response;
         }
-
-        PermissionSynchronizer::sync();
 
         $validator = Validator::make($request->all(), [
             'search' => 'nullable|string|max:255',
@@ -79,140 +72,6 @@ class PermissionController extends ApiController
         ], 'Permission retrieved successfully');
     }
 
-    public function create(Request $request): JsonResponse
-    {
-        if ($response = $this->ensurePermission('create permissions', 'You do not have permission to create permissions')) {
-            return $response;
-        }
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'guard_name' => 'nullable|string|max:255',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->validationError($validator->errors());
-        }
-
-        $data = $validator->validated();
-        $normalizedName = $this->normalizePermissionName($data['name']);
-
-        if (!$normalizedName) {
-            return $this->validationError(['name' => ['Permission name cannot be empty']]);
-        }
-
-        $guardName = $data['guard_name'] ?? 'web';
-
-        $nameRule = Rule::unique('permissions')->where(function ($query) use ($guardName) {
-            return $query->where('guard_name', $guardName);
-        });
-
-        $duplicateValidator = Validator::make([
-            'name' => $normalizedName,
-        ], [
-            'name' => ['required', $nameRule],
-        ]);
-
-        if ($duplicateValidator->fails()) {
-            return $this->validationError($duplicateValidator->errors());
-        }
-
-        $permission = Permission::create([
-            'name' => $normalizedName,
-            'guard_name' => $guardName,
-        ]);
-
-        $this->refreshPermissionCache();
-
-        return $this->success([
-            'permission' => $this->transformPermission($permission->fresh('roles')),
-        ], 'Permission created successfully');
-    }
-
-    public function update(Request $request): JsonResponse
-    {
-        if ($response = $this->ensurePermission('edit permissions', 'You do not have permission to edit permissions')) {
-            return $response;
-        }
-
-        $validator = Validator::make($request->all(), [
-            'id' => 'required|integer|exists:permissions,id',
-            'name' => 'required|string|max:255',
-            'guard_name' => 'nullable|string|max:255',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->validationError($validator->errors());
-        }
-
-        $data = $validator->validated();
-        $permission = Permission::findOrFail($data['id']);
-
-        $normalizedName = $this->normalizePermissionName($data['name']);
-
-        if (!$normalizedName) {
-            return $this->validationError(['name' => ['Permission name cannot be empty']]);
-        }
-
-        $guardName = $data['guard_name'] ?? $permission->guard_name ?? 'web';
-
-        $nameRule = Rule::unique('permissions')
-            ->ignore($permission->id)
-            ->where(function ($query) use ($guardName) {
-                return $query->where('guard_name', $guardName);
-            });
-
-        $duplicateValidator = Validator::make([
-            'name' => $normalizedName,
-        ], [
-            'name' => ['required', $nameRule],
-        ]);
-
-        if ($duplicateValidator->fails()) {
-            return $this->validationError($duplicateValidator->errors());
-        }
-
-        $permission->name = $normalizedName;
-        $permission->guard_name = $guardName;
-        $permission->save();
-
-        $this->refreshPermissionCache();
-
-        return $this->success([
-            'permission' => $this->transformPermission($permission->fresh('roles')),
-        ], 'Permission updated successfully');
-    }
-
-    public function delete(Request $request): JsonResponse
-    {
-        if ($response = $this->ensurePermission('delete permissions', 'You do not have permission to delete permissions')) {
-            return $response;
-        }
-
-        $validator = Validator::make($request->all(), [
-            'id' => 'required|integer|exists:permissions,id',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->validationError($validator->errors());
-        }
-
-        $permission = Permission::findOrFail($request->id);
-
-        // Detach assigned roles before removing the permission
-        $permission->roles()->detach();
-        $permission->delete();
-
-        $this->refreshPermissionCache();
-
-        return $this->success(null, 'Permission deleted successfully');
-    }
-
-    private function normalizePermissionName(string $name): string
-    {
-        return (string) Str::of($name)->squish()->lower();
-    }
-
     private function transformPermission(Permission $permission): Permission
     {
         if ($permission->relationLoaded('roles')) {
@@ -222,8 +81,4 @@ class PermissionController extends ApiController
         return $permission;
     }
 
-    private function refreshPermissionCache(): void
-    {
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
-    }
 }

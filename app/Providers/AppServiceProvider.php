@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Support\PermissionSynchronizer;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,12 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        try {
-            if (Schema::hasTable('permissions')) {
-                PermissionSynchronizer::sync();
-            }
-        } catch (\Throwable $e) {
-            // Tables might not exist yet (e.g., during initial migrations). Ignore gracefully.
-        }
+        // No-op for now; kept for future application bootstrapping.
     }
 }

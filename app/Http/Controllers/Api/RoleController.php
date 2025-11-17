@@ -6,7 +6,6 @@ use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -21,9 +20,6 @@ class RoleController extends ApiController
      */
     private const PROTECTED_ROLES = [
         'sysadmin',
-        'division_leader',
-        'treasurer',
-        'member',
     ];
 
     public function list(Request $request): JsonResponse
@@ -263,7 +259,13 @@ class RoleController extends ApiController
             return [];
         }
 
-        return Permission::whereIn('name', $permissionNames)->pluck('name')->all();
+        $valid = Permission::whereIn('name', $permissionNames)->pluck('name')->all();
+
+        if (empty($valid)) {
+            return [];
+        }
+
+        return $valid;
     }
 
     private function refreshPermissionCache(): void

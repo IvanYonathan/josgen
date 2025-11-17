@@ -12,16 +12,21 @@ use App\Models\TreasuryRequest;
 use App\Models\TreasuryRequestItem;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class TestDataSeeder extends Seeder
 {
     public function run(): void
     {
-        // Get some users to work with
-        $admin = User::where('email', 'admin@josgen.org')->first();
-        $leader = User::where('email', 'leader@josgen.org')->first();
-        $treasurer = User::where('email', 'treasurer@josgen.org')->first();
-        $member = User::where('email', 'member@josgen.org')->first();
+        // Seed required users idempotently so sample data always has owners.
+        $admin = $this->ensureUserWithRole(
+            email: config('auth.initial_admin.email', 'admin@josgen.org'),
+            name: 'System Administrator',
+            role: 'sysadmin'
+        );
+        $leader = $this->ensureUserWithRole('leader@josgen.org', 'Division Leader', 'division_leader');
+        $treasurer = $this->ensureUserWithRole('treasurer@josgen.org', 'Treasurer', 'treasurer');
+        $member = $this->ensureUserWithRole('member@josgen.org', 'Regular Member', 'member');
         
         // Create divisions
         $worship = Division::create([
@@ -196,5 +201,26 @@ class TestDataSeeder extends Seeder
             'category' => 'Equipment',
             'item_date' => now()->subDays(5),
         ]);
+    }
+
+    private function ensureUserWithRole(string $email, string $name, string $role): User
+    {
+        $user = User::firstOrCreate(
+            ['email' => $email],
+            [
+                'name' => $name,
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+                'phone' => null,
+                'role' => $role,
+                'birthday' => now(),
+            ]
+        );
+
+        if (!$user->hasRole($role)) {
+            $user->assignRole($role);
+        }
+
+        return $user;
     }
 }

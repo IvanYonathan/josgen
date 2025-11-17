@@ -154,7 +154,10 @@ export default function RolePage() {
       setSelectedRoleId(role.id);
       setEditSheetOpen(true);
     },
-    onDelete: openDeleteDialog,
+    onDelete: (role) => {
+      setSelectedRoleId(role.id);
+      openDeleteDialog(role);
+    },
     onRowClick: (role) => setSelectedRoleId(role.id),
     canEditRole,
     canDeleteRole,
@@ -219,7 +222,12 @@ export default function RolePage() {
               <div className="py-10 text-center text-sm text-muted-foreground">{t('table.empty')}</div>
             )}
             {!loading && roles.length > 0 && (
-              <DataTable table={table} hidePaginationControls={true} />
+              <DataTable
+                table={table}
+                hidePaginationControls={true}
+                onRowClick={(role) => setSelectedRoleId(role.id)}
+                isRowSelected={(role) => role.id === selectedRoleId}
+              />
             )}
           </CardContent>
         </Card>
