@@ -15,8 +15,6 @@ use App\Support\PermissionRegistry;
 
 class PermissionController extends ApiController
 {
-    private const NOT_AUTHENTICATED = 'Not authenticated';
-
     public function list(Request $request): JsonResponse
     {
         if ($response = $this->ensurePermission('view permissions', 'You do not have permission to view permissions')) {
@@ -213,28 +211,6 @@ class PermissionController extends ApiController
     private function normalizePermissionName(string $name): string
     {
         return (string) Str::of($name)->squish()->lower();
-    }
-
-    private function ensurePermission(string $permission, string $message): ?JsonResponse
-    {
-        $user = Auth::user();
-
-        if (!$user) {
-            return $this->unauthorized(self::NOT_AUTHENTICATED);
-        }
-
-        $originalGuard = config('auth.defaults.guard');
-        config(['auth.defaults.guard' => 'web']);
-
-        $allowed = $user->can($permission);
-
-        config(['auth.defaults.guard' => $originalGuard]);
-
-        if (!$allowed) {
-            return $this->forbidden($message);
-        }
-
-        return null;
     }
 
     private function transformPermission(Permission $permission): Permission

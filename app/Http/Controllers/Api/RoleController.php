@@ -14,8 +14,6 @@ use Spatie\Permission\PermissionRegistrar;
 
 class RoleController extends ApiController
 {
-    private const NOT_AUTHENTICATED = 'Not authenticated';
-
     /**
      * Roles that should not be renamed or deleted.
      *
@@ -237,28 +235,6 @@ class RoleController extends ApiController
     private function normalizeRoleName(string $name): string
     {
         return Str::slug(Str::lower($name), '_');
-    }
-
-    private function ensurePermission(string $permission, string $message): ?JsonResponse
-    {
-        $user = Auth::user();
-
-        if (!$user) {
-            return $this->unauthorized(self::NOT_AUTHENTICATED);
-        }
-
-        $originalGuard = config('auth.defaults.guard');
-        config(['auth.defaults.guard' => 'web']);
-
-        $allowed = $user->can($permission);
-
-        config(['auth.defaults.guard' => $originalGuard]);
-
-        if (!$allowed) {
-            return $this->forbidden($message);
-        }
-
-        return null;
     }
 
     private function isProtectedRole(Role $role): bool
