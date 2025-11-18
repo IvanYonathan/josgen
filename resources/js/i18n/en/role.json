@@ -5,7 +5,9 @@
     "create": "Create Role",
     "refresh": "Refresh",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "viewDetails": "View Details",
+    "backToList": "Back to List"
   },
   "stats": {
     "roles": "Total roles",
@@ -30,6 +32,12 @@
     "permissions": "Assigned permissions",
     "noPermissions": "This role has no permissions yet.",
     "protected": "Protected",
+    "information": "Role Information",
+    "informationDescription": "Basic information about this role",
+    "assignedUsers": "Assigned Users",
+    "assignedUsersDescription": "Users who have this role assigned",
+    "noAssignedUsers": "No users have been assigned to this role yet.",
+    "noRoleSelected": "No role selected",
     "metadata": {
       "created": "Created",
       "updated": "Updated"

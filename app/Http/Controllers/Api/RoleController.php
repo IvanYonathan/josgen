@@ -75,17 +75,42 @@ class RoleController extends ApiController
 
         $validator = Validator::make($request->all(), [
             'id' => 'required|integer|exists:roles,id',
+            'include_users' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
             return $this->validationError($validator->errors());
         }
 
+        $includeUsers = $request->input('include_users', false);
+
         $role = Role::with('permissions:id,name,guard_name')->findOrFail($request->id);
 
-        return $this->success([
+        $responseData = [
             'role' => $this->transformRole($role),
-        ], 'Role retrieved successfully');
+        ];
+
+        if ($includeUsers) {
+            $users = \App\Models\User::whereHas('roles', function ($query) use ($role) {
+                $query->where('roles.id', $role->id);
+            })
+                ->select('id', 'name', 'email', 'ava')
+                ->orderBy('name')
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'avatar' => $user->ava, // Map 'ava' to 'avatar' for frontend consistency
+                    ];
+                });
+
+            $responseData['users'] = $users;
+            $responseData['users_count'] = $users->count();
+        }
+
+        return $this->success($responseData, 'Role retrieved successfully');
     }
 
     public function create(Request $request): JsonResponse

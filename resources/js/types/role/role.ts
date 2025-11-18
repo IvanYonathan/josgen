@@ -26,6 +26,17 @@ export interface RoleResponse {
   role: Role;
 }
 
+export interface RoleWithUsersResponse {
+  role: Role;
+  users?: Array<{
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string | null;
+  }>;
+  users_count?: number;
+}
+
 export interface ListRoleRequest {
   search?: string;
   guard?: string;
@@ -33,6 +44,7 @@ export interface ListRoleRequest {
 
 export interface GetRoleRequest {
   id: number;
+  include_users?: boolean;
 }
 
 export interface CreateRoleRequest {

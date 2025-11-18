@@ -18,7 +18,9 @@ import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
 import { CreateRoleSheet } from './components/create-role-sheet';
 import { EditRoleSheet } from './components/edit-role-sheet';
+import { RoleDetailView } from './components/role-detail-view';
 import { listRoles } from '@/lib/api/role/list-role';
+import { getRoleWithUsers } from '@/lib/api/role/get-role';
 import { deleteRole } from '@/lib/api/role/delete-role';
 import { me } from '@/lib/api/auth/me';
 import { Role, RolePermission } from '@/types/role/role';
@@ -30,6 +32,8 @@ import { useDataTable } from '@/hooks/use-data-table';
 
 const sortRoles = (roles: Role[]) => [...roles].sort((a, b) => a.name.localeCompare(b.name));
 
+type ViewMode = 'list' | 'detail';
+
 export default function RolePage() {
   const { t } = useTranslation('role');
   const tRef = useRef(t);
@@ -37,6 +41,8 @@ export default function RolePage() {
     tRef.current = t;
   }, [t]);
   const { toast } = useToast();
+  
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<RolePermission[]>([]);
@@ -44,6 +50,11 @@ export default function RolePage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [detailRole, setDetailRole] = useState<Role | null>(null);
+  const [detailUsers, setDetailUsers] = useState<Array<{ id: number; name: string; email: string; avatar?: string | null }>>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   const [createSheetOpen, setCreateSheetOpen] = useState(false);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
@@ -73,13 +84,6 @@ export default function RolePage() {
       setRoles(sortedRoles);
       setPermissions(roleResponse.permissions ?? []);
 
-      setSelectedRoleId((current) => {
-        if (current && sortedRoles.some((role) => role.id === current)) {
-          return current;
-        }
-        return sortedRoles[0]?.id ?? null;
-      });
-
       const perms = profileResponse.permissions;
       setCanCreateRole(Boolean(perms?.can_create_roles));
       setCanEditRole(Boolean(perms?.can_edit_roles));
@@ -99,11 +103,7 @@ export default function RolePage() {
   }, [loadData]);
 
   const handleRoleCreated = (role: Role) => {
-    setRoles((prev) => {
-      const next = sortRoles([...prev, role]);
-      setSelectedRoleId(role.id);
-      return next;
-    });
+    setRoles((prev) => sortRoles([...prev, role]));
   };
 
   const handleRoleUpdated = (role: Role) => {
@@ -134,6 +134,10 @@ export default function RolePage() {
         return next;
       });
       toast({ title: tRef.current?.('deleteRole.success') ?? 'Role deleted successfully' });
+
+      if (viewMode === 'detail' && deleteTarget.id === detailRole?.id) {
+        handleBackToList();
+      }
     } catch (err: any) {
       const fallback = tRef.current?.('deleteRole.error') ?? 'Failed to delete role';
       const message = err?.response?.data?.message || fallback;
@@ -149,6 +153,38 @@ export default function RolePage() {
     }
   };
 
+  const handleViewDetails = async (role: Role) => {
+    setSelectedRoleId(role.id);
+    setViewMode('detail');
+    await loadRoleDetail(role.id);
+  };
+
+  const loadRoleDetail = async (roleId: number) => {
+    try {
+      setDetailLoading(true);
+      setDetailError(null);
+
+      const response = await getRoleWithUsers({ id: roleId });
+
+      setDetailRole(response.role);
+      setDetailUsers(response.users ?? []);
+    } catch (err) {
+      setDetailError(err instanceof Error ? err.message : 'Failed to load role details');
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const handleBackToList = async () => {
+    setViewMode('list');
+    setSelectedRoleId(null);
+    setDetailRole(null);
+    setDetailUsers([]);
+    setDetailError(null);
+
+    await loadData(true);
+  };
+
   const columns = useRoleColumns({
     onEdit: (role) => {
       setSelectedRoleId(role.id);
@@ -158,7 +194,7 @@ export default function RolePage() {
       setSelectedRoleId(role.id);
       openDeleteDialog(role);
     },
-    onRowClick: (role) => setSelectedRoleId(role.id),
+    onViewDetails: handleViewDetails,
     canEditRole,
     canDeleteRole,
     selectedRoleId,
@@ -181,29 +217,31 @@ export default function RolePage() {
   });
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('description')}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => loadData(true)} disabled={loading || refreshing}>
-            {refreshing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-            {t('buttons.refresh')}
-          </Button>
-          <Button onClick={() => setCreateSheetOpen(true)} disabled={!canCreateRole}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            {t('buttons.create')}
-          </Button>
-        </div>
-      </div>
+    <>
+      {viewMode === 'list' ? (
+        <div className="space-y-6 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold">{t('title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('description')}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => loadData(true)} disabled={loading || refreshing}>
+                {refreshing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                {t('buttons.refresh')}
+              </Button>
+              <Button onClick={() => setCreateSheetOpen(true)} disabled={!canCreateRole}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                {t('buttons.create')}
+              </Button>
+            </div>
+          </div>
 
-      {error && (
-        <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
-      )}
+          {error && (
+            <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
+          )}
 
-      <div className="grid gap-6 lg:grid-cols-[3fr,2fr]">
+          <div className="grid gap-6 lg:grid-cols-[3fr,2fr]">
         <Card>
           <CardHeader>
             <div>
@@ -225,95 +263,23 @@ export default function RolePage() {
               <DataTable
                 table={table}
                 hidePaginationControls={true}
-                onRowClick={(role) => setSelectedRoleId(role.id)}
-                isRowSelected={(role) => role.id === selectedRoleId}
               />
             )}
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('detail.title')}</CardTitle>
-            <CardDescription>
-              {selectedRole ? formatRoleLabel(selectedRole.name) : t('detail.helper')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {selectedRole ? (
-              <>
-                <div className="space-y-3 rounded border p-3">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium">{selectedRole.guard_name}</span>
-                  </div>
-                  {selectedRole.is_protected && (
-                    <Badge variant="secondary" className="inline-flex items-center gap-1 text-[11px] uppercase">
-                      <ShieldAlert className="h-3 w-3" />
-                      {t('detail.protected')}
-                    </Badge>
-                  )}
-                  <p className="text-xs text-muted-foreground">{t('detail.guard')}</p>
-                </div>
-
-                <div>
-                  <p className="mb-2 text-sm font-medium">
-                    {t('detail.permissions')} ({selectedRole.permissions?.length ?? 0})
-                  </p>
-                  {selectedRole.permissions && selectedRole.permissions.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {selectedRole.permissions.map((permission) => (
-                        <Badge key={permission.id} variant="outline" className="text-xs font-normal">
-                          {permission.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">{t('detail.noPermissions')}</p>
-                  )}
-                </div>
-
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <p>
-                    {t('detail.metadata.created')}: {new Date(selectedRole.created_at).toLocaleString()}
-                  </p>
-                  <p>
-                    {t('detail.metadata.updated')}: {new Date(selectedRole.updated_at).toLocaleString()}
-                  </p>
-                </div>
-
-                <Tabs defaultValue="actions">
-                  <TabsList>
-                    <TabsTrigger value="actions">{t('table.actions')}</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="actions" className="space-y-2 pt-4">
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      disabled={!canEditRole}
-                      onClick={() => setEditSheetOpen(true)}
-                    >
-                      <Pencil className="mr-2 h-4 w-4" />
-                      {t('buttons.edit')}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="w-full"
-                      disabled={!canDeleteRole || selectedRole.is_protected}
-                      onClick={() => openDeleteDialog(selectedRole)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      {t('buttons.delete')}
-                    </Button>
-                  </TabsContent>
-                </Tabs>
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">{t('detail.helper')}</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      ) : (
+        <RoleDetailView
+          role={detailRole}
+          users={detailUsers}
+          loading={detailLoading}
+          error={detailError}
+          canDeleteRole={canDeleteRole}
+          onBack={handleBackToList}
+          onDelete={openDeleteDialog}
+        />
+      )}
 
       <CreateRoleSheet
         open={createSheetOpen}
@@ -353,6 +319,6 @@ export default function RolePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

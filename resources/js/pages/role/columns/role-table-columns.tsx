@@ -4,7 +4,7 @@ import { Role } from '@/types/role/role';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DataTableColumnHeader } from '@/components/common/tables/data-table-column-header';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Eye } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRoleLabel } from '@/lib/utils/role-label';
 import {
@@ -19,7 +19,7 @@ import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 export interface RoleTableActions {
   onEdit: (role: Role) => void;
   onDelete: (role: Role) => void;
-  onRowClick: (role: Role) => void;
+  onViewDetails: (role: Role) => void;
   canEditRole?: boolean;
   canDeleteRole?: boolean;
   selectedRoleId?: number | null;
@@ -97,7 +97,7 @@ export const useRoleColumns = (actions: RoleTableActions): ColumnDef<Role>[] => 
     size: 40,
     cell: ({ row }) => {
       const role = row.original;
-      const { onEdit, onDelete, canEditRole = true, canDeleteRole = true } = actions;
+      const { onEdit, onDelete, onViewDetails, canEditRole = true, canDeleteRole = true } = actions;
 
       return (
         <div className="flex justify-center">
@@ -114,6 +114,16 @@ export const useRoleColumns = (actions: RoleTableActions): ColumnDef<Role>[] => 
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onViewDetails(role);
+                }}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                {t('buttons.viewDetails')}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 disabled={!canEditRole}
                 onClick={(event) => {

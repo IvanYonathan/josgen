@@ -166,8 +166,9 @@ class UserController extends ApiController
 
         $newUser = User::create($data);
 
-        // Assign the correct role
-        $newUser->assignRole($roleName);
+        // Assign the correct role - specify 'web' guard to match role's guard
+        $role = \Spatie\Permission\Models\Role::findByName($roleName, 'web');
+        $newUser->assignRole($role);
         $newUser->load('roles', 'division');
         $this->appendPrimaryRole($newUser);
 
@@ -217,7 +218,9 @@ class UserController extends ApiController
         $userToUpdate->update($data);
 
         $roleName = $data['role'];
-        $userToUpdate->syncRoles([$roleName]);
+        // Sync roles - specify 'web' guard to match role's guard
+        $role = \Spatie\Permission\Models\Role::findByName($roleName, 'web');
+        $userToUpdate->syncRoles([$role]);
         $userToUpdate->load('roles', 'division');
         $this->appendPrimaryRole($userToUpdate);
 
