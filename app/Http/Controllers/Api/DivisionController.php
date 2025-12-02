@@ -14,8 +14,8 @@ class DivisionController extends ApiController
 {
     public function list(Request $request): JsonResponse
     {
-        if (!Auth::user()->can('view divisions')) {
-            return $this->forbidden('You do not have permission to view divisions');
+        if ($response = $this->ensurePermission('view divisions', 'You do not have permission to view divisions')) {
+            return $response;
         }
 
         $divisions = Division::with('leader:id,name')
@@ -36,8 +36,8 @@ class DivisionController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        if (!Auth::user()->can('view divisions')) {
-            return $this->forbidden('You do not have permission to view divisions');
+        if ($response = $this->ensurePermission('view divisions', 'You do not have permission to view divisions')) {
+            return $response;
         }
 
         $division = Division::with(['leader', 'members', 'events', 'projects', 'todoLists'])
@@ -51,8 +51,8 @@ class DivisionController extends ApiController
 
     public function create(Request $request): JsonResponse
     {
-        if (!Auth::user()->can('create divisions')) {
-            return $this->forbidden('You do not have permission to create divisions');
+        if ($response = $this->ensurePermission('create divisions', 'You do not have permission to create divisions')) {
+            return $response;
         }
 
         $validator = Validator::make($request->all(), [
@@ -88,8 +88,8 @@ class DivisionController extends ApiController
         $division = Division::findOrFail($request->id)
         ->makeHidden(['created_at', 'leader_id']);
 
-        if (!Auth::user()->can('edit divisions')) {
-            return $this->forbidden('You do not have permission to edit divisions');
+        if ($response = $this->ensurePermission('edit divisions', 'You do not have permission to edit divisions')) {
+            return $response;
         }
 
         // Add unique validation for name excluding current division
@@ -120,8 +120,8 @@ class DivisionController extends ApiController
 
         $division = Division::findOrFail($request->id);
 
-        if (!Auth::user()->can('delete divisions')) {
-            return $this->forbidden('You do not have permission to delete divisions');
+        if ($response = $this->ensurePermission('delete divisions', 'You do not have permission to delete divisions')) {
+            return $response;
         }
 
         $division->delete();
@@ -141,11 +141,11 @@ class DivisionController extends ApiController
 
         $division = Division::findOrFail($request->division_id);
 
-        if (!Auth::user()->can('view divisions')) {
-            return $this->forbidden('You do not have permission to view division members');
+        if ($response = $this->ensurePermission('view divisions', 'You do not have permission to view division members')) {
+            return $response;
         }
 
-        $canManageMembers = Auth::user()->can('edit divisions') || Auth::user()->id === $division->leader_id;
+        $canManageMembers = $this->hasPermission('edit divisions') || Auth::user()->id === $division->leader_id;
 
         if (!$canManageMembers) {
             return $this->forbidden('You do not have permission to manage division members');
@@ -174,7 +174,7 @@ class DivisionController extends ApiController
         }
 
         $division = Division::findOrFail($request->division_id);
-        $canManageMembers = Auth::user()->can('edit divisions') || Auth::user()->id === $division->leader_id;
+        $canManageMembers = $this->hasPermission('edit divisions') || Auth::user()->id === $division->leader_id;
 
         if (!$canManageMembers) {
             return $this->forbidden('You do not have permission to manage division members');
@@ -200,7 +200,7 @@ class DivisionController extends ApiController
         }
 
         $division = Division::findOrFail($request->division_id);
-        $canManageMembers = Auth::user()->can('edit divisions') || Auth::user()->id === $division->leader_id;
+        $canManageMembers = $this->hasPermission('edit divisions') || Auth::user()->id === $division->leader_id;
 
         if (!$canManageMembers) {
             return $this->forbidden('You do not have permission to manage division members');
@@ -227,7 +227,7 @@ class DivisionController extends ApiController
         }
 
         $division = Division::findOrFail($request->division_id);
-        $canManageMembers = Auth::user()->can('edit divisions') || Auth::user()->id === $division->leader_id;
+        $canManageMembers = $this->hasPermission('edit divisions') || Auth::user()->id === $division->leader_id;
 
         if (!$canManageMembers) {
             return $this->forbidden('You do not have permission to manage division members');

@@ -19,6 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // No-op for now; kept for future application bootstrapping.
     }
 }

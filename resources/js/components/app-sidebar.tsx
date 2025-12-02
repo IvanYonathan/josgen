@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, useLocation } from 'react-router-dom'; // React Router instead of Inertia
-import { BookOpen, Folder, LayoutGrid, Users, CalendarDays, Briefcase, DollarSign, StickyNote, ListTodo, ChevronDown, ChevronRight, UserCog } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Users, CalendarDays, Briefcase, DollarSign, StickyNote, ListTodo, ChevronDown, ChevronRight, UserCog, ShieldCheck } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useState } from 'react';
 
@@ -17,6 +17,11 @@ const mainNavItems: NavItem[] = [
         title: 'User Management',
         href: '/users',
         icon: UserCog,
+    },
+    {
+        title: 'Role Management',
+        href: '/roles',
+        icon: ShieldCheck,
     },
     {
         title: 'Divisions',

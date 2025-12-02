@@ -9,9 +9,9 @@ import { z } from 'zod';
  */
 
 /**
- * User Roles enum for validation
+ * User role value (dynamic).
  */
-export const userRoleSchema = z.enum(['Sysadmin', 'Division_Leader', 'Treasurer', 'Member']);
+export const userRoleSchema = z.string().min(1, 'Role is required');
 
 /**
  * Base user schema with common fields

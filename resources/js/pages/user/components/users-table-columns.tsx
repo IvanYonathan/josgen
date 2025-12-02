@@ -5,22 +5,19 @@ import { RoleBadge } from '@/components/user/role-badge';
 import { DataTableColumnHeader } from '@/components/common/tables/data-table-column-header';
 import { Button } from '@/components/ui/button';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Loader2, Trash2 } from 'lucide-react';
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Loader2, Trash2, Eye, Pencil } from 'lucide-react';
 import { TFunction } from '@/hooks/use-translation';
+import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 
 export interface UserTableActions {
     onEdit: (user: User) => void;
-    onDelete: (userId: number) => Promise<void>;
+    onDeleteClick: (user: User) => void;
     onView?: (user: User) => void;
     deletingId?: number | null;
 }
@@ -28,7 +25,7 @@ export interface UserTableActions {
 export const createUserColumns = (t: TFunction, actions: UserTableActions): ColumnDef<User>[] => [
     {
         id: 'avatar',
-        header: () => <div aria-label={t('avatar')} />,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('avatar')} />,
         cell: ({ row }) => <UserAvatar user={row.original} />,
         enableSorting: false,
     },
@@ -46,13 +43,13 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
     },
     {
         accessorKey: 'role',
-        header: () => <div className="text-left">{t('role')}</div>,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('role')} />,
         cell: ({ row }) => <RoleBadge role={row.original.role} />,
         enableSorting: false,
     },
     {
         id: 'division',
-        header: () => <div className="text-left">{t('division')}</div>,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t('division')} />,
         cell: ({ row }) => (
             <div className="break-words whitespace-normal">{row.original.division?.name || '-'}</div>
         ),
@@ -60,76 +57,53 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
     },
     {
         id: 'actions',
-        header: () => (
-            <div className="flex h-full items-center justify-center text-center">
-                {t('actions')}
-            </div>
-        ),
+        size: 40,
         cell: ({ row }) => {
             const user = row.original;
-            const { onEdit, onDelete, onView, deletingId } = actions;
+            const { onEdit, onDeleteClick, onView, deletingId } = actions;
 
             return (
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                    {onView && (
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => onView(user)}
-                            className="min-w-[80px]"
-                        >
-                            {t('view')}
-                        </Button>
-                    )}
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onEdit(user)}
-                        className="min-w-[80px]"
-                    >
-                        {t('edit')}
-                    </Button>
-
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                <div className="flex justify-center">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
                             <Button
-                                variant="destructive"
-                                size="sm"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
                                 disabled={deletingId === user.id}
-                                className="min-w-[80px]"
                             >
                                 {deletingId === user.id ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        {t('deleting')}
-                                    </>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
-                                    <>
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        {t('delete')}
-                                    </>
+                                    <DotsHorizontalIcon className="h-4 w-4" />
                                 )}
+                                <span className="sr-only">{t('actions')}</span>
                             </Button>
-                        </AlertDialogTrigger>
-
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>{t('delete_user')}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {t.rich('confirm_delete', { userName: user.name })}
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={() => onDelete(user.id)}
-                                    className="bg-red-600 hover:bg-red-700"
-                                >
-                                    {t('delete')}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                            {onView && (
+                                <>
+                                    <DropdownMenuItem onClick={() => onView(user)}>
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        {t('view')}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                </>
+                            )}
+                            <DropdownMenuItem onClick={() => onEdit(user)}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                {t('edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => onDeleteClick(user)}
+                                className="text-destructive focus:text-destructive"
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t('delete')}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             );
         },

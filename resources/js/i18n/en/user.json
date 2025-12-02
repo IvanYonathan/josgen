@@ -39,6 +39,7 @@
     "update_error": "Failed to update user",
     "failed_to_delete_user": "Failed to delete user",
     "failed_to_fetch_user_detail": "Failed to fetch user detail",
+    "noUsersFound": "No users found",
 
 
 

@@ -1,0 +1,112 @@
+{
+  "title": "Roles",
+  "description": "Manage application roles and their permissions.",
+  "buttons": {
+    "create": "Create Role",
+    "refresh": "Refresh",
+    "edit": "Edit",
+    "delete": "Delete",
+    "viewDetails": "View Details",
+    "backToList": "Back to List"
+  },
+  "stats": {
+    "roles": "Total roles",
+    "permissions": "Available permissions"
+  },
+  "table": {
+    "title": "Role list",
+    "description": "Select a role to inspect or update it.",
+    "searchPlaceholder": "Search roles...",
+    "role": "Role",
+    "guard": "Guard",
+    "permissions": "Permissions",
+    "updated": "Updated",
+    "actions": "Actions",
+    "loading": "Loading roles...",
+    "empty": "No roles found."
+  },
+  "detail": {
+    "title": "Role details",
+    "helper": "Select a role to view its metadata and permissions.",
+    "guard": "Guard",
+    "permissions": "Assigned permissions",
+    "noPermissions": "This role has no permissions yet.",
+    "protected": "Protected",
+    "information": "Role Information",
+    "informationDescription": "Basic information about this role",
+    "assignedUsers": "Assigned Users",
+    "assignedUsersDescription": "Users who have this role assigned",
+    "noAssignedUsers": "No users have been assigned to this role yet.",
+    "noRoleSelected": "No role selected",
+    "metadata": {
+      "created": "Created",
+      "updated": "Updated"
+    }
+  },
+  "createRole": {
+    "title": "Create role",
+    "description": "Define a new role and assign permissions.",
+    "form": {
+      "name": {
+        "label": "Role name",
+        "placeholder": "e.g. division_editor",
+        "helper": "Use lowercase names; underscores are allowed."
+      },
+      "guard": {
+        "label": "Guard",
+        "placeholder": "web",
+        "helper": "Leave empty to use the default guard."
+      },
+      "permissions": {
+        "label": "Permissions",
+        "helper": "Select permissions to assign to this role."
+      }
+    },
+    "button": {
+      "create": "Create",
+      "cancel": "Cancel"
+    },
+    "messages": {
+      "success": "Role created successfully.",
+      "error": "Failed to create role."
+    }
+  },
+  "editRole": {
+    "title": "Edit role",
+    "description": "Update the role details and permissions.",
+    "form": {
+      "name": {
+        "label": "Role name",
+        "helper": "Renaming protected roles is not allowed."
+      },
+      "guard": {
+        "label": "Guard",
+        "helper": "Leave empty to keep the current guard."
+      },
+      "permissions": {
+        "label": "Permissions",
+        "helper": "Update the permissions assigned to this role."
+      }
+    },
+    "button": {
+      "save": "Save changes",
+      "cancel": "Cancel"
+    },
+    "messages": {
+      "success": "Role updated successfully.",
+      "error": "Failed to update role.",
+      "loadError": "Unable to load role details."
+    }
+  },
+  "deleteRole": {
+    "title": "Delete role",
+    "description": "Are you sure you want to delete {{role}}? This action cannot be undone.",
+    "button": "Delete",
+    "success": "Role deleted successfully.",
+    "error": "Failed to delete role."
+  },
+  "permissions": {
+    "search": "Search permissions...",
+    "empty": "No permissions match your search."
+  }
+}

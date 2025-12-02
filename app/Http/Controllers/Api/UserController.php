@@ -12,22 +12,10 @@ use Illuminate\Validation\Rule;
 
 class UserController extends ApiController
 {
-    const NOT_AUTHENTICATED = 'Not authenticated';
     public function list(Request $request): JsonResponse
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        if (!$user) {
-            return $this->unauthorized(self::NOT_AUTHENTICATED);
-        }
-
-        // Temporarily set default guard to 'web' for permission checks
-        // And also the same for the rest of the methods
-        config(['auth.defaults.guard' => 'web']);
-
-        if (!$user->can('view users')) {
-            return $this->forbidden('You do not have permission to view users');
+        if ($response = $this->ensurePermission('view users', 'You do not have permission to view users')) {
+            return $response;
         }
 
         $validator = Validator::make($request->all(), [
@@ -36,7 +24,7 @@ class UserController extends ApiController
             'filters' => 'nullable|array',
             'filters.name' => 'nullable|string',
             'filters.email' => 'nullable|string',
-            'filters.role' => ['nullable', Rule::in(['Sysadmin', 'Division_Leader', 'Treasurer', 'Member'])],
+            'filters.role' => ['nullable', 'string', 'max:255', Rule::exists('roles', 'name')],
             'filters.division_id' => 'nullable|integer|exists:divisions,id',
             'sort' => 'nullable|array',
             'sort.*' => ['nullable', Rule::in(['asc', 'desc'])],
@@ -107,6 +95,10 @@ class UserController extends ApiController
             ->get()
             ->makeHidden(['password', 'remember_token']);
 
+        $users->each(function (User $user) {
+            $this->appendPrimaryRole($user);
+        });
+
         return $this->success([
             'users' => $users,
         ], 'Users retrieved successfully', $total);
@@ -122,22 +114,15 @@ class UserController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        if (!$user) {
-            return $this->unauthorized(self::NOT_AUTHENTICATED);
-        }
-
-        config(['auth.defaults.guard' => 'web']);
-
-        if (!$user->can('view users')) {
-            return $this->forbidden('You do not have permission to view users');
+        if ($response = $this->ensurePermission('view users', 'You do not have permission to view users')) {
+            return $response;
         }
 
         $userData = User::with(['roles', 'division'])
             ->findOrFail($request->id)
             ->makeHidden(['password', 'remember_token']);
+
+        $this->appendPrimaryRole($userData);
 
         return $this->success([
             'user' => $userData,
@@ -146,17 +131,8 @@ class UserController extends ApiController
 
     public function create(Request $request): JsonResponse
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        if (!$user) {
-            return $this->unauthorized(self::NOT_AUTHENTICATED);
-        }
-
-        config(['auth.defaults.guard' => 'web']);
-
-        if (!$user->can('create users')) {
-            return $this->forbidden('You do not have permission to create users');
+        if ($response = $this->ensurePermission('create users', 'You do not have permission to create users')) {
+            return $response;
         }
 
         $validator = Validator::make($request->all(), [
@@ -164,7 +140,7 @@ class UserController extends ApiController
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'phone' => 'nullable|string|max:20',
-            'role' => 'required|in:Sysadmin,Division_Leader,Treasurer,Member',
+            'role' => ['required', 'string', 'max:255', Rule::exists('roles', 'name')],
             'birthday' => 'nullable|date',
             'division_id' => 'nullable|exists:divisions,id',
             'ava' => 'nullable|string',
@@ -186,39 +162,26 @@ class UserController extends ApiController
         unset($data['avatar']);
         $data['password'] = Hash::make($data['password']);
 
+        $roleName = $data['role'];
+
         $newUser = User::create($data);
 
-        $roleMap = [
-            'Sysadmin' => 'sysadmin',
-            'Division_Leader' => 'division_leader',
-            'Treasurer' => 'treasurer',
-            'Member' => 'member',
-        ];
-
-        $roleName = $roleMap[$data['role']] ?? strtolower($data['role']);
-
-        // Assign the correct role
-        $newUser->assignRole($roleName);
+        // Assign the correct role - specify 'web' guard to match role's guard
+        $role = \Spatie\Permission\Models\Role::findByName($roleName, 'web');
+        $newUser->assignRole($role);
+        $newUser->load('roles', 'division');
+        $this->appendPrimaryRole($newUser);
 
         return $this->success([
-            'user' => $newUser->load('roles', 'division'),
+            'user' => $newUser,
         ], 'User created successfully');
     }
 
 
     public function update(Request $request): JsonResponse
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        if (!$user) {
-            return $this->unauthorized(self::NOT_AUTHENTICATED);
-        }
-
-        config(['auth.defaults.guard' => 'web']);
-
-        if (!$user->can('edit users')) {
-            return $this->forbidden('You do not have permission to edit users');
+        if ($response = $this->ensurePermission('edit users', 'You do not have permission to edit users')) {
+            return $response;
         }
 
         $validator = Validator::make($request->all(), [
@@ -232,7 +195,7 @@ class UserController extends ApiController
                 Rule::unique('users')->ignore($request->id),
             ],
             'phone' => 'nullable|string|max:20',
-            'role' => 'required|in:Sysadmin,Division_Leader,Treasurer,Member',
+            'role' => ['required', 'string', 'max:255', Rule::exists('roles', 'name')],
             'birthday' => 'nullable|date',
             'division_id' => 'nullable|exists:divisions,id',
             'ava' => 'nullable|string',
@@ -254,17 +217,15 @@ class UserController extends ApiController
 
         $userToUpdate->update($data);
 
-        $roleMap = [
-            'Sysadmin' => 'sysadmin',
-            'Division_Leader' => 'division_leader',
-            'Treasurer' => 'treasurer',
-            'Member' => 'member',
-        ];
-        $roleName = $roleMap[$data['role']] ?? strtolower($data['role']);
-        $userToUpdate->syncRoles([$roleName]);
+        $roleName = $data['role'];
+        // Sync roles - specify 'web' guard to match role's guard
+        $role = \Spatie\Permission\Models\Role::findByName($roleName, 'web');
+        $userToUpdate->syncRoles([$role]);
+        $userToUpdate->load('roles', 'division');
+        $this->appendPrimaryRole($userToUpdate);
 
         return $this->success([
-            'user' => $userToUpdate->load('roles', 'division'),
+            'user' => $userToUpdate,
         ], 'User updated successfully');
     }
 
@@ -280,17 +241,8 @@ class UserController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        if (!$user) {
-            return $this->unauthorized(self::NOT_AUTHENTICATED);
-        }
-
-        config(['auth.defaults.guard' => 'web']);
-
-        if (!$user->can('delete users')) {
-            return $this->forbidden('You do not have permission to delete users');
+        if ($response = $this->ensurePermission('delete users', 'You do not have permission to delete users')) {
+            return $response;
         }
 
         $userToDelete = User::findOrFail($request->id);
@@ -311,6 +263,7 @@ class UserController extends ApiController
         $user = Auth::user();
 
         $user->load(['roles', 'division']);
+        $this->appendPrimaryRole($user);
         $user->makeHidden(['password', 'remember_token']);
 
         return $this->success([
@@ -346,8 +299,27 @@ class UserController extends ApiController
 
         $user->update($data);
 
+        $user->load('roles', 'division');
+        $this->appendPrimaryRole($user);
+
         return $this->success([
-            'user' => $user->load('roles', 'division'),
+            'user' => $user,
         ], 'Profile updated successfully');
+    }
+
+    /**
+     * Normalize the exposed role attribute so clients always receive the primary role slug.
+     */
+    private function appendPrimaryRole(User $user): void
+    {
+        $user->loadMissing('roles');
+        $primaryRole = $user->roles->pluck('name')->first();
+
+        if ($primaryRole) {
+            if ($user->getAttribute('role') !== $primaryRole) {
+                $user->forceFill(['role' => $primaryRole])->save();
+            }
+            $user->setAttribute('role', $primaryRole);
+        }
     }
 }

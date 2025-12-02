@@ -6,27 +6,18 @@ import { useTranslation } from '@/hooks/use-translation';
 import { deleteUser } from '@/lib/api/user/delete-user';
 import { getUser } from '@/lib/api/user/get-user';
 import { listUsers } from '@/lib/api/user/list-users';
+import { listRoles } from '@/lib/api/role/list-role';
 import { User, UserRole } from '@/types/user/user';
 import { Loader2, PlusCircle, RefreshCcwDot, RefreshCw, Download, Trash2 } from 'lucide-react';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { CreateUserSheet } from './components/create-user-sheet';
 import { EditUserSheet } from './components/edit-user-sheet';
 import { UserDataTable } from './components/user-data-table';
 import { UserDetailView } from './components/user-detail-view';
 import { UserManagementProvider, useUserManagementStore } from './store/user-management-store';
 import { useFeatureFlags } from '@/stores/feature-flags-store';
-
-const FALLBACK_ROLE_LABELS: Partial<Record<UserRole, string>> = {
-    Sysadmin: 'System Admin',
-    Division_Leader: 'Division Leader',
-    Treasurer: 'Treasurer',
-    Member: 'Member',
-};
-
-const DEFAULT_ROLE_ORDER: UserRole[] = ['Sysadmin', 'Division_Leader', 'Treasurer', 'Member'];
-
-const formatRoleLabel = (role: string) =>
-    role.replace(/_/g, ' ').replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+import { formatRoleLabel } from '@/lib/utils/role-label';
+import { DEFAULT_ROLE_SLUGS } from '@/constants/default-roles';
 
 const LIMIT_OPTIONS = [10, 25, 50, 100];
 
@@ -138,31 +129,6 @@ function UserPage() {
 
             setUsers(response.users);
 
-            const uniqueRoles = Array.from(new Set(response.users.map((user) => user.role))) as UserRole[];
-
-            if (uniqueRoles.length > 0) {
-                const merged = Array.from(new Set([...availableRoles, ...uniqueRoles])) as UserRole[];
-                const sortedRoles = merged.sort((a, b) => {
-                    const orderA = DEFAULT_ROLE_ORDER.indexOf(a);
-                    const orderB = DEFAULT_ROLE_ORDER.indexOf(b);
-                    if (orderA === -1 && orderB === -1) {
-                        return a.localeCompare(b);
-                    }
-                    if (orderA === -1) return 1;
-                    if (orderB === -1) return -1;
-                    return orderA - orderB;
-                });
-                setAvailableRoles(sortedRoles);
-
-                const updatedLabels = { ...roleLabels };
-                uniqueRoles.forEach((role) => {
-                    if (!updatedLabels[role]) {
-                        updatedLabels[role] = FALLBACK_ROLE_LABELS[role] ?? formatRoleLabel(role);
-                    }
-                });
-                setRoleLabels(updatedLabels);
-            }
-
             if (typeof response.total === 'number') {
                 setPagination({
                     total: response.total,
@@ -186,6 +152,48 @@ function UserPage() {
     useEffect(() => {
         fetchUsers();
     }, [fetchUsers]);
+
+    useEffect(() => {
+        let mounted = true;
+
+        const loadRoles = async () => {
+            try {
+                const response = await listRoles();
+                if (!mounted) return;
+
+                const roleNames = Array.from(new Set(response.roles?.map((role) => role.name) ?? []));
+                const effectiveRoles = roleNames.length > 0 ? roleNames : DEFAULT_ROLE_SLUGS;
+                const sortedRoles = [...effectiveRoles].sort((a, b) =>
+                    formatRoleLabel(a).localeCompare(formatRoleLabel(b))
+                );
+
+                const labels: Record<string, string> = {};
+                sortedRoles.forEach((role) => {
+                    labels[role] = formatRoleLabel(role);
+                });
+
+                setAvailableRoles(sortedRoles as UserRole[]);
+                setRoleLabels(labels);
+            } catch (error) {
+                if (!mounted) return;
+                const fallbackLabels: Record<string, string> = {};
+                const sortedFallback = [...DEFAULT_ROLE_SLUGS].sort((a, b) =>
+                    formatRoleLabel(a).localeCompare(formatRoleLabel(b))
+                );
+                sortedFallback.forEach((role) => {
+                    fallbackLabels[role] = formatRoleLabel(role);
+                });
+                setAvailableRoles(sortedFallback as UserRole[]);
+                setRoleLabels(fallbackLabels);
+            }
+        };
+
+        void loadRoles();
+
+        return () => {
+            mounted = false;
+        };
+    }, [setAvailableRoles, setRoleLabels]);
 
     // Handlers
     const handleUserCreated = async (_user: User) => {
@@ -258,7 +266,11 @@ function UserPage() {
     };
 
     const handleRoleFilterChange = (value: string) => {
-        setRoleFilter((value as UserRole) ?? 'all');
+        if (value === 'all') {
+            setRoleFilter('all');
+            return;
+        }
+        setRoleFilter((value as UserRole) || 'all');
     };
 
     const handleSortChange = (value: SortSelection) => {
@@ -393,22 +405,6 @@ function UserPage() {
                             </div>
                         )}
 
-                        <div className="min-w-[60px]">
-                            <label className="text-muted-foreground mb-2 block text-sm font-medium">Items per page</label>
-                            <Select value={String(pagination.limit)} onValueChange={handleLimitChange} disabled={loading}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Items per page" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {LIMIT_OPTIONS.map((option) => (
-                                        <SelectItem key={option} value={String(option)}>
-                                            {option}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
                         {/* Reset Button */}
                         <div className="flex items-end">
                             <Button variant="ghost" size="icon" onClick={resetFilters} disabled={loading} aria-label="Reset filters">
@@ -425,44 +421,21 @@ function UserPage() {
                         </div>
                     ) : users.length === 0 ? (
                         <div className="py-8 text-center">
-                            <p className="text-muted-foreground">No users found</p>
+                            <p className="text-muted-foreground">{t('noUsersFound')}</p>
                         </div>
                     ) : (
                         <>
                             <UserDataTable
                                 users={users}
+                                setUsers={setUsers}
                                 loading={loading}
-                                sorting={sorting ?? []}
-                                onSortingChange={(newSorting) => {
-                                    if (typeof newSorting === 'function') {
-                                        setSorting(newSorting(sorting ?? []));
-                                    } else {
-                                        setSorting(newSorting);
-                                    }
-                                }}
                                 onEdit={openEditSheet}
                                 onDelete={handleUserDeleted}
                                 onView={handleViewUser}
+                                pagination={pagination}
+                                onPageChange={setPage}
+                                onPageSizeChange={setLimit}
                             />
-
-                            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="text-muted-foreground text-sm">
-                                    Showing {startItem}-{effectiveEnd}
-                                    {pagination.total !== null ? ` of ${pagination.total}` : ''} users {sortLabel}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Button variant="outline" size="sm" onClick={previousPage} disabled={pagination.page === 1 || loading}>
-                                        Previous
-                                    </Button>
-                                    <span className="text-sm font-medium">
-                                        Page {pagination.page}
-                                        {totalPages !== null ? ` of ${totalPages}` : ''}
-                                    </span>
-                                    <Button variant="outline" size="sm" onClick={nextPage} disabled={!pagination.hasNextPage || loading}>
-                                        Next
-                                    </Button>
-                                </div>
-                            </div>
                         </>
                     )}
                 </>

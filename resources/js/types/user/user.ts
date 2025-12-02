@@ -1,4 +1,4 @@
-export type UserRole = 'Sysadmin' | 'Division_Leader' | 'Treasurer' | 'Member';
+export type UserRole = string;
 
 export interface UserDivisionLite {
     id: number;
@@ -30,6 +30,18 @@ export interface UserPermissions {
     can_create_divisions: boolean;
     can_edit_divisions: boolean;
     can_delete_divisions: boolean;
+    can_view_users: boolean;
+    can_create_users: boolean;
+    can_edit_users: boolean;
+    can_delete_users: boolean;
+    can_view_roles: boolean;
+    can_create_roles: boolean;
+    can_edit_roles: boolean;
+    can_delete_roles: boolean;
+    can_view_permissions: boolean;
+    can_create_permissions: boolean;
+    can_edit_permissions: boolean;
+    can_delete_permissions: boolean;
 }
 
 export interface GetUserRequest {
@@ -67,8 +79,11 @@ export interface UserResponse {
     user: User;
 }
 
+export interface UserProfileResponse extends UserResponse {
+    permissions: UserPermissions;
+}
+
 export interface UserListResponse {
     users: User[];
     total?: number;
 }
-
