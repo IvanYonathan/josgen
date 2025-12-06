@@ -1,4 +1,136 @@
 {
     "title": "Notes",
-    "description": "View and Manage Notes here"
+    "description": "View and manage your personal notes",
+    "notes": "Notes",
+    "create_note": "Create Note",
+    "edit_note": "Edit Note",
+    "delete_note": "Delete Note",
+    "view_note": "View Note",
+    "new_note": "New Note",
+    "no_notes_found": "No notes found",
+    "no_notes_description": "Create your first note to get started",
+    "pinned": "Pinned",
+    "unpinned": "Unpinned",
+    "pin_note": "Pin Note",
+    "unpin_note": "Unpin Note",
+    "pinned_notes": "Pinned Notes",
+    "all_notes": "All Notes",
+    "search_placeholder": "Search notes...",
+    "filter_by_category": "Filter by category",
+    "all_categories": "All Categories",
+    "refresh": "Refresh",
+    "loading": "Loading notes...",
+    "deleting": "Deleting...",
+    "saving": "Saving...",
+
+    "note_details": {
+        "title": "Title",
+        "content": "Content",
+        "category": "Category",
+        "tags": "Tags",
+        "created_at": "Created",
+        "updated_at": "Last Updated",
+        "no_category": "No Category",
+        "no_tags": "No Tags"
+    },
+
+    "create": {
+        "title": "Create New Note",
+        "description": "Write your thoughts, ideas, or important information",
+        "form": {
+            "title": {
+                "label": "Title",
+                "placeholder": "Enter note title"
+            },
+            "content": {
+                "label": "Content",
+                "placeholder": "Write your note here..."
+            },
+            "category": {
+                "label": "Category",
+                "placeholder": "Enter or select category"
+            },
+            "tags": {
+                "label": "Tags",
+                "placeholder": "Add tags (press Enter)",
+                "add_tag": "Add tag",
+                "remove_tag": "Remove tag"
+            },
+            "is_pinned": {
+                "label": "Pin this note",
+                "description": "Pinned notes appear at the top"
+            }
+        },
+        "button": {
+            "create": "Create Note",
+            "cancel": "Cancel",
+            "back": "Back to Notes"
+        }
+    },
+
+    "edit": {
+        "title": "Edit Note",
+        "description": "Update your note",
+        "form": {
+            "title": {
+                "label": "Title",
+                "placeholder": "Enter note title"
+            },
+            "content": {
+                "label": "Content",
+                "placeholder": "Write your note here..."
+            },
+            "category": {
+                "label": "Category",
+                "placeholder": "Enter or select category"
+            },
+            "tags": {
+                "label": "Tags",
+                "placeholder": "Add tags (press Enter)"
+            },
+            "is_pinned": {
+                "label": "Pin this note"
+            }
+        },
+        "button": {
+            "update": "Update Note",
+            "cancel": "Cancel",
+            "back": "Back to Notes"
+        }
+    },
+
+    "delete": {
+        "confirm_title": "Delete Note",
+        "confirm_message": "Are you sure you want to delete <bold>{{noteTitle}}</bold>? This action cannot be undone.",
+        "button_confirm": "Delete",
+        "button_cancel": "Cancel"
+    },
+
+    "messages": {
+        "create_success": "Note created successfully",
+        "create_error": "Failed to create note",
+        "update_success": "Note updated successfully",
+        "update_error": "Failed to update note",
+        "delete_success": "Note deleted successfully",
+        "delete_error": "Failed to delete note",
+        "load_error": "Failed to load notes",
+        "required_field": "This field is required",
+        "title_required": "Title is required",
+        "content_required": "Content is required",
+        "title_max_length": "Title must be less than 255 characters",
+        "category_max_length": "Category must be less than 100 characters",
+        "tag_max_length": "Tag must be less than 50 characters"
+    },
+
+    "filters": {
+        "all": "All",
+        "pinned_only": "Pinned Only",
+        "unpinned_only": "Unpinned Only",
+        "clear_filters": "Clear Filters"
+    },
+
+    "stats": {
+        "showing": "Showing {{count}} notes",
+        "pinned_count": "{{count}} pinned"
+    }
 }

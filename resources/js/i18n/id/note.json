@@ -1,0 +1,136 @@
+{
+    "title": "Catatan",
+    "description": "Lihat dan kelola catatan pribadi Anda",
+    "notes": "Catatan",
+    "create_note": "Buat Catatan",
+    "edit_note": "Edit Catatan",
+    "delete_note": "Hapus Catatan",
+    "view_note": "Lihat Catatan",
+    "new_note": "Catatan Baru",
+    "no_notes_found": "Tidak ada catatan",
+    "no_notes_description": "Buat catatan pertama Anda untuk memulai",
+    "pinned": "Disematkan",
+    "unpinned": "Tidak Disematkan",
+    "pin_note": "Sematkan Catatan",
+    "unpin_note": "Lepas Sematan",
+    "pinned_notes": "Catatan Tersematkan",
+    "all_notes": "Semua Catatan",
+    "search_placeholder": "Cari catatan...",
+    "filter_by_category": "Filter berdasarkan kategori",
+    "all_categories": "Semua Kategori",
+    "refresh": "Muat Ulang",
+    "loading": "Memuat catatan...",
+    "deleting": "Menghapus...",
+    "saving": "Menyimpan...",
+
+    "note_details": {
+        "title": "Judul",
+        "content": "Konten",
+        "category": "Kategori",
+        "tags": "Tag",
+        "created_at": "Dibuat",
+        "updated_at": "Terakhir Diubah",
+        "no_category": "Tanpa Kategori",
+        "no_tags": "Tanpa Tag"
+    },
+
+    "create": {
+        "title": "Buat Catatan Baru",
+        "description": "Tulis pemikiran, ide, atau informasi penting Anda",
+        "form": {
+            "title": {
+                "label": "Judul",
+                "placeholder": "Masukkan judul catatan"
+            },
+            "content": {
+                "label": "Konten",
+                "placeholder": "Tulis catatan Anda di sini..."
+            },
+            "category": {
+                "label": "Kategori",
+                "placeholder": "Masukkan atau pilih kategori"
+            },
+            "tags": {
+                "label": "Tag",
+                "placeholder": "Tambah tag (tekan Enter)",
+                "add_tag": "Tambah tag",
+                "remove_tag": "Hapus tag"
+            },
+            "is_pinned": {
+                "label": "Sematkan catatan ini",
+                "description": "Catatan yang disematkan muncul di atas"
+            }
+        },
+        "button": {
+            "create": "Buat Catatan",
+            "cancel": "Batal",
+            "back": "Kembali ke Catatan"
+        }
+    },
+
+    "edit": {
+        "title": "Edit Catatan",
+        "description": "Perbarui catatan Anda",
+        "form": {
+            "title": {
+                "label": "Judul",
+                "placeholder": "Masukkan judul catatan"
+            },
+            "content": {
+                "label": "Konten",
+                "placeholder": "Tulis catatan Anda di sini..."
+            },
+            "category": {
+                "label": "Kategori",
+                "placeholder": "Masukkan atau pilih kategori"
+            },
+            "tags": {
+                "label": "Tag",
+                "placeholder": "Tambah tag (tekan Enter)"
+            },
+            "is_pinned": {
+                "label": "Sematkan catatan ini"
+            }
+        },
+        "button": {
+            "update": "Perbarui Catatan",
+            "cancel": "Batal",
+            "back": "Kembali ke Catatan"
+        }
+    },
+
+    "delete": {
+        "confirm_title": "Hapus Catatan",
+        "confirm_message": "Apakah Anda yakin ingin menghapus <bold>{{noteTitle}}</bold>? Tindakan ini tidak dapat dibatalkan.",
+        "button_confirm": "Hapus",
+        "button_cancel": "Batal"
+    },
+
+    "messages": {
+        "create_success": "Catatan berhasil dibuat",
+        "create_error": "Gagal membuat catatan",
+        "update_success": "Catatan berhasil diperbarui",
+        "update_error": "Gagal memperbarui catatan",
+        "delete_success": "Catatan berhasil dihapus",
+        "delete_error": "Gagal menghapus catatan",
+        "load_error": "Gagal memuat catatan",
+        "required_field": "Bidang ini wajib diisi",
+        "title_required": "Judul wajib diisi",
+        "content_required": "Konten wajib diisi",
+        "title_max_length": "Judul harus kurang dari 255 karakter",
+        "category_max_length": "Kategori harus kurang dari 100 karakter",
+        "tag_max_length": "Tag harus kurang dari 50 karakter"
+    },
+
+    "filters": {
+        "all": "Semua",
+        "pinned_only": "Hanya Tersematkan",
+        "unpinned_only": "Tidak Tersematkan",
+        "clear_filters": "Hapus Filter"
+    },
+
+    "stats": {
+        "showing": "Menampilkan {{count}} catatan",
+        "pinned_count": "{{count}} disematkan"
+    }
+}

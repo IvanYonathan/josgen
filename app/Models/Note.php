@@ -14,12 +14,14 @@ class Note extends Model
         'title',
         'content',
         'user_id',
-        'division_id',
-        'is_private',
+        'tags',
+        'category',
+        'is_pinned',
     ];
 
     protected $casts = [
-        'is_private' => 'boolean',
+        'tags' => 'array',
+        'is_pinned' => 'boolean',
     ];
 
     /**
@@ -31,26 +33,18 @@ class Note extends Model
     }
 
     /**
-     * Get the division associated with the note.
+     * Scope a query to only include pinned notes.
      */
-    public function division(): BelongsTo
+    public function scopePinned($query)
     {
-        return $this->belongsTo(Division::class);
+        return $query->where('is_pinned', true);
     }
 
     /**
-     * Scope a query to only include private notes.
+     * Scope a query to filter by category.
      */
-    public function scopePrivate($query)
+    public function scopeByCategory($query, $category)
     {
-        return $query->where('is_private', true);
-    }
-
-    /**
-     * Scope a query to only include public notes.
-     */
-    public function scopePublic($query)
-    {
-        return $query->where('is_private', false);
+        return $query->where('category', $category);
     }
 }
