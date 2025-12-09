@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +37,7 @@ export function CreateNoteForm() {
     if (tag && !currentTags.includes(tag)) {
       const newTags = [...currentTags, tag];
       setCurrentTags(newTags);
-      form.setValue('tags', newTags);
+      form.setValue('tags', newTags, { shouldValidate: true, shouldDirty: true });
       setTagInput('');
     }
   };
@@ -45,7 +45,7 @@ export function CreateNoteForm() {
   const handleRemoveTag = (tagToRemove: string) => {
     const updatedTags = currentTags.filter(tag => tag !== tagToRemove);
     setCurrentTags(updatedTags);
-    form.setValue('tags', updatedTags);
+    form.setValue('tags', updatedTags, { shouldValidate: true, shouldDirty: true });
   };
 
   const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -126,11 +126,17 @@ export function CreateNoteForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="content">{t('create.form.content.label')}</Label>
-                <Textarea
-                  id="content"
-                  {...form.register('content')}
-                  placeholder={t('create.form.content.placeholder')}
-                  className="min-h-[400px] resize-y"
+                <Controller
+                  name="content"
+                  control={form.control}
+                  render={({ field }) => (
+                    <RichTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder={t('create.form.content.placeholder')}
+                      disabled={isSubmitting}
+                    />
+                  )}
                 />
                 {form.formState.errors.content && (
                   <p className="text-sm text-destructive">{form.formState.errors.content.message}</p>

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\NoteController;
+use App\Http\Controllers\Api\ImageController;
 // use App\Http\Controllers\Api\EventController;
 // use App\Http\Controllers\Api\ProjectController;
 // use App\Http\Controllers\Api\TodoListController;
@@ -143,5 +144,11 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('create', [NoteController::class, 'create']);
         Route::post('update', [NoteController::class, 'update']);
         Route::post('delete', [NoteController::class, 'delete']);
+    });
+
+    // Image endpoints
+    Route::prefix('image')->group(function () {
+        Route::post('upload', [ImageController::class, 'upload']);
+        Route::post('delete', [ImageController::class, 'delete']);
     });
 });

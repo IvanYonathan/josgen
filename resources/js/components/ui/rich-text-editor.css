@@ -1,0 +1,43 @@
+/* Rich Text Editor Custom Styles */
+.rich-text-editor {
+  border: 2px solid hsl(var(--border)) !important;
+  border-radius: 0.5rem !important;
+  background-color: hsl(var(--background)) !important;
+  overflow: hidden;
+}
+
+.rich-text-editor:focus-within {
+  border-color: hsl(var(--ring)) !important;
+  outline: 2px solid hsl(var(--ring) / 0.2);
+  outline-offset: 0px;
+}
+
+.rich-text-editor .ql-toolbar {
+  border: none !important;
+  border-bottom: 1px solid hsl(var(--border)) !important;
+  background-color: hsl(var(--muted) / 0.3) !important;
+  border-radius: 0 !important;
+}
+
+.rich-text-editor .ql-container {
+  min-height: 400px;
+  font-size: 16px;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.rich-text-editor .ql-editor {
+  min-height: 400px;
+  padding: 1rem;
+}
+
+.rich-text-editor .ql-editor.ql-blank::before {
+  font-style: normal;
+  color: hsl(var(--muted-foreground));
+  left: 1rem;
+}
+
+.rich-text-editor .ql-editor img {
+  max-width: 100%;
+  height: auto;
+}
