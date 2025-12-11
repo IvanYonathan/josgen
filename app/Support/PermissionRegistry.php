@@ -61,6 +61,11 @@ class PermissionRegistry
         'edit todo lists',
         'delete todo lists',
 
+        // Notes
+        'create notes',
+        'edit notes',
+        'delete notes',
+
         // Treasury
         'create treasury requests',
         'view own treasury requests',
@@ -68,9 +73,6 @@ class PermissionRegistry
         'approve treasury requests',
         'process payments',
         'view treasury reports',
-
-        'aasijdbashbdasidbasiydgasyudasd',
-        'ausidasdialgsdoiugasddiuashdlukasddluhasdluasdlgasd',
     ];
 
     /**

@@ -1,95 +1,87 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, StickyNote, PlusCircle, RefreshCw, Calendar, Tag } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Loader2, StickyNote, PlusCircle, RefreshCw, Search, Filter } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
+import { NoteManagementProvider, useNoteManagementStore } from './store/note-management-store';
+import { listNotes } from '@/lib/api/note/list-notes';
+import { NoteCard } from './components/note-card';
+import { CreateNoteForm } from './components/create-note-form';
+import { EditNoteForm } from './components/edit-note-form';
+import { toast } from 'sonner';
+import { useDebounce } from '@/hooks/use-debounce';
 
-// Placeholder types - replace with actual API types
-interface Note {
-  id: number;
-  title: string;
-  content: string;
-  tags?: string[];
-  category?: string;
-  created_at: string;
-  updated_at: string;
-  author: string;
-  is_pinned: boolean;
-}
-
-interface NotesResponse {
-  notes: Note[];
-  total: number;
-}
-
-export function NotePage() {
+function NotePageContent() {
   const { t } = useTranslation('note');
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    notes,
+    loading,
+    error,
+    pagination,
+    filters,
+    searchInput,
+    createMode,
+    editMode,
+    viewMode,
+    availableCategories,
+    setNotes,
+    setLoading,
+    setError,
+    setPagination,
+    setSearchInput,
+    setSearchTerm,
+    setCategoryFilter,
+    setPinnedFilter,
+    resetFilters,
+    openCreateMode,
+  } = useNoteManagementStore();
 
-  // Load notes from API
+  const debouncedSearch = useDebounce(searchInput, 300);
+
+  useEffect(() => {
+    if (debouncedSearch !== filters.searchTerm) {
+      setSearchTerm(debouncedSearch);
+    }
+  }, [debouncedSearch, filters.searchTerm, setSearchTerm]);
+
   const loadNotes = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // TODO: Replace with actual API call when note API is implemented
-      // const response = await listNotes();
-      // setNotes(response.notes);
+      const apiFilters: any = {};
+      if (filters.searchTerm) {
+        apiFilters.search = filters.searchTerm;
+      }
+      if (filters.categoryFilter) {
+        apiFilters.category = filters.categoryFilter;
+      }
+      if (filters.pinnedFilter !== 'all') {
+        apiFilters.is_pinned = filters.pinnedFilter === 'pinned';
+      }
 
-      // Mock data for now
-      const mockNotes: Note[] = [
-        {
-          id: 1,
-          title: 'Project Meeting Notes',
-          content: 'Discussed the timeline for the upcoming website redesign project. Key points: - Budget approved for $50k - Launch target: end of Q2 - Team assignments finalized - Weekly check-ins scheduled for Fridays',
-          tags: ['meeting', 'project', 'budget'],
-          category: 'Work',
-          created_at: '2024-05-10',
-          updated_at: '2024-05-10',
-          author: 'John Doe',
-          is_pinned: true
-        },
-        {
-          id: 2,
-          title: 'API Documentation Ideas',
-          content: 'Ideas for improving our API documentation: 1. Add more interactive examples 2. Include common use cases 3. Better error handling examples 4. Video tutorials for complex endpoints',
-          tags: ['documentation', 'api', 'improvement'],
-          category: 'Development',
-          created_at: '2024-05-08',
-          updated_at: '2024-05-09',
-          author: 'Jane Smith',
-          is_pinned: false
-        },
-        {
-          id: 3,
-          title: 'Team Building Activity Ideas',
-          content: 'Brainstorming session for Q2 team building: - Escape room challenge - Cooking class - Outdoor hiking trip - Virtual game tournament - Volunteer work at local charity',
-          tags: ['team-building', 'activities', 'planning'],
-          category: 'HR',
-          created_at: '2024-05-05',
-          updated_at: '2024-05-05',
-          author: 'Mike Johnson',
-          is_pinned: false
-        },
-        {
-          id: 4,
-          title: 'Marketing Campaign Insights',
-          content: 'Analysis of our last marketing campaign: - 23% increase in website traffic - 15% improvement in conversion rate - Social media engagement up 45% - ROI: 3.2x investment - Next steps: expand to LinkedIn ads',
-          tags: ['marketing', 'analysis', 'roi'],
-          category: 'Marketing',
-          created_at: '2024-05-03',
-          updated_at: '2024-05-07',
-          author: 'Sarah Wilson',
-          is_pinned: true
-        }
-      ];
+      const response = await listNotes({
+        page: pagination.page,
+        limit: pagination.limit,
+        filters: apiFilters,
+      });
 
-      setNotes(mockNotes);
+      setNotes(response.notes);
+      setPagination({
+        total: response.pagination.total,
+        hasNextPage: response.pagination.has_next_page,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load notes');
+      const errorMessage = err instanceof Error ? err.message : t('messages.load_error');
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -97,143 +89,139 @@ export function NotePage() {
 
   useEffect(() => {
     loadNotes();
-  }, []);
+  }, [pagination.page, pagination.limit, filters.searchTerm, filters.categoryFilter, filters.pinnedFilter]);
 
-  const getCategoryColor = (category?: string) => {
-    if (!category) return 'bg-gray-100 text-gray-800';
-
-    const colors: Record<string, string> = {
-      'Work': 'bg-blue-100 text-blue-800',
-      'Development': 'bg-green-100 text-green-800',
-      'HR': 'bg-purple-100 text-purple-800',
-      'Marketing': 'bg-pink-100 text-pink-800',
-      'Personal': 'bg-yellow-100 text-yellow-800',
-    };
-
-    return colors[category] || 'bg-gray-100 text-gray-800';
-  };
-
-  const truncateContent = (content: string, maxLength: number = 150) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
-  };
-
-  // Sort notes by pinned status and then by updated date
   const sortedNotes = [...notes].sort((a, b) => {
     if (a.is_pinned && !b.is_pinned) return -1;
     if (!a.is_pinned && b.is_pinned) return 1;
     return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
   });
 
+  const pinnedCount = notes.filter(n => n.is_pinned).length;
+
+  if (createMode) {
+    return <CreateNoteForm />;
+  }
+
+  if (editMode) {
+    return <EditNoteForm />;
+  }
+
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">Notes</h1>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadNotes}
-            disabled={loading}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">{t('title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('description')}</p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadNotes}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              {t('refresh')}
+            </Button>
+            <Button onClick={openCreateMode}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              {t('new_note')}
+            </Button>
+          </div>
         </div>
 
-        <Button>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          New Note
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1 sm:flex-[3]">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('search_placeholder')}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          <Select
+            value={filters.categoryFilter || 'all'}
+            onValueChange={(value) => setCategoryFilter(value === 'all' ? '' : value)}
+          >
+            <SelectTrigger wrapperClassName="w-full sm:w-[150px]">
+              <SelectValue placeholder={t('filter_by_category')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('all_categories')}</SelectItem>
+              {availableCategories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={filters.pinnedFilter}
+            onValueChange={(value: 'all' | 'pinned' | 'unpinned') => setPinnedFilter(value)}
+          >
+            <SelectTrigger wrapperClassName="w-full sm:w-[130px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('filters.all')}</SelectItem>
+              <SelectItem value="pinned">{t('filters.pinned_only')}</SelectItem>
+              <SelectItem value="unpinned">{t('filters.unpinned_only')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {(filters.searchTerm || filters.categoryFilter || filters.pinnedFilter !== 'all') && (
+            <Button variant="outline" onClick={resetFilters}>
+              {t('filters.clear_filters')}
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="mb-6 p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
           {error}
         </div>
       )}
 
-      {/* Loading State */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2 text-muted-foreground">{t('loading')}</span>
         </div>
       ) : notes.length === 0 ? (
-        <div className="text-center py-8">
+        <div className="text-center py-12">
           <StickyNote className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">No notes found</p>
-          <Button variant="outline">
+          <p className="text-lg font-semibold mb-2">{t('no_notes_found')}</p>
+          <p className="text-muted-foreground mb-4">{t('no_notes_description')}</p>
+          <Button onClick={openCreateMode}>
             <PlusCircle className="h-4 w-4 mr-2" />
-            Create your first note
+            {t('create_note')}
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedNotes.map(note => (
-            <Card key={note.id} className={`overflow-hidden hover:shadow-md transition-shadow cursor-pointer ${note.is_pinned ? 'ring-2 ring-yellow-200' : ''}`}>
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start gap-2">
-                  <CardTitle className="hover:text-primary transition-colors line-clamp-2 text-base">
-                    {note.is_pinned && '📌 '}{note.title}
-                  </CardTitle>
-                  {note.category && (
-                    <Badge className={getCategoryColor(note.category)} variant="secondary">
-                      {note.category}
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {sortedNotes.map((note) => (
+              <NoteCard key={note.id} note={note} />
+            ))}
+          </div>
 
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground line-clamp-4">
-                  {truncateContent(note.content)}
-                </p>
-
-                {note.tags && note.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {note.tags.slice(0, 3).map(tag => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        <Tag className="h-2 w-2 mr-1" />
-                        {tag}
-                      </Badge>
-                    ))}
-                    {note.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{note.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>By {note.author}</span>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>{new Date(note.updated_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              </CardContent>
-
-              <CardFooter className="border-t pt-4">
-                <Button variant="outline" className="w-full">
-                  Read More
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* TODO: Add pagination when API supports it */}
-      {notes.length > 0 && (
-        <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Showing {notes.length} notes • {notes.filter(n => n.is_pinned).length} pinned
-          </p>
-        </div>
+          <div className="mt-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              {t('stats.showing', { count: notes.length })}
+              {pinnedCount > 0 && ` • ${t('stats.pinned_count', { count: pinnedCount })}`}
+            </p>
+          </div>
+        </>
       )}
     </div>
   );
 }
+
+export const NotePage = NoteManagementProvider(NotePageContent);
