@@ -13,6 +13,7 @@ import { CreateNoteFormData, createNoteSchema, cleanNoteFormData } from '../sche
 import { createNote } from '@/lib/api/note/create-note';
 import { useNoteManagementStore } from '../store/note-management-store';
 import { toast } from 'sonner';
+import { BackToNotesPageDialog } from './back-to-notes-page-dialog';
 
 export function CreateNoteForm() {
   const { t } = useTranslation('note');
@@ -20,6 +21,8 @@ export function CreateNoteForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [currentTags, setCurrentTags] = useState<string[]>([]);
+  const [showBackDialog, setShowBackDialog] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(createNoteSchema),
@@ -30,7 +33,19 @@ export function CreateNoteForm() {
       tags: [] as string[],
       is_pinned: false,
     },
+    mode: 'onChange',
   });
+
+  const watchedFields = form.watch();
+
+  if (!hasUnsavedChanges && (
+    watchedFields.title ||
+    watchedFields.content ||
+    watchedFields.category ||
+    watchedFields.is_pinned
+  )) {
+    setHasUnsavedChanges(true);
+  }
 
   const handleAddTag = () => {
     const tag = tagInput.trim();
@@ -53,6 +68,19 @@ export function CreateNoteForm() {
       e.preventDefault();
       handleAddTag();
     }
+  };
+
+  const handleBackClick = () => {
+    if (hasUnsavedChanges) {
+      setShowBackDialog(true);
+    } else {
+      closeCreateMode();
+    }
+  };
+
+  const handleConfirmBack = () => {
+    setShowBackDialog(false);
+    closeCreateMode();
   };
 
   const onSubmit = async (data: any) => {
@@ -79,7 +107,7 @@ export function CreateNoteForm() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={closeCreateMode}
+              onClick={handleBackClick}
               disabled={isSubmitting}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -209,6 +237,12 @@ export function CreateNoteForm() {
           </div>
         </div>
       </div>
+
+      <BackToNotesPageDialog
+        open={showBackDialog}
+        onOpenChange={setShowBackDialog}
+        onConfirm={handleConfirmBack}
+      />
     </div>
   );
 }

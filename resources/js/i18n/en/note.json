@@ -132,5 +132,13 @@
     "stats": {
         "showing": "Showing {{count}} notes",
         "pinned_count": "{{count}} pinned"
+    },
+    "dialog": {
+        "unsavedChanges": {
+            "title": "Unsaved Changes",
+            "description": "You have unsaved changes. Are you sure you want to leave without saving?",
+            "cancel": "Cancel",
+            "confirm": "Leave Without Saving"
+        }
     }
 }

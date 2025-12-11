@@ -1,10 +1,13 @@
 import { useRef, useMemo, useEffect, useId } from 'react';
-import ReactQuill from 'react-quill-new';
+import ReactQuill, { Quill } from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import './rich-text-editor.css';
 import { uploadImage } from '@/lib/api/image/upload-image';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './tooltip';
+import ImageResize from 'quill-image-resize-module-react';
+
+Quill.register('modules/imageResize', ImageResize);
 
 interface RichTextEditorProps {
   value: string;
@@ -67,6 +70,10 @@ export function RichTextEditor({
         handlers: {
           image: imageHandler,
         },
+      },
+      imageResize: {
+        parchment: Quill.import('parchment'),
+        modules: ['Resize', 'DisplaySize'],
       },
       clipboard: {
         matchVisual: false,

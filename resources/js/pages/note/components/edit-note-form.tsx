@@ -13,6 +13,7 @@ import { UpdateNoteFormData, updateNoteSchema, cleanNoteFormData } from '../sche
 import { updateNote } from '@/lib/api/note/update-note';
 import { useNoteManagementStore } from '../store/note-management-store';
 import { toast } from 'sonner';
+import { BackToNotesPageDialog } from './back-to-notes-page-dialog';
 
 export function EditNoteForm() {
   const { t } = useTranslation('note');
@@ -20,6 +21,8 @@ export function EditNoteForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [currentTags, setCurrentTags] = useState<string[]>([]);
+  const [showBackDialog, setShowBackDialog] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(updateNoteSchema),
@@ -31,13 +34,31 @@ export function EditNoteForm() {
       tags: (selectedNote?.tags || []) as string[],
       is_pinned: selectedNote?.is_pinned || false,
     },
+    mode: 'onChange',
   });
+
+  const watchedFields = form.watch();
 
   useEffect(() => {
     if (selectedNote) {
       setCurrentTags(selectedNote.tags || []);
     }
   }, [selectedNote]);
+
+  useEffect(() => {
+    if (selectedNote && !hasUnsavedChanges) {
+      const hasChanges =
+        watchedFields.title !== selectedNote.title ||
+        watchedFields.content !== selectedNote.content ||
+        watchedFields.category !== selectedNote.category ||
+        watchedFields.is_pinned !== selectedNote.is_pinned ||
+        JSON.stringify(watchedFields.tags) !== JSON.stringify(selectedNote.tags);
+
+      if (hasChanges) {
+        setHasUnsavedChanges(true);
+      }
+    }
+  }, [watchedFields, selectedNote, hasUnsavedChanges]);
 
   const handleAddTag = () => {
     const tag = tagInput.trim();
@@ -60,6 +81,19 @@ export function EditNoteForm() {
       e.preventDefault();
       handleAddTag();
     }
+  };
+
+  const handleBackClick = () => {
+    if (hasUnsavedChanges) {
+      setShowBackDialog(true);
+    } else {
+      closeEditMode();
+    }
+  };
+
+  const handleConfirmBack = () => {
+    setShowBackDialog(false);
+    closeEditMode();
   };
 
   const onSubmit = async (data: any) => {
@@ -90,7 +124,7 @@ export function EditNoteForm() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={closeEditMode}
+              onClick={handleBackClick}
               disabled={isSubmitting}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -220,6 +254,12 @@ export function EditNoteForm() {
           </div>
         </div>
       </div>
+
+      <BackToNotesPageDialog
+        open={showBackDialog}
+        onOpenChange={setShowBackDialog}
+        onConfirm={handleConfirmBack}
+      />
     </div>
   );
 }
