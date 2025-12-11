@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\ImageController;
-// use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\Api\EventController;
 // use App\Http\Controllers\Api\ProjectController;
 // use App\Http\Controllers\Api\TodoListController;
 // use App\Http\Controllers\Api\TreasuryController;
@@ -91,8 +91,6 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('get', [PermissionController::class, 'get']);
     });
 
-    // TODO: Uncomment when controllers are created
-    /*
     // Event endpoints
     Route::prefix('event')->group(function () {
         Route::post('list', [EventController::class, 'list']);
@@ -100,8 +98,12 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('create', [EventController::class, 'create']);
         Route::post('update', [EventController::class, 'update']);
         Route::post('delete', [EventController::class, 'delete']);
+        Route::post('participants/add', [EventController::class, 'addParticipants']);
+        Route::post('participants/remove', [EventController::class, 'removeParticipants']);
     });
 
+    // TODO: Uncomment when controllers are created
+    /*
     // Project endpoints
     Route::prefix('project')->group(function () {
         Route::post('list', [ProjectController::class, 'list']);
