@@ -16,11 +16,13 @@ import { createProjectSchema, cleanProjectFormData, type CreateProjectFormData }
 import { toast } from 'sonner';
 import { DivisionListResponse } from '@/types/division/division';
 import { User } from '@/types/user/user';
+import { ProjectUnsavedChangesDialog } from './unsaved-changes-dialog';
 
 export function CreateProjectSheet() {
   const { closeCreateMode, addProject } = useProjectManagementStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [divisions, setDivisions] = useState<DivisionListResponse[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -66,12 +68,15 @@ export function CreateProjectSheet() {
 
   const handleBackClick = () => {
     if (hasUnsavedChanges) {
-      if (confirm('You have unsaved changes. Are you sure you want to go back?')) {
-        closeCreateMode();
-      }
+      setShowUnsavedDialog(true);
     } else {
       closeCreateMode();
     }
+  };
+
+  const handleConfirmDiscard = () => {
+    setShowUnsavedDialog(false);
+    closeCreateMode();
   };
 
   const onSubmit = async (data: any) => {
@@ -228,6 +233,12 @@ export function CreateProjectSheet() {
           </Tabs>
         </div>
       </div>
+
+      <ProjectUnsavedChangesDialog
+        open={showUnsavedDialog}
+        onOpenChange={setShowUnsavedDialog}
+        onConfirm={handleConfirmDiscard}
+      />
     </div>
   );
 }
