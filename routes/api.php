@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\EventController;
-// use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\ProjectController;
 // use App\Http\Controllers\Api\TodoListController;
 // use App\Http\Controllers\Api\TreasuryController;
 use Illuminate\Support\Facades\Route;
@@ -102,8 +102,6 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('participants/remove', [EventController::class, 'removeParticipants']);
     });
 
-    // TODO: Uncomment when controllers are created
-    /*
     // Project endpoints
     Route::prefix('project')->group(function () {
         Route::post('list', [ProjectController::class, 'list']);
@@ -111,7 +109,16 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('create', [ProjectController::class, 'create']);
         Route::post('update', [ProjectController::class, 'update']);
         Route::post('delete', [ProjectController::class, 'delete']);
+        Route::post('members/add', [ProjectController::class, 'addMembers']);
+        Route::post('members/remove', [ProjectController::class, 'removeMembers']);
+        Route::post('tasks/create', [ProjectController::class, 'createTask']);
+        Route::post('tasks/update', [ProjectController::class, 'updateTask']);
+        Route::post('tasks/delete', [ProjectController::class, 'deleteTask']);
+        Route::post('tasks/toggle-completion', [ProjectController::class, 'toggleTaskCompletion']);
     });
+
+    // TODO: Uncomment when controllers are created
+    /*
 
     // TodoList endpoints
     Route::prefix('todo-list')->group(function () {

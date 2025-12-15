@@ -70,7 +70,7 @@ export function EditEventSheet() {
         setLoadingData(true);
         const [divisionsRes, usersRes] = await Promise.all([
           listDivisions(),
-          listUsers({ limit: 100 }),
+          listUsers(),
         ]);
         setDivisions(divisionsRes.divisions || []);
         setUsers(usersRes.users || []);

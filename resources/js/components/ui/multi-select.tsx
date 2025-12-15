@@ -217,7 +217,7 @@ interface MultiSelectValueItemProps extends React.ComponentPropsWithoutRef<typeo
   value: string;
 }
 
-const MultiSelectValueItem: React.FC<MultiSelectValueItemProps> = (({ value, className, ...props }) => (
+const MultiSelectValueItem: React.FC<MultiSelectValueItemProps> = (({ value, className, children, ...props }) => (
   <Badge
     className={cn(
       "rounded-sm px-1 font-normal hover:bg-primary",
@@ -225,7 +225,7 @@ const MultiSelectValueItem: React.FC<MultiSelectValueItemProps> = (({ value, cla
     )}
     {...props}
   >
-    {value}
+    {children || value}
   </Badge>
 ));
 MultiSelectValueItem.displayName = "MultiSelectValueItem";
