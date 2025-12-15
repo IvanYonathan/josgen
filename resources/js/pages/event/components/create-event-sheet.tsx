@@ -16,11 +16,13 @@ import { listDivisions } from '@/lib/api/division/list-divisions';
 import { listUsers } from '@/lib/api/user/list-users';
 import { MultiSelect, MultiSelectTrigger, MultiSelectValue, MultiSelectContent, MultiSelectEmpty, MultiSelectGroup, MultiSelectItem } from '@/components/ui/multi-select';
 import { ParticipantSelector } from './participant-selector';
+import { EventUnsavedChangesDialog } from './event-unsaved-changes-dialog';
 
 export function CreateEventSheet() {
   const { closeCreateMode, addEvent } = useEventManagementStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [divisions, setDivisions] = useState<Array<{ id: number; name: string }>>([]);
   const [users, setUsers] = useState<Array<{ id: number; name: string }>>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -75,12 +77,15 @@ export function CreateEventSheet() {
 
   const handleBackClick = () => {
     if (hasUnsavedChanges) {
-      if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
-        closeCreateMode();
-      }
+      setShowUnsavedDialog(true);
     } else {
       closeCreateMode();
     }
+  };
+
+  const handleConfirmDiscard = () => {
+    setShowUnsavedDialog(false);
+    closeCreateMode();
   };
 
   const onSubmit = async (data: any) => {
@@ -274,6 +279,12 @@ export function CreateEventSheet() {
             </form>
         </div>
       </div>
+
+      <EventUnsavedChangesDialog
+        open={showUnsavedDialog}
+        onOpenChange={setShowUnsavedDialog}
+        onConfirm={handleConfirmDiscard}
+      />
     </div>
   );
 }

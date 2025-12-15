@@ -19,12 +19,14 @@ import { Event } from '@/types/event/event';
 import { MultiSelect, MultiSelectTrigger, MultiSelectValue, MultiSelectContent, MultiSelectEmpty, MultiSelectGroup, MultiSelectItem } from '@/components/ui/multi-select';
 import { ParticipantSelector } from './participant-selector';
 import { DeleteConfirmationDialog } from './delete-confirmation-dialog';
+import { EventUnsavedChangesDialog } from './event-unsaved-changes-dialog';
 
 export function EditEventSheet() {
   const { closeEditMode, selectedEvent, updateEventInList, removeEvent: removeEventFromList } = useEventManagementStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [divisions, setDivisions] = useState<Array<{ id: number; name: string }>>([]);
   const [users, setUsers] = useState<Array<{ id: number; name: string }>>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -86,12 +88,15 @@ export function EditEventSheet() {
 
   const handleBackClick = () => {
     if (hasUnsavedChanges) {
-      if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
-        closeEditMode();
-      }
+      setShowUnsavedDialog(true);
     } else {
       closeEditMode();
     }
+  };
+
+  const handleConfirmDiscard = () => {
+    setShowUnsavedDialog(false);
+    closeEditMode();
   };
 
   const onSubmit = async (data: any) => {
@@ -383,6 +388,12 @@ export function EditEventSheet() {
             title="Delete Event"
             description={`Are you sure you want to delete "${selectedEvent.title}"? This action cannot be undone.`}
             isLoading={isDeleting}
+          />
+
+          <EventUnsavedChangesDialog
+            open={showUnsavedDialog}
+            onOpenChange={setShowUnsavedDialog}
+            onConfirm={handleConfirmDiscard}
           />
       </div>
     </div>
