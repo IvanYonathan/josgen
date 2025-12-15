@@ -20,11 +20,14 @@ import { ProjectDetailsTab } from './project-details-tab';
 import { TaskTab } from './task-tab';
 import { DeleteProjectDialog } from './delete-project-dialog';
 import { AddNewTaskDialog } from './add-new-task-dialog';
+import { ProjectUnsavedChangesDialog } from './unsaved-changes-dialog';
 
 export function EditProjectSheet() {
   const { closeEditMode, selectedProject, updateProjectInList, removeProject } = useProjectManagementStore();
   const [project, setProject] = useState<Project | null>(selectedProject);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
   const [divisions, setDivisions] = useState<DivisionListResponse[]>([]);
@@ -91,6 +94,19 @@ export function EditProjectSheet() {
     }
   }, [selectedProject]);
 
+  const watchedFields = form.watch();
+  useEffect(() => {
+    if (!loadingData && project && !hasUnsavedChanges) {
+      const hasChanges =
+        watchedFields.name !== project.name ||
+        (watchedFields.description || '') !== (project.description || '') ||
+        watchedFields.status !== project.status;
+      if (hasChanges) {
+        setHasUnsavedChanges(true);
+      }
+    }
+  }, [watchedFields, loadingData, project, hasUnsavedChanges]);
+
   const refreshProject = async () => {
     try {
       const response = await getProject({ id: project!.id });
@@ -143,6 +159,19 @@ export function EditProjectSheet() {
     }
   };
 
+  const handleBackClick = () => {
+    if (hasUnsavedChanges) {
+      setShowUnsavedDialog(true);
+    } else {
+      closeEditMode();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setShowUnsavedDialog(false);
+    closeEditMode();
+  };
+
   if (!project) {
     closeEditMode();
     return null;
@@ -156,7 +185,7 @@ export function EditProjectSheet() {
       <div className="flex flex-col">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={closeEditMode} disabled={isSubmitting}>
+            <Button variant="ghost" size="sm" onClick={handleBackClick} disabled={isSubmitting}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
@@ -195,7 +224,7 @@ export function EditProjectSheet() {
                 loadingData={loadingData}
                 project={project}
                 onSubmit={onSubmit}
-                onCancel={closeEditMode}
+                onCancel={handleBackClick}
                 isSubmitting={isSubmitting}
                 divisions={divisions}
                 users={users}
@@ -227,6 +256,12 @@ export function EditProjectSheet() {
         form={taskForm}
         onSubmit={handleAddTask}
         project={project}
+      />
+
+      <ProjectUnsavedChangesDialog
+        open={showUnsavedDialog}
+        onOpenChange={setShowUnsavedDialog}
+        onConfirm={handleConfirmDiscard}
       />
     </div>
   );
