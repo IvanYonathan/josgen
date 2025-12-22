@@ -20,6 +20,7 @@ import { EventUnsavedChangesDialog } from './event-unsaved-changes-dialog';
 
 export function CreateEventSheet() {
   const { closeCreateMode, addEvent } = useEventManagementStore();
+  const { t } = useTranslation('event');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
@@ -67,7 +68,7 @@ export function CreateEventSheet() {
         setUsers(usersRes.users || []);
       } catch (error) {
         console.error('Failed to load data:', error);
-        toast.error('Failed to load divisions and users');
+        toast.error(t('failed_to_load_divisions_and_users'));
       } finally {
         setLoadingData(false);
       }
@@ -94,10 +95,10 @@ export function CreateEventSheet() {
       const cleanedData = cleanEventFormData(data);
       const response = await createEvent(cleanedData as CreateEventFormData);
       addEvent(response.event);
-      toast.success('Event created successfully');
+      toast.success(t('create_success'));
       closeCreateMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create event');
+      toast.error(error instanceof Error ? error.message : t('create_error'));
       console.error('Failed to create event:', error);
     } finally {
       setIsSubmitting(false);
@@ -116,11 +117,11 @@ export function CreateEventSheet() {
               disabled={isSubmitting}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              {t('back')}
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Create Event</h1>
-              <p className="text-sm text-muted-foreground">Create a new event for your division</p>
+              <h1 className="text-2xl font-bold">{t('createEvent.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('createEvent.description')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -129,7 +130,7 @@ export function CreateEventSheet() {
               disabled={isSubmitting || loadingData}
             >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Event
+              {t('createEvent.button.create')}
             </Button>
           </div>
         </div>
@@ -137,11 +138,11 @@ export function CreateEventSheet() {
         <div className="max-w-4xl space-y-6">
           <form className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">{t('createEvent.form.title.label')}</Label>
                 <Input
                   id="title"
                   {...form.register('title')}
-                  placeholder="Enter event title"
+                  placeholder={t('createEvent.form.title.placeholder')}
                   className="text-lg"
                   disabled={isSubmitting}
                 />
@@ -151,11 +152,11 @@ export function CreateEventSheet() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{t('createEvent.form.description.label')}</Label>
                 <Textarea
                   id="description"
                   {...form.register('description')}
-                  placeholder="Enter event description"
+                  placeholder={t('createEvent.form.description.placeholder')}
                   rows={4}
                   disabled={isSubmitting}
                 />
@@ -168,7 +169,7 @@ export function CreateEventSheet() {
                 <div className="space-y-2">
                   <Label htmlFor="start_date">
                     <CalendarDays className="h-4 w-4 inline mr-1" />
-                    Start Date *
+                    {t('createEvent.form.start_date.label')}
                   </Label>
                   <Input
                     id="start_date"
@@ -184,7 +185,7 @@ export function CreateEventSheet() {
                 <div className="space-y-2">
                   <Label htmlFor="end_date">
                     <CalendarDays className="h-4 w-4 inline mr-1" />
-                    End Date *
+                    {t('createEvent.form.end_date.label')}
                   </Label>
                   <Input
                     id="end_date"
@@ -201,12 +202,12 @@ export function CreateEventSheet() {
               <div className="space-y-2">
                 <Label htmlFor="location">
                   <MapPin className="h-4 w-4 inline mr-1" />
-                  Location
+                  {t('createEvent.form.location.label')}
                 </Label>
                 <Input
                   id="location"
                   {...form.register('location')}
-                  placeholder="Enter event location"
+                  placeholder={t('createEvent.form.location.placeholder')}
                   disabled={isSubmitting}
                 />
                 {form.formState.errors.location && (
@@ -217,7 +218,7 @@ export function CreateEventSheet() {
               <div className="space-y-2">
                 <Label htmlFor="division_ids">
                   <Building2 className="h-4 w-4 inline mr-1" />
-                  Assigned Divisions *
+                  {t('createEvent.form.division_ids.label')}
                 </Label>
                 <Controller
                   name="division_ids"
@@ -229,7 +230,7 @@ export function CreateEventSheet() {
                     >
                       <MultiSelectTrigger>
                         <MultiSelectValue
-                          placeholder="Select divisions..."
+                          placeholder={t('createEvent.form.division_ids.placeholder')}
                           itemComponent={(props) => (
                             <Badge variant="secondary" className="mr-1">
                               {divisions.find(d => d.id === Number(props.value))?.name || props.value}
@@ -238,7 +239,7 @@ export function CreateEventSheet() {
                         />
                       </MultiSelectTrigger>
                       <MultiSelectContent>
-                        <MultiSelectEmpty>No divisions found</MultiSelectEmpty>
+                        <MultiSelectEmpty>{t('createEvent.form.division_ids.empty')}</MultiSelectEmpty>
                         <MultiSelectGroup>
                           {divisions.map((division) => (
                             <MultiSelectItem key={division.id} value={String(division.id)}>
@@ -258,7 +259,7 @@ export function CreateEventSheet() {
               <div className="space-y-2">
                 <Label htmlFor="participant_ids">
                   <Users className="h-4 w-4 inline mr-1" />
-                  Participants (Optional)
+                  {t('createEvent.form.participant_ids.label')}
                 </Label>
                 <Controller
                   name="participant_ids"

@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface DeleteTaskDialogProps {
   open: boolean;
@@ -25,17 +26,19 @@ export function DeleteTaskDialog({
   taskTitle,
   isLoading = false,
 }: DeleteTaskDialogProps) {
+  const { t } = useTranslation('project');
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Task</AlertDialogTitle>
+          <AlertDialogTitle>{t('dialog.deleteTask.title')}</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{taskTitle}"? This action cannot be undone.
+            {t.rich('confirm_delete_task', { taskTitle })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{t('dialog.deleteTask.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault();
@@ -45,7 +48,7 @@ export function DeleteTaskDialog({
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Delete
+            {t('dialog.deleteTask.confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

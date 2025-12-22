@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2 } from 'lucide-react';
 import { UpdateTaskFormData } from '../schemas/project-schemas';
 import { Project } from '@/types/project/project';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface EditTaskDialogProps {
   open: boolean;
@@ -20,26 +21,28 @@ interface EditTaskDialogProps {
 }
 
 export function EditTaskDialog({ open, onOpenChange, form, onSubmit, project, isSubmitting }: EditTaskDialogProps) {
+  const { t } = useTranslation('project', { keyPrefix: 'dialog.editTask' });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby={undefined}>
         <DialogHeader>
-          <DialogTitle>Edit Task</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-title">Task Title</Label>
+            <Label htmlFor="edit-title">{t('form.title.label')}</Label>
             <Input
               id="edit-title"
               {...form.register('title')}
-              placeholder="Enter task title"
+              placeholder={t('form.title.placeholder')}
             />
             {form.formState.errors.title && (
               <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-description">Description</Label>
+            <Label htmlFor="edit-description">{t('form.description.label')}</Label>
             <Textarea
               id="edit-description"
               {...form.register('description')}
@@ -48,11 +51,11 @@ export function EditTaskDialog({ open, onOpenChange, form, onSubmit, project, is
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-start">Start Date</Label>
+              <Label htmlFor="edit-start">{t('form.start_date.label')}</Label>
               <Input id="edit-start" type="date" {...form.register('start_date')} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-end">End Date</Label>
+              <Label htmlFor="edit-end">{t('form.end_date.label')}</Label>
               <Input id="edit-end" type="date" {...form.register('end_date')} />
               {form.formState.errors.end_date && (
                 <p className="text-sm text-destructive">{form.formState.errors.end_date.message}</p>
@@ -60,7 +63,7 @@ export function EditTaskDialog({ open, onOpenChange, form, onSubmit, project, is
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Assign To</Label>
+            <Label>{t('form.assigned_to.label')}</Label>
             <Controller
               name="assigned_to"
               control={form.control}
@@ -76,7 +79,7 @@ export function EditTaskDialog({ open, onOpenChange, form, onSubmit, project, is
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Unassigned - Select team member..." />
+                      <SelectValue placeholder={t('form.assigned_to.placeholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {project.members?.map((member) => (
@@ -96,7 +99,7 @@ export function EditTaskDialog({ open, onOpenChange, form, onSubmit, project, is
                         form.setValue('assigned_to', null, { shouldDirty: true, shouldValidate: true });
                       }}
                     >
-                      Clear Assignment
+                      {t('button.clear_assignment')}
                     </Button>
                   )}
                 </div>
@@ -116,7 +119,7 @@ export function EditTaskDialog({ open, onOpenChange, form, onSubmit, project, is
               )}
             />
             <Label htmlFor="edit-completed" className="font-normal cursor-pointer">
-              Mark as completed
+              {t('form.is_completed.label')}
             </Label>
           </div>
           <DialogFooter>
@@ -126,11 +129,11 @@ export function EditTaskDialog({ open, onOpenChange, form, onSubmit, project, is
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
-              Cancel
+              {t('button.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Save Changes
+              {t('button.save')}
             </Button>
           </DialogFooter>
         </form>

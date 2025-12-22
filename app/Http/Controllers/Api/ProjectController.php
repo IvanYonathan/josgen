@@ -25,6 +25,8 @@ class ProjectController extends ApiController
         $validator = Validator::make($request->all(), [
             'page' => 'nullable|integer|min:1',
             'limit' => 'nullable|integer|min:1|max:100',
+            // Support both ?search=... and ?filters[search]=...
+            'search' => 'nullable|string',
             'filters' => 'nullable|array',
             'filters.search' => 'nullable|string',
             'filters.status' => ['nullable', Rule::in(['planning', 'active', 'on_hold', 'completed', 'cancelled'])],
@@ -60,11 +62,17 @@ class ProjectController extends ApiController
             ->withCount(['members', 'tasks']);
 
         // Apply filters
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
+        $searchTerm = $filters['search'] ?? ($validated['search'] ?? null);
+        if (is_string($searchTerm)) {
+            $searchTerm = trim($searchTerm);
+        }
+
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $search = mb_strtolower($searchTerm);
+
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(description) LIKE ?', ["%{$search}%"]);
             });
         }
 

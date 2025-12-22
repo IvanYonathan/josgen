@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Briefcase, PlusCircle, RefreshCw, Search } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { ProjectManagementProvider, useProjectManagementStore } from './store/project-management-store';
 import { CreateProjectSheet } from './components/create-project-sheet';
@@ -13,6 +14,7 @@ import { toast } from 'sonner';
 import { ProjectCard } from './components/project-card';
 
 function ProjectPageContent() {
+  const { t } = useTranslation('project');
   const {
     projects,
     loading,
@@ -63,7 +65,7 @@ function ProjectPageContent() {
         hasNextPage: response.pagination.has_next_page,
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load projects';
+      const errorMessage = err instanceof Error ? err.message : t('failed_to_load_projects');
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -75,7 +77,7 @@ function ProjectPageContent() {
     if (project.can_edit) {
       openEditMode(project);
     } else {
-      toast.info('You can only view this project');
+      toast.info(t('view_only'));
       openEditMode(project);
     }
   };
@@ -87,7 +89,7 @@ function ProjectPageContent() {
     <div className="p-6">
       <div className="flex flex-col gap-4 mb-6 md:flex-row md:justify-between md:items-center">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">Projects</h1>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
           <Button
             variant="outline"
             size="sm"
@@ -96,13 +98,13 @@ function ProjectPageContent() {
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('refresh')}
           </Button>
         </div>
 
         <Button onClick={openCreateMode}>
           <PlusCircle className="h-4 w-4 mr-2" />
-          Create Project
+          {t('create_project')}
         </Button>
       </div>
 
@@ -110,7 +112,7 @@ function ProjectPageContent() {
           <div className="relative flex-1 sm:flex-[10]">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search projects by name or description..."
+              placeholder={t('search_projects_placeholder')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="pl-10"
@@ -119,15 +121,15 @@ function ProjectPageContent() {
 
           <Select value={filters.statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger wrapperClassName="w-full sm:w-[150px]">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder={t('filter_by_status')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="planning">Planning</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="on_hold">On Hold</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="all">{t('all_status')}</SelectItem>
+              <SelectItem value="planning">{t('planning')}</SelectItem>
+              <SelectItem value="active">{t('active')}</SelectItem>
+              <SelectItem value="on_hold">{t('on_hold')}</SelectItem>
+              <SelectItem value="completed">{t('completed')}</SelectItem>
+              <SelectItem value="cancelled">{t('cancelled')}</SelectItem>
             </SelectContent>
           </Select>
       </div>
@@ -148,12 +150,12 @@ function ProjectPageContent() {
           <Briefcase className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground mb-4">
             {filters.searchTerm || filters.statusFilter !== 'all'
-              ? 'No projects found matching your filters'
-              : 'No projects found'}
+              ? t('noProjectsFoundMatchingFilters')
+              : t('noProjectsFound')}
           </p>
           <Button variant="outline" onClick={openCreateMode}>
             <PlusCircle className="h-4 w-4 mr-2" />
-            Create your first project
+            {t('create_first_project')}
           </Button>
         </div>
       ) : (
@@ -171,7 +173,7 @@ function ProjectPageContent() {
           {pagination.total !== null && (
             <div className="mt-8 text-center">
               <p className="text-sm text-muted-foreground">
-                Showing {projects.length} of {pagination.total} projects
+                {t('showing_projects', { shown: projects.length, total: pagination.total })}
               </p>
             </div>
           )}

@@ -10,6 +10,7 @@ import { UpdateProjectFormData } from '../schemas/project-schemas';
 import { DivisionListResponse } from '@/types/division/division';
 import { User } from '@/types/user/user';
 import { Project } from '@/types/project/project';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface DivisionValueItemProps {
   value: string;
@@ -60,6 +61,7 @@ export function ProjectDetailsTab({
   divisions,
   users,
 }: ProjectDetailsTabProps) {
+  const { t } = useTranslation('project');
   const selectedDivisionIds = form.watch('division_ids');
   const filteredUsers = users.filter((user) => user.division_id && selectedDivisionIds?.includes(user.division_id));
 
@@ -74,29 +76,29 @@ export function ProjectDetailsTab({
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="name">Project Name</Label>
+        <Label htmlFor="name">{t('editProject.form.name.label')}</Label>
         <Input id="name" {...form.register('name')} disabled={!project.can_edit} />
         {form.formState.errors.name && <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">{t('editProject.form.description.label')}</Label>
         <Textarea id="description" {...form.register('description')} rows={4} disabled={!project.can_edit} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="start_date">Start Date</Label>
+          <Label htmlFor="start_date">{t('editProject.form.start_date.label')}</Label>
           <Input id="start_date" type="date" {...form.register('start_date')} disabled={!project.can_edit} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="end_date">End Date</Label>
+          <Label htmlFor="end_date">{t('editProject.form.end_date.label')}</Label>
           <Input id="end_date" type="date" {...form.register('end_date')} disabled={!project.can_edit} />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label>Status</Label>
+        <Label>{t('editProject.form.status.label')}</Label>
         <Controller
           name="status"
           control={form.control}
@@ -106,11 +108,11 @@ export function ProjectDetailsTab({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="planning">Planning</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="on_hold">On Hold</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="planning">{t('planning')}</SelectItem>
+                <SelectItem value="active">{t('active')}</SelectItem>
+                <SelectItem value="on_hold">{t('on_hold')}</SelectItem>
+                <SelectItem value="completed">{t('completed')}</SelectItem>
+                <SelectItem value="cancelled">{t('cancelled')}</SelectItem>
               </SelectContent>
             </Select>
           )}
@@ -118,7 +120,7 @@ export function ProjectDetailsTab({
       </div>
 
       <div className="space-y-2">
-        <Label>Assigned Divisions</Label>
+        <Label>{t('editProject.form.division_ids.label')}</Label>
         <Controller
           name="division_ids"
           control={form.control}
@@ -130,7 +132,7 @@ export function ProjectDetailsTab({
             >
               <MultiSelectTrigger>
                 <MultiSelectValue
-                  placeholder="Select divisions..."
+                  placeholder={t('editProject.form.division_ids.placeholder')}
                   itemComponent={(props) => <DivisionValueItem {...props} divisions={divisions} />}
                 />
               </MultiSelectTrigger>
@@ -147,9 +149,11 @@ export function ProjectDetailsTab({
       </div>
 
       <div className="space-y-2">
-        <Label>Team Members</Label>
+        <Label>{t('editProject.form.member_ids.label')}</Label>
         {!project.can_modify_members && (
-          <p className="text-sm text-yellow-600">Members cannot be modified because the project status is {project.status}</p>
+          <p className="text-sm text-yellow-600">
+            {t('editProject.members_cannot_modify', { status: t(project.status) })}
+          </p>
         )}
         <Controller
           name="member_ids"
@@ -162,7 +166,7 @@ export function ProjectDetailsTab({
             >
               <MultiSelectTrigger>
                 <MultiSelectValue
-                  placeholder="Select team members..."
+                  placeholder={t('editProject.form.member_ids.placeholder')}
                   itemComponent={(props) => <MemberValueItem {...props} users={filteredUsers} />}
                 />
               </MultiSelectTrigger>
@@ -180,12 +184,12 @@ export function ProjectDetailsTab({
 
       <div className="flex justify-end gap-2 pt-4 border-t">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {t('editProject.button.cancel')}
         </Button>
         <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting || loadingData || !project.can_edit}>
           {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           <Save className="h-4 w-4 mr-2" />
-          Save Changes
+          {t('editProject.button.save')}
         </Button>
       </div>
     </form>

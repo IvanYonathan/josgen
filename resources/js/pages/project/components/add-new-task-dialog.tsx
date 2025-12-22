@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus } from 'lucide-react';
 import { CreateTaskFormData } from '../schemas/project-schemas';
 import { Project } from '@/types/project/project';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface AddNewTaskDialogProps {
   open: boolean;
@@ -18,41 +19,43 @@ interface AddNewTaskDialogProps {
 }
 
 export function AddNewTaskDialog({ open, onOpenChange, form, onSubmit, project }: AddNewTaskDialogProps) {
+  const { t } = useTranslation('project', { keyPrefix: 'dialog.addTask' });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby={undefined}>
         <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="task-title">Task Title</Label>
-            <Input id="task-title" {...form.register('title')} placeholder="Enter task title" />
+            <Label htmlFor="task-title">{t('form.title.label')}</Label>
+            <Input id="task-title" {...form.register('title')} placeholder={t('form.title.placeholder')} />
             {form.formState.errors.title && <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="task-description">Description</Label>
+            <Label htmlFor="task-description">{t('form.description.label')}</Label>
             <Textarea id="task-description" {...form.register('description')} rows={3} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="task-start">Start Date</Label>
+              <Label htmlFor="task-start">{t('form.start_date.label')}</Label>
               <Input id="task-start" type="date" {...form.register('start_date')} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-end">End Date</Label>
+              <Label htmlFor="task-end">{t('form.end_date.label')}</Label>
               <Input id="task-end" type="date" {...form.register('end_date')} />
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Assign To</Label>
+            <Label>{t('form.assigned_to.label')}</Label>
             <Controller
               name="assigned_to"
               control={form.control}
               render={({ field }) => (
                 <Select value={field.value?.toString() || ''} onValueChange={(v) => field.onChange(v ? Number(v) : undefined)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select team member..." />
+                    <SelectValue placeholder={t('form.assigned_to.placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {project.members?.map((member) => (
@@ -66,10 +69,10 @@ export function AddNewTaskDialog({ open, onOpenChange, form, onSubmit, project }
             />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('button.cancel')}</Button>
             <Button type="submit">
               <Plus className="h-4 w-4 mr-2" />
-              Add Task
+              {t('button.add')}
             </Button>
           </DialogFooter>
         </form>

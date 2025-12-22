@@ -23,6 +23,7 @@ import { EventUnsavedChangesDialog } from './event-unsaved-changes-dialog';
 
 export function EditEventSheet() {
   const { closeEditMode, selectedEvent, updateEventInList, removeEvent: removeEventFromList } = useEventManagementStore();
+  const { t } = useTranslation('event');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -78,7 +79,7 @@ export function EditEventSheet() {
         setUsers(usersRes.users || []);
       } catch (error) {
         console.error('Failed to load data:', error);
-        toast.error('Failed to load divisions and users');
+        toast.error(t('failed_to_load_divisions_and_users'));
       } finally {
         setLoadingData(false);
       }
@@ -105,10 +106,10 @@ export function EditEventSheet() {
       const cleanedData = cleanEventFormData(data);
       const response = await updateEvent(cleanedData as UpdateEventFormData);
       updateEventInList(response.event);
-      toast.success('Event updated successfully');
+      toast.success(t('update_success'));
       closeEditMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update event');
+      toast.error(error instanceof Error ? error.message : t('update_error'));
       console.error('Failed to update event:', error);
     } finally {
       setIsSubmitting(false);
@@ -120,11 +121,11 @@ export function EditEventSheet() {
       setIsDeleting(true);
       await deleteEvent({ id: selectedEvent.id });
       removeEventFromList(selectedEvent.id);
-      toast.success('Event deleted successfully');
+      toast.success(t('delete_success'));
       setShowDeleteDialog(false);
       closeEditMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete event');
+      toast.error(error instanceof Error ? error.message : t('delete_error'));
       console.error('Failed to delete event:', error);
     } finally {
       setIsDeleting(false);
@@ -160,16 +161,16 @@ export function EditEventSheet() {
               disabled={isSubmitting || isDeleting}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              {t('back')}
             </Button>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">Edit Event</h1>
+                <h1 className="text-2xl font-bold">{t('editEvent.title')}</h1>
                 <Badge className={getStatusColor(selectedEvent.status)}>
-                  {selectedEvent.status}
+                  {t(selectedEvent.status)}
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">Update event details</p>
+              <p className="text-sm text-muted-foreground">{t('editEvent.description')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -180,7 +181,7 @@ export function EditEventSheet() {
                 disabled={isSubmitting || isDeleting}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                {t('editEvent.button.delete')}
               </Button>
             )}
             <Button
@@ -188,7 +189,7 @@ export function EditEventSheet() {
               disabled={isSubmitting || isDeleting || loadingData || !selectedEvent.can_edit}
             >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+              {t('editEvent.button.update')}
             </Button>
           </div>
         </div>
@@ -198,7 +199,7 @@ export function EditEventSheet() {
               <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4">
                 <div className="flex items-center gap-2 text-yellow-800">
                   <AlertCircle className="h-5 w-5" />
-                  <p className="text-sm font-medium">You do not have permission to edit this event</p>
+                  <p className="text-sm font-medium">{t('no_permission_edit')}</p>
                 </div>
               </div>
             )}
@@ -208,7 +209,7 @@ export function EditEventSheet() {
                 <div className="flex items-center gap-2 text-blue-800">
                   <AlertCircle className="h-5 w-5" />
                   <p className="text-sm font-medium">
-                    Participants cannot be modified because the event is {selectedEvent.status}
+                    {t('participants_cannot_modify', { status: t(selectedEvent.status) })}
                   </p>
                 </div>
               </div>
@@ -216,11 +217,11 @@ export function EditEventSheet() {
 
             <form className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">{t('editEvent.form.title.label')}</Label>
                 <Input
                   id="title"
                   {...form.register('title')}
-                  placeholder="Enter event title"
+                  placeholder={t('editEvent.form.title.placeholder')}
                   className="text-lg"
                   disabled={isSubmitting || !selectedEvent.can_edit}
                 />
@@ -230,11 +231,11 @@ export function EditEventSheet() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{t('editEvent.form.description.label')}</Label>
                 <Textarea
                   id="description"
                   {...form.register('description')}
-                  placeholder="Enter event description"
+                  placeholder={t('editEvent.form.description.placeholder')}
                   rows={4}
                   disabled={isSubmitting || !selectedEvent.can_edit}
                 />
@@ -247,7 +248,7 @@ export function EditEventSheet() {
                 <div className="space-y-2">
                   <Label htmlFor="start_date">
                     <CalendarDays className="h-4 w-4 inline mr-1" />
-                    Start Date *
+                    {t('editEvent.form.start_date.label')}
                   </Label>
                   <Input
                     id="start_date"
@@ -263,7 +264,7 @@ export function EditEventSheet() {
                 <div className="space-y-2">
                   <Label htmlFor="end_date">
                     <CalendarDays className="h-4 w-4 inline mr-1" />
-                    End Date *
+                    {t('editEvent.form.end_date.label')}
                   </Label>
                   <Input
                     id="end_date"
@@ -280,12 +281,12 @@ export function EditEventSheet() {
               <div className="space-y-2">
                 <Label htmlFor="location">
                   <MapPin className="h-4 w-4 inline mr-1" />
-                  Location
+                  {t('editEvent.form.location.label')}
                 </Label>
                 <Input
                   id="location"
                   {...form.register('location')}
-                  placeholder="Enter event location"
+                  placeholder={t('editEvent.form.location.placeholder')}
                   disabled={isSubmitting || !selectedEvent.can_edit}
                 />
                 {form.formState.errors.location && (
@@ -296,7 +297,7 @@ export function EditEventSheet() {
               <div className="space-y-2">
                 <Label htmlFor="division_ids">
                   <Building2 className="h-4 w-4 inline mr-1" />
-                  Assigned Divisions *
+                  {t('editEvent.form.division_ids.label')}
                 </Label>
                 <Controller
                   name="division_ids"
@@ -308,7 +309,7 @@ export function EditEventSheet() {
                     >
                       <MultiSelectTrigger>
                         <MultiSelectValue
-                          placeholder="Select divisions..."
+                          placeholder={t('editEvent.form.division_ids.placeholder')}
                           itemComponent={(props) => (
                             <Badge variant="secondary" className="mr-1">
                               {divisions.find(d => d.id === Number(props.value))?.name || props.value}
@@ -317,7 +318,7 @@ export function EditEventSheet() {
                         />
                       </MultiSelectTrigger>
                       <MultiSelectContent>
-                        <MultiSelectEmpty>No divisions found</MultiSelectEmpty>
+                        <MultiSelectEmpty>{t('editEvent.form.division_ids.empty')}</MultiSelectEmpty>
                         <MultiSelectGroup>
                           {divisions.map((division) => (
                             <MultiSelectItem key={division.id} value={String(division.id)}>
@@ -337,7 +338,7 @@ export function EditEventSheet() {
               <div className="space-y-2">
                 <Label>
                   <Users className="h-4 w-4 inline mr-1" />
-                  Participants ({form.watch('participant_ids')?.length || 0})
+                  {t('editEvent.form.participant_ids.label', { count: form.watch('participant_ids')?.length || 0 })}
                 </Label>
 
                 {canModifyParticipants ? (
@@ -349,7 +350,7 @@ export function EditEventSheet() {
                         {field.value && field.value.length > 0 && (
                           <div className="rounded-md border p-3">
                             <p className="text-xs text-muted-foreground mb-2">
-                              Selected: {field.value.map(id => users.find(u => u.id === id)?.name).filter(Boolean).join(', ')}
+                              {t('selected', { names: field.value.map(id => users.find(u => u.id === id)?.name).filter(Boolean).join(', ') })}
                             </p>
                           </div>
                         )}
@@ -366,10 +367,10 @@ export function EditEventSheet() {
                 ) : (
                   <div className="rounded-md border p-4">
                     <p className="text-sm text-muted-foreground mb-2">
-                      Current participants: {selectedEvent.participants?.map(p => p.name).join(', ') || 'None'}
+                      {t('current_participants', { names: selectedEvent.participants?.map(p => p.name).join(', ') || t('none') })}
                     </p>
                     <p className="text-xs text-blue-800">
-                      Participants are locked because the event is not in 'upcoming' status
+                      {t('participants_locked')}
                     </p>
                   </div>
                 )}
@@ -385,8 +386,8 @@ export function EditEventSheet() {
             open={showDeleteDialog}
             onOpenChange={setShowDeleteDialog}
             onConfirm={handleDelete}
-            title="Delete Event"
-            description={`Are you sure you want to delete "${selectedEvent.title}"? This action cannot be undone.`}
+            title={t('delete_event')}
+            description={t.rich('confirm_delete', { eventTitle: selectedEvent.title })}
             isLoading={isDeleting}
           />
 

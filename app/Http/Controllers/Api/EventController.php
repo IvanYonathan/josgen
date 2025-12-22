@@ -58,12 +58,14 @@ class EventController extends ApiController
 
         // Search in title and description
         if (!empty($filters['search'])) {
-            $search = $filters['search'];
+            $search = mb_strtolower(trim($filters['search']));
+
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $q->whereRaw('LOWER(title) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(description) LIKE ?', ["%{$search}%"]);
             });
         }
+
 
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -159,11 +161,11 @@ class EventController extends ApiController
         $user = Auth::user();
 
         $event = Event::where(function ($q) use ($user) {
-                $q->where('organizer_id', $user->id)
-                    ->orWhereHas('divisions', function ($subQ) use ($user) {
-                        $subQ->where('divisions.id', $user->division_id);
-                    });
-            })
+            $q->where('organizer_id', $user->id)
+                ->orWhereHas('divisions', function ($subQ) use ($user) {
+                    $subQ->where('divisions.id', $user->division_id);
+                });
+        })
             ->with(['organizer:id,name', 'divisions:id,name', 'participants:id,name'])
             ->find($request->id);
 

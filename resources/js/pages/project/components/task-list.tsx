@@ -13,6 +13,7 @@ import { updateTaskSchema, type UpdateTaskFormData } from '../schemas/project-sc
 import { toast } from 'sonner';
 import { DeleteTaskDialog } from './delete-task-dialog';
 import { EditTaskDialog } from './edit-task-dialog';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface TaskListProps {
   project: Project;
@@ -23,6 +24,7 @@ interface TaskListProps {
 }
 
 export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }: TaskListProps) {
+  const { t } = useTranslation('project');
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<number>>(new Set());
   const [togglingTasks, setTogglingTasks] = useState(false);
   const [editingTask, setEditingTask] = useState<ProjectTask | null>(null);
@@ -63,18 +65,18 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
 
   const handleBulkToggleCompletion = async () => {
     if (selectedTaskIds.size === 0) {
-      toast.error('Please select at least one task');
+      toast.error(t('select_at_least_one_task'));
       return;
     }
 
     try {
       setTogglingTasks(true);
       await toggleTaskCompletion({ task_ids: Array.from(selectedTaskIds) });
-      toast.success(`${selectedTaskIds.size} task(s) toggled successfully`);
+      toast.success(t('tasks_toggled_success', { count: selectedTaskIds.size }));
       setSelectedTaskIds(new Set());
       onTasksChange();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to toggle tasks');
+      toast.error(error instanceof Error ? error.message : t('failed_to_toggle_tasks'));
     } finally {
       setTogglingTasks(false);
     }
@@ -90,11 +92,11 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
     try {
       setIsDeleting(true);
       await deleteTask({ id: taskToDelete.id });
-      toast.success('Task deleted successfully');
+      toast.success(t('task_delete_success'));
       setTaskToDelete(null);
       onTasksChange();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete task');
+      toast.error(error instanceof Error ? error.message : t('task_delete_error'));
     } finally {
       setIsDeleting(false);
     }
@@ -117,12 +119,12 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
     try {
       setIsSubmitting(true);
       await updateTask(data);
-      toast.success('Task updated successfully');
+      toast.success(t('task_update_success'));
       setEditingTask(null);
       editForm.reset();
       onTasksChange();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update task');
+      toast.error(error instanceof Error ? error.message : t('task_update_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -135,11 +137,11 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
     return (
       <div className="text-center py-12">
         <Circle className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-        <p className="text-muted-foreground mb-4">No tasks yet</p>
+        <p className="text-muted-foreground mb-4">{t('no_tasks_yet')}</p>
         {canManage && (
           <Button onClick={onAddTask} variant="outline">
             <Plus className="h-4 w-4 mr-2" />
-            Add First Task
+            {t('add_first_task')}
           </Button>
         )}
       </div>
@@ -150,10 +152,10 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
     <div className="space-y-4">
       {canManage && selectedTaskIds.size > 0 && (
         <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-          <span className="text-sm font-medium">{selectedTaskIds.size} selected</span>
+          <span className="text-sm font-medium">{t('selected_count', { count: selectedTaskIds.size })}</span>
           <Button size="sm" onClick={handleBulkToggleCompletion} disabled={togglingTasks}>
             {togglingTasks && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-            Toggle Completion
+            {t('toggle_completion')}
           </Button>
         </div>
       )}
@@ -167,11 +169,11 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
               {...(someSelected && { 'data-state': 'indeterminate' })}
             />
           )}
-          <span className="text-sm font-medium">Tasks ({tasks.length})</span>
+          <span className="text-sm font-medium">{t('tasks_tab', { count: tasks.length })}</span>
           {canManage && (
             <Button size="sm" variant="ghost" onClick={onAddTask} className="ml-auto">
               <Plus className="h-4 w-4 mr-1" />
-              Add Task
+              {t('add_task')}
             </Button>
           )}
         </div>
@@ -202,7 +204,7 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
                   </h4>
                   {task.is_completed && (
                     <Badge variant="outline" className="text-xs">
-                      Completed
+                      {t('completed_label')}
                     </Badge>
                   )}
                 </div>
@@ -210,9 +212,9 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
                   <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
                 )}
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                  {task.start_date && <span>Start: {new Date(task.start_date).toLocaleDateString()}</span>}
-                  {task.end_date && <span>End: {new Date(task.end_date).toLocaleDateString()}</span>}
-                  {task.assigned_user?.name && <span>Assigned to: {task.assigned_user.name}</span>}
+                  {task.start_date && <span>{t('task_start', { date: new Date(task.start_date).toLocaleDateString() })}</span>}
+                  {task.end_date && <span>{t('task_end', { date: new Date(task.end_date).toLocaleDateString() })}</span>}
+                  {task.assigned_user?.name && <span>{t('task_assigned_to', { name: task.assigned_user.name })}</span>}
                 </div>
               </div>
 

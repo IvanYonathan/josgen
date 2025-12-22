@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface DeleteProjectDialogProps {
   open: boolean;
@@ -9,16 +10,18 @@ interface DeleteProjectDialogProps {
 }
 
 export function DeleteProjectDialog({ open, onOpenChange, onConfirm, projectName }: DeleteProjectDialogProps) {
+  const { t } = useTranslation('project');
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby={undefined}>
         <DialogHeader>
-          <DialogTitle>Delete Project</DialogTitle>
+          <DialogTitle>{t('dialog.deleteProject.title')}</DialogTitle>
         </DialogHeader>
-        <p>Are you sure you want to delete "{projectName}"? This action cannot be undone.</p>
+        <p>{t.rich('confirm_delete_project', { projectName })}</p>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button variant="destructive" onClick={onConfirm}>Delete Project</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('dialog.deleteProject.cancel')}</Button>
+          <Button variant="destructive" onClick={onConfirm}>{t('dialog.deleteProject.confirm')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Users } from 'lucide-react';
 import { Event } from '@/types/event/event';
 import { formatDate } from '@/utils/date';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface EventCardProps {
   event: Event;
@@ -11,6 +12,8 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onClick }: EventCardProps) {
+  const { t } = useTranslation('event');
+
   const getStatusColor = (status: Event['status']) => {
     switch (status) {
       case 'upcoming':
@@ -37,7 +40,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
             {event.title}
           </CardTitle>
           <Badge className={getStatusColor(event.status)}>
-            {event.status}
+            {t(event.status)}
           </Badge>
         </div>
       </CardHeader>
@@ -53,7 +56,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
           <div className="flex items-center gap-2 text-sm">
             <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">Start:</span>
+              <span className="text-xs text-muted-foreground">{t('start')}</span>
               <span>{formatDate(event.start_date, { format: 'MMM DD, YYYY hh:mm A' })}</span>
             </div>
           </div>
@@ -61,7 +64,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
           <div className="flex items-center gap-2 text-sm">
             <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">End:</span>
+              <span className="text-xs text-muted-foreground">{t('end')}</span>
               <span>{formatDate(event.end_date, { format: 'MMM DD, YYYY hh:mm A' })}</span>
             </div>
           </div>
@@ -75,7 +78,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
 
           <div className="flex items-center gap-2 text-sm">
             <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <span>{event.participants_count || 0} participants</span>
+            <span>{t('participants_count', { count: event.participants_count || 0 })}</span>
           </div>
 
           {event.divisions && event.divisions.length > 0 && (
@@ -99,7 +102,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
             onClick(event);
           }}
         >
-          {event.can_edit ? 'Edit Event' : 'View Details'}
+          {event.can_edit ? t('edit_event') : t('view_details')}
         </Button>
       </CardFooter>
     </Card>

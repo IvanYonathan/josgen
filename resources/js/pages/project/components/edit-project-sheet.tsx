@@ -21,9 +21,11 @@ import { TaskTab } from './task-tab';
 import { DeleteProjectDialog } from './delete-project-dialog';
 import { AddNewTaskDialog } from './add-new-task-dialog';
 import { ProjectUnsavedChangesDialog } from './unsaved-changes-dialog';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function EditProjectSheet() {
   const { closeEditMode, selectedProject, updateProjectInList, removeProject } = useProjectManagementStore();
+  const { t } = useTranslation('project');
   const [project, setProject] = useState<Project | null>(selectedProject);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -84,7 +86,7 @@ export function EditProjectSheet() {
           member_ids: projectRes.project.members?.map((m) => m.id) || [],
         });
       } catch (error) {
-        toast.error('Failed to load project details');
+        toast.error(t('failed_to_load_project_details'));
       } finally {
         setLoadingData(false);
       }
@@ -113,7 +115,7 @@ export function EditProjectSheet() {
       setProject(response.project);
       updateProjectInList(response.project);
     } catch (error) {
-      toast.error('Failed to refresh project');
+      toast.error(t('failed_to_refresh_project'));
     }
   };
 
@@ -124,10 +126,10 @@ export function EditProjectSheet() {
       const response = await updateProject(cleanedData);
       setProject(response.project);
       updateProjectInList(response.project);
-      toast.success('Project updated successfully');
+      toast.success(t('update_success'));
       closeEditMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update project');
+      toast.error(error instanceof Error ? error.message : t('update_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -137,10 +139,10 @@ export function EditProjectSheet() {
     try {
       await deleteProject({ id: project!.id });
       removeProject(project!.id);
-      toast.success('Project deleted successfully');
+      toast.success(t('delete_success'));
       closeEditMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete project');
+      toast.error(error instanceof Error ? error.message : t('delete_error'));
     }
   };
 
@@ -150,12 +152,12 @@ export function EditProjectSheet() {
         project_id: project!.id,
         ...data,
       });
-      toast.success('Task created successfully');
+      toast.success(t('task_create_success'));
       taskForm.reset();
       setShowAddTaskDialog(false);
       refreshProject();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create task');
+      toast.error(error instanceof Error ? error.message : t('task_create_error'));
     }
   };
 
@@ -187,18 +189,18 @@ export function EditProjectSheet() {
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={handleBackClick} disabled={isSubmitting}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              {t('back')}
             </Button>
             <div>
               <h1 className="text-2xl font-bold">{project.name}</h1>
-              <p className="text-sm text-muted-foreground">Edit project details and manage tasks</p>
+              <p className="text-sm text-muted-foreground">{t('editProject.description')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {isManager && (
               <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} disabled={isSubmitting}>
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                {t('editProject.button.delete')}
               </Button>
             )}
           </div>
@@ -208,14 +210,14 @@ export function EditProjectSheet() {
           {!project.can_edit && (
             <div className="mb-6 p-4 text-sm bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-              <p className="text-yellow-800">You can view this project but don't have permission to edit it.</p>
+              <p className="text-yellow-800">{t('editProject.view_only_warning')}</p>
             </div>
           )}
 
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="details">Project Details</TabsTrigger>
-              <TabsTrigger value="tasks">Tasks ({project.tasks?.length || 0})</TabsTrigger>
+              <TabsTrigger value="details">{t('editProject.tabs.details')}</TabsTrigger>
+              <TabsTrigger value="tasks">{t('editProject.tabs.tasks', { count: project.tasks?.length || 0 })}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="details" className="space-y-6 mt-6">

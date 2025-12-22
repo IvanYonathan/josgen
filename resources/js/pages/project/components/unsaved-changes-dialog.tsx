@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface ProjectUnsavedChangesDialogProps {
   open: boolean;
@@ -16,21 +17,23 @@ interface ProjectUnsavedChangesDialogProps {
 }
 
 export function ProjectUnsavedChangesDialog({ open, onOpenChange, onConfirm }: ProjectUnsavedChangesDialogProps) {
+  const { t } = useTranslation('project', { keyPrefix: 'dialog.unsavedChanges' });
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+          <AlertDialogTitle>{t('title')}</AlertDialogTitle>
           <AlertDialogDescription>
-            You have unsaved changes. Are you sure you want to go back? All your changes will be lost.
+            {t('description')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>
-            Cancel
+            {t('cancel')}
           </AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm}>
-            Discard Changes
+            {t('confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

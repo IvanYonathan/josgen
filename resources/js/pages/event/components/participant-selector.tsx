@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface User {
   id: number;
@@ -20,6 +21,7 @@ export function ParticipantSelector({
   onChange,
   disabled = false,
 }: Readonly<ParticipantSelectorProps>) {
+  const { t } = useTranslation('event');
   const [search, setSearch] = useState('');
 
   const normalizedValue = value ?? [];
@@ -49,7 +51,7 @@ export function ParticipantSelector({
   return (
     <div className="space-y-2">
       <Input
-        placeholder="Search users..."
+        placeholder={t('search_users_placeholder')}
         value={search}
         onChange={(event) => setSearch(event.target.value)}
         disabled={disabled || users.length === 0}
@@ -57,7 +59,7 @@ export function ParticipantSelector({
       <div className="max-h-64 overflow-y-auto rounded border border-border">
         {filteredUsers.length === 0 ? (
           <div className="p-3 text-sm text-muted-foreground">
-            No users found
+            {t('no_users_found')}
           </div>
         ) : (
           filteredUsers.map((user) => (

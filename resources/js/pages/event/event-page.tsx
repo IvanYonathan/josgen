@@ -38,12 +38,17 @@ function EventPageContent() {
   const debouncedSearch = useDebounce(searchInput, 300);
 
   useEffect(() => {
+    setPagination({ page: 1 });
+  }, [debouncedSearch, filters.statusFilter]);
+
+  useEffect(() => {
     loadEvents();
   }, [debouncedSearch, filters.statusFilter, pagination.page]);
 
   useEffect(() => {
     setSearchTerm(debouncedSearch);
   }, [debouncedSearch, setSearchTerm]);
+
 
   const loadEvents = async () => {
     try {
@@ -54,7 +59,7 @@ function EventPageContent() {
         page: pagination.page,
         limit: pagination.limit,
         filters: {
-          search: filters.searchTerm,
+          search: debouncedSearch || undefined,
           status: filters.statusFilter !== 'all' ? filters.statusFilter : undefined,
         },
       });
@@ -65,7 +70,7 @@ function EventPageContent() {
         hasNextPage: response.pagination.has_next_page,
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load events';
+      const errorMessage = err instanceof Error ? err.message : t('failed_to_load_events');
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -77,7 +82,7 @@ function EventPageContent() {
     if (event.can_edit) {
       openEditMode(event);
     } else {
-      toast.info('You can only view this event');
+      toast.info(t('view_only'));
     }
   };
 
@@ -93,7 +98,7 @@ function EventPageContent() {
     <div className="p-6">
       <div className="flex flex-col gap-4 mb-6 md:flex-row md:justify-between md:items-center">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">Events</h1>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
           <Button
             variant="outline"
             size="sm"
@@ -102,13 +107,13 @@ function EventPageContent() {
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('refresh')}
           </Button>
         </div>
 
         <Button onClick={openCreateMode}>
           <PlusCircle className="h-4 w-4 mr-2" />
-          Create Event
+          {t('create_event')}
         </Button>
       </div>
 
@@ -116,7 +121,7 @@ function EventPageContent() {
         <div className="relative flex-1 sm:flex-[10]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search events..."
+            placeholder={t('search_events_placeholder')}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="pl-10"
@@ -125,14 +130,14 @@ function EventPageContent() {
 
         <Select value={filters.statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
           <SelectTrigger wrapperClassName="w-full sm:w-[150px]">
-            <SelectValue placeholder="All Status" />
+            <SelectValue placeholder={t('all_status')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="upcoming">Upcoming</SelectItem>
-            <SelectItem value="ongoing">Ongoing</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
+            <SelectItem value="all">{t('all_status')}</SelectItem>
+            <SelectItem value="upcoming">{t('upcoming')}</SelectItem>
+            <SelectItem value="ongoing">{t('ongoing')}</SelectItem>
+            <SelectItem value="completed">{t('completed')}</SelectItem>
+            <SelectItem value="cancelled">{t('cancelled')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -154,12 +159,12 @@ function EventPageContent() {
           <CalendarDays className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground mb-4">
             {filters.searchTerm || filters.statusFilter !== 'all'
-              ? 'No events found matching your filters'
-              : 'No events found'}
+              ? t('noEventsFoundMatchingFilters')
+              : t('noEventsFound')}
           </p>
           <Button variant="outline" onClick={openCreateMode}>
             <PlusCircle className="h-4 w-4 mr-2" />
-            Create your first event
+            {t('create_first_event')}
           </Button>
         </div>
       ) : (
@@ -178,7 +183,7 @@ function EventPageContent() {
           {pagination.total && (
             <div className="mt-8 text-center">
               <p className="text-sm text-muted-foreground">
-                Showing {events.length} of {pagination.total} events
+                {t('showing_events', { shown: events.length, total: pagination.total })}
               </p>
             </div>
           )}

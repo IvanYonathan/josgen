@@ -9,13 +9,15 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Loader2 } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface DeleteConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-  title: string;
-  description: string;
+  title: ReactNode;
+  description: ReactNode;
   isLoading?: boolean;
 }
 
@@ -27,6 +29,8 @@ export function DeleteConfirmationDialog({
   description,
   isLoading = false,
 }: DeleteConfirmationDialogProps) {
+  const { t } = useTranslation('event');
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -35,7 +39,7 @@ export function DeleteConfirmationDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault();
@@ -45,7 +49,7 @@ export function DeleteConfirmationDialog({
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Delete
+            {t('delete')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

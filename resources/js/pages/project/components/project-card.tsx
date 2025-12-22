@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Briefcase, Users, Calendar } from 'lucide-react';
 import { Project } from '@/types/project/project';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface ProjectCardProps {
   project: Project;
@@ -11,6 +12,8 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, onClick }: ProjectCardProps) {
+  const { t } = useTranslation('project');
+
   const getStatusColor = (status: Project['status']) => {
     switch (status) {
       case 'planning':
@@ -28,10 +31,6 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
     }
   };
 
-  const formatStatus = (status: Project['status']) => {
-    return status.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-  };
-
   return (
     <Card
       className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
@@ -43,7 +42,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
             {project.name}
           </CardTitle>
           <Badge className={getStatusColor(project.status)}>
-            {formatStatus(project.status)}
+            {t(project.status)}
           </Badge>
         </div>
       </CardHeader>
@@ -57,7 +56,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
 
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Progress</span>
+            <span className="text-muted-foreground">{t('progress')}</span>
             <span className="font-medium">{project.progress}%</span>
           </div>
           <Progress value={project.progress} className="h-2" />
@@ -80,7 +79,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
           <div className="flex items-center gap-2 text-sm">
             <Users className="h-4 w-4 text-muted-foreground" />
             <span className="text-muted-foreground">
-              {project.members_count || 0} member{project.members_count !== 1 ? 's' : ''}
+              {t('members_count', { count: project.members_count || 0 })}
             </span>
           </div>
 
@@ -99,7 +98,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
 
       <CardFooter className="border-t pt-4">
         <Button variant="outline" className="w-full">
-          {project.can_edit ? 'Edit Project' : 'View Details'}
+          {project.can_edit ? t('edit_project') : t('view_details')}
         </Button>
       </CardFooter>
     </Card>
