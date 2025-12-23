@@ -1,9 +1,17 @@
 import { AxiosJosgen } from "@/lib/axios/axios-josgen";
 import { ApiResponse } from "@/types/api/response";
-import { EventResponse, GetEventRequest } from "@/types/event/event";
+import { Event } from "@/types/event/event";
 
-export async function getEvent(data: GetEventRequest): Promise<EventResponse> {
-  const response = await AxiosJosgen.post<ApiResponse<EventResponse>>("/event/get", data);
-  if (!response.data.status) throw new Error(response.data.message);
+export interface GetEventRequest {
+  id: number;
+}
+
+export interface GetEventResponse {
+  event: Event;
+}
+
+export async function getEvent(data: GetEventRequest): Promise<GetEventResponse> {
+  const response = await AxiosJosgen.post<ApiResponse<GetEventResponse>>("/event/get", data);
+  if (!response.data.status) throw new Error(response.data.message || 'Failed to fetch event');
   return response.data.data;
 }

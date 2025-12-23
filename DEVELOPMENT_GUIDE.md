@@ -120,6 +120,16 @@ php artisan db:seed
 chmod -R 775 storage bootstrap/cache
 ```
 
+## **After Adding Permissions**
+
+```bash
+# ALWAYS seed the database after adding new permissions
+php artisan db:seed --class=PermissionSeeder
+
+## The InitialAdminSeeder is for seeding the sysadmin on first deploymeny
+php artisan db:seed --class=InitialAdminSeeder # Probably wont need this exact command since db:seed already handles all seeders
+```
+
 ---
 
 ## 🏗️ Project Architecture Overview

@@ -116,4 +116,17 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Initial Sysadmin Bootstrap
+    |--------------------------------------------------------------------------
+    |
+    | Used by InitialAdminSeeder. Configure per environment via env vars.
+    |
+    */
+    'initial_admin' => [
+        'email' => env('INITIAL_ADMIN_EMAIL', 'admin@josgen.org'),
+        'password' => env('INITIAL_ADMIN_PASSWORD', 'password'),
+    ],
+
 ];

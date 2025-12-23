@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Note extends Model
 {
@@ -14,12 +15,14 @@ class Note extends Model
         'title',
         'content',
         'user_id',
-        'division_id',
-        'is_private',
+        'tags',
+        'category',
+        'is_pinned',
     ];
 
     protected $casts = [
-        'is_private' => 'boolean',
+        'tags' => 'array',
+        'is_pinned' => 'boolean',
     ];
 
     /**
@@ -31,26 +34,26 @@ class Note extends Model
     }
 
     /**
-     * Get the division associated with the note.
+     * Get the images for the note.
      */
-    public function division(): BelongsTo
+    public function images(): HasMany
     {
-        return $this->belongsTo(Division::class);
+        return $this->hasMany(Image::class);
     }
 
     /**
-     * Scope a query to only include private notes.
+     * Scope a query to only include pinned notes.
      */
-    public function scopePrivate($query)
+    public function scopePinned($query)
     {
-        return $query->where('is_private', true);
+        return $query->where('is_pinned', true);
     }
 
     /**
-     * Scope a query to only include public notes.
+     * Scope a query to filter by category.
      */
-    public function scopePublic($query)
+    public function scopeByCategory($query, $category)
     {
-        return $query->where('is_private', false);
+        return $query->where('category', $category);
     }
 }

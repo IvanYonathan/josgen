@@ -16,6 +16,10 @@ export function DashboardLayout() {
     // Add specific breadcrumbs based on route
     if (path === '/dashboard' || path === '/') {
       breadcrumbs.push({ title: 'Dashboard', href: '/dashboard' });
+    } else if (path === '/users') {
+      breadcrumbs.push({ title: 'Users', href: '/users' });
+    } else if (path === '/roles') {
+      breadcrumbs.push({ title: 'Roles', href: '/roles' });
     } else if (path === '/divisions') {
       breadcrumbs.push({ title: 'Divisions', href: '/divisions' });
     } else if (path === '/event') {
@@ -30,6 +34,12 @@ export function DashboardLayout() {
       breadcrumbs.push({ title: 'Personal To-Do', href: '/toDoList/personal' });
     } else if (path === '/toDoList/division') {
       breadcrumbs.push({ title: 'Division To-Do', href: '/toDoList/division' });
+    } else if (path === '/settings/profile') {
+      breadcrumbs.push({ title: 'Profile settings', href: '/settings/profile' });
+    } else if (path === '/settings/password') {
+      breadcrumbs.push({ title: 'Password settings', href: '/settings/password' });
+    } else if (path === '/settings/appearance') {
+      breadcrumbs.push({ title: 'Appearance settings', href: '/settings/appearance' });
     }
 
     return breadcrumbs;
