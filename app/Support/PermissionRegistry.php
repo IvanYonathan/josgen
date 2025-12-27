@@ -80,7 +80,35 @@ class PermissionRegistry
      *
      * @var array<string, array<int, string>>
      */
-    private const ROLE_PERMISSION_MAP = [];
+    private const ROLE_PERMISSION_MAP = [
+        'member' => [
+            'create treasury requests',
+            'view own treasury requests',
+            'view events',
+            'view projects',
+            'view todo lists',
+            'create todo lists',
+            'edit todo lists',
+            'create notes',
+            'edit notes',
+        ],
+        'treasurer' => [
+            'create treasury requests',
+            'view own treasury requests',
+            'view all treasury requests',
+            'approve treasury requests',
+            'process payments',
+            'view treasury reports',
+        ],
+        'division_leader' => [
+            'create treasury requests',
+            'view own treasury requests',
+            'view all treasury requests',
+            'approve treasury requests',
+            'view divisions',
+            'edit divisions',
+        ],
+    ];
 
     /**
      * Returns the definitive map of permission => roles that should own it by default.
