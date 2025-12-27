@@ -15,3 +15,8 @@ Schedule::job(new PrewarmDailyVerseCache)
     ->at('23:59')
     ->timezone('UTC')
     ->description('Pre-warm cache for tomorrow\'s daily verse');
+
+// Schedule event status updates (runs every 15 minutes)
+Schedule::command('events:update-statuses')
+    ->everyFifteenMinutes()
+    ->description('Update event statuses based on current date (upcoming → ongoing → completed)');

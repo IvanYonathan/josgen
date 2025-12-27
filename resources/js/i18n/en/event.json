@@ -1,0 +1,137 @@
+{
+    "events": "Events",
+    "create_event": "Create Event",
+    "edit_event": "Edit Event",
+    "delete_event": "Delete Event",
+    "back": "Back",
+    "refresh": "Refresh",
+    "save_changes": "Save Changes",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "view_details": "View Details",
+
+    "start": "Start:",
+    "end": "End:",
+
+    "search_events_placeholder": "Search events...",
+    "all_status": "All Status",
+
+    "upcoming": "Upcoming",
+    "ongoing": "Ongoing",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+
+    "noEventsFound": "No events found",
+    "noEventsFoundMatchingFilters": "No events found matching your filters",
+    "create_first_event": "Create your first event",
+    "showing_events": "Showing {{shown}} of {{total}} events",
+    "participants_count": "{{count}} participants",
+
+    "failed_to_load_events": "Failed to load events",
+    "view_only": "You can only view this event",
+    "failed_to_load_divisions_and_users": "Failed to load divisions and users",
+
+    "create_success": "Event created successfully",
+    "create_error": "Failed to create event",
+    "update_success": "Event updated successfully",
+    "update_error": "Failed to update event",
+    "delete_success": "Event deleted successfully",
+    "delete_error": "Failed to delete event",
+
+    "no_permission_edit": "You do not have permission to edit this event",
+    "participants_cannot_modify": "Participants cannot be modified because the event is {{status}}",
+    "participants_locked": "Participants are locked because the event is not in upcoming status",
+    "selected": "Selected: {{names}}",
+    "current_participants": "Current participants: {{names}}",
+    "none": "None",
+
+    "search_users_placeholder": "Search users...",
+    "no_users_found": "No users found",
+    "no_divisions_found": "No divisions found",
+
+    "confirm_delete": "Are you sure you want to delete <bold>{{eventTitle}}</bold>? This action cannot be undone.",
+
+    "title": "Events",
+    "description": "View and Manage Events here",
+    "createEvent": {
+        "title": "Create Event",
+        "description": "Create a new event for your division",
+        "form": {
+            "title": {
+                "label": "Title *",
+                "placeholder": "Enter event title"
+            },
+            "description": {
+                "label": "Description",
+                "placeholder": "Enter event description"
+            },
+            "start_date": {
+                "label": "Start Date *"
+            },
+            "end_date": {
+                "label": "End Date *"
+            },
+            "location": {
+                "label": "Location",
+                "placeholder": "Enter event location"
+            },
+            "division_ids": {
+                "label": "Assigned Divisions *",
+                "placeholder": "Select divisions...",
+                "empty": "No divisions found"
+            },
+            "participant_ids": {
+                "label": "Participants (Optional)"
+            }
+        },
+        "button": {
+            "create": "Create Event",
+            "cancel": "Cancel"
+        }
+    },
+    "editEvent": {
+        "title": "Edit Event",
+        "description": "Update event details",
+        "form": {
+            "title": {
+                "label": "Title *",
+                "placeholder": "Enter event title"
+            },
+            "description": {
+                "label": "Description",
+                "placeholder": "Enter event description"
+            },
+            "start_date": {
+                "label": "Start Date *"
+            },
+            "end_date": {
+                "label": "End Date *"
+            },
+            "location": {
+                "label": "Location",
+                "placeholder": "Enter event location"
+            },
+            "division_ids": {
+                "label": "Assigned Divisions *",
+                "placeholder": "Select divisions...",
+                "empty": "No divisions found"
+            },
+            "participant_ids": {
+                "label": "Participants ({{count}})"
+            }
+        },
+        "button": {
+            "update": "Save Changes",
+            "delete": "Delete",
+            "cancel": "Cancel"
+        }
+    },
+    "dialog": {
+        "unsavedChanges": {
+            "title": "Unsaved Changes",
+            "description": "You have unsaved changes. Are you sure you want to leave? All your changes will be lost.",
+            "cancel": "Keep Editing",
+            "confirm": "Discard Changes"
+        }
+    }
+}

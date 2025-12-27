@@ -104,7 +104,7 @@ export function BulkMemberSelectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-4xl max-h flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />

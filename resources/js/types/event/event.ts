@@ -1,43 +1,34 @@
-import { PaginatedResponse } from "../api/response";
-
-export interface EventListResponse {
-  events: Event[];
-  pagination?: PaginatedResponse;
-}
-
-export interface EventResponse {
-  event: Event;
-}
-
-export interface ListEventsRequest {
-  division_id?: number;
-  page?: number;
-  per_page?: number;
-}
-
-export interface GetEventRequest {
-  id: number;
-}
-
-export interface CreateEventRequest {
-  title: string;
-  description?: string;
-  start_date: string;
-  end_date: string;
-  location?: string;
-  division_id?: number;
-}
-
-export interface UpdateEventRequest {
+export interface Event {
   id: number;
   title: string;
-  description?: string;
+  description: string | null;
   start_date: string;
   end_date: string;
-  location?: string;
-  division_id?: number;
+  location: string | null;
+  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  organizer_id: number;
+  created_at: string;
+  updated_at: string;
+
+  // Relationships
+  organizer?: {
+    id: number;
+    name: string;
+  };
+  divisions?: Division[];
+  participants?: Participant[];
+
+  can_edit?: boolean;
+  can_modify_participants?: boolean;
+  participants_count?: number;
 }
 
-export interface DeleteEventRequest {
+export interface Division {
   id: number;
+  name: string;
+}
+
+export interface Participant {
+  id: number;
+  name: string;
 }
