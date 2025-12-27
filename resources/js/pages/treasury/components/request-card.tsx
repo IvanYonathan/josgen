@@ -20,7 +20,7 @@ import {
 export const getStatusBadgeClass = (status: TreasuryRequest['status']) => {
     switch (status) {
         case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200';
-        case 'submitted': return 'bg-blue-100 text-blue-800 border-blue-200';
+        case 'submitted': return '!bg-blue-100 !text-blue-800 !border-blue-200';
         case 'under_review': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
         case 'approved': return 'bg-green-100 text-green-800 border-green-200';
         case 'rejected': return 'bg-red-100 text-red-800 border-red-200';
@@ -31,11 +31,11 @@ export const getStatusBadgeClass = (status: TreasuryRequest['status']) => {
 
 export const formatCurrency = (amount: number, currency: string = 'IDR', hidden: boolean = false) => {
     if (hidden) return '••••••••';
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: currency,
-        minimumFractionDigits: 0,
-    }).format(amount);
+    const formatted = Math.abs(amount)
+        .toFixed(0)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const prefix = currency === 'IDR' ? 'Rp' : currency + ' ';
+    return amount < 0 ? `-${prefix}${formatted}` : `${prefix}${formatted}`;
 };
 
 export const formatDate = (dateString: string) => {
@@ -183,11 +183,11 @@ export function RequestCard({
                 <div className="flex items-center gap-2 pt-2">
                     {showApprovalActions && (request.status === 'submitted' || request.status === 'under_review') ? (
                         <>
-                            <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700" onClick={onApprove}>
+                            <Button size="sm" className="!bg-green-600 hover:!bg-green-700 text-white" onClick={onApprove}>
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Approve
                             </Button>
-                            <Button size="sm" variant="destructive" className="flex-1" onClick={onReject}>
+                            <Button size="sm" variant="destructive" className="bg-red-600 hover:bg-red-700" onClick={onReject}>
                                 <XCircle className="h-4 w-4 mr-1" />
                                 Reject
                             </Button>

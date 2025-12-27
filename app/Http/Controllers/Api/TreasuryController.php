@@ -17,11 +17,7 @@ use Illuminate\Validation\Rule;
 
 class TreasuryController extends ApiController
 {
-    /**
-     * List treasury requests.
-     * Regular users see only their own requests.
-     * Users with 'view all treasury requests' permission see all requests.
-     */
+    // List treasury requests with optional type/status filters
     public function list(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -43,14 +39,12 @@ class TreasuryController extends ApiController
         $canViewAll = $this->hasPermission('view all treasury requests');
 
         $query = TreasuryRequest::with(['requester:id,name,email', 'division:id,name', 'approvals.approver:id,name'])
-            ->withCount(['items', 'attachments']);
+            ->withCount(['items']);
 
-        // Filter by user if they don't have permission to view all
         if (!$canViewAll) {
             $query->where('requested_by', $user->id);
         }
 
-        // Apply filters
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
@@ -62,7 +56,6 @@ class TreasuryController extends ApiController
         $perPage = $request->input('per_page', 15);
         $requests = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-        // Add approval stage to each request
         $requests->getCollection()->transform(function ($treasuryRequest) {
             $treasuryRequest->approval_stage = $treasuryRequest->getApprovalStage();
             return $treasuryRequest;
@@ -79,9 +72,7 @@ class TreasuryController extends ApiController
         ], 'Treasury requests retrieved successfully', $requests->total());
     }
 
-    /**
-     * Get a single treasury request with full details.
-     */
+    // Get a single treasury request with full details
     public function get(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -104,11 +95,9 @@ class TreasuryController extends ApiController
             'project:id,name',
             'event:id,title',
             'items',
-            'attachments',
             'approvals.approver:id,name,email',
         ])->findOrFail($request->id);
 
-        // Check permission: owner or has 'view all treasury requests'
         $canViewAll = $this->hasPermission('view all treasury requests');
         if ($treasuryRequest->requested_by !== $user->id && !$canViewAll) {
             return $this->forbidden('You do not have permission to view this request');
@@ -122,9 +111,7 @@ class TreasuryController extends ApiController
         ], 'Treasury request retrieved successfully');
     }
 
-    /**
-     * Create a new treasury request with items.
-     */
+    // Create a new treasury request with items
     public function create(Request $request): JsonResponse
     {
         if ($response = $this->ensurePermission('create treasury requests', 'You do not have permission to create treasury requests')) {
@@ -147,7 +134,7 @@ class TreasuryController extends ApiController
             'items.*.amount' => 'required_with:items|numeric|min:0',
             'items.*.category' => ['required_with:items', Rule::in(array_keys(TreasuryRequest::expense_categories))],
             'items.*.item_date' => 'nullable|date',
-            'submit' => 'nullable|boolean', // If true, submit immediately instead of saving as draft
+            'submit' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -174,7 +161,6 @@ class TreasuryController extends ApiController
                 'event_id' => $request->event_id,
             ]);
 
-            // Create items if provided
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
                     TreasuryRequestItem::create([
@@ -200,9 +186,7 @@ class TreasuryController extends ApiController
         }
     }
 
-    /**
-     * Update a treasury request (only draft or submitted status).
-     */
+    // Update a treasury request (only draft, submitted, or rejected)
     public function update(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -237,12 +221,10 @@ class TreasuryController extends ApiController
 
         $treasuryRequest = TreasuryRequest::findOrFail($request->id);
 
-        // Check ownership
         if ($treasuryRequest->requested_by !== $user->id) {
             return $this->forbidden('You can only edit your own requests');
         }
 
-        // Check if editable (draft, submitted, or rejected)
         if (!in_array($treasuryRequest->status, ['draft', 'submitted', 'rejected'])) {
             return $this->error('Cannot edit a request that is already under review or processed');
         }
@@ -250,28 +232,22 @@ class TreasuryController extends ApiController
         DB::beginTransaction();
 
         try {
-            // Update main request
             $treasuryRequest->update($request->only([
                 'type', 'title', 'description', 'amount', 'currency',
                 'request_date', 'needed_by_date',
                 'division_id', 'project_id', 'event_id',
             ]));
 
-            // Update items if provided
             if ($request->has('items')) {
-                // Get existing item IDs
                 $existingItemIds = $treasuryRequest->items->pluck('id')->toArray();
                 $submittedItemIds = collect($request->items)->pluck('id')->filter()->toArray();
 
-                // Delete items that are not in the submitted list
                 TreasuryRequestItem::where('treasury_request_id', $treasuryRequest->id)
                     ->whereNotIn('id', $submittedItemIds)
                     ->delete();
 
-                // Update or create items
                 foreach ($request->items as $item) {
                     if (isset($item['id']) && in_array($item['id'], $existingItemIds)) {
-                        // Update existing item
                         TreasuryRequestItem::where('id', $item['id'])->update([
                             'description' => $item['description'],
                             'amount' => $item['amount'],
@@ -279,7 +255,6 @@ class TreasuryController extends ApiController
                             'item_date' => $item['item_date'] ?? null,
                         ]);
                     } else {
-                        // Create new item
                         TreasuryRequestItem::create([
                             'treasury_request_id' => $treasuryRequest->id,
                             'description' => $item['description'],
@@ -293,7 +268,7 @@ class TreasuryController extends ApiController
 
             DB::commit();
 
-            $treasuryRequest->load(['requester:id,name', 'items', 'division:id,name', 'attachments']);
+            $treasuryRequest->load(['requester:id,name', 'items', 'division:id,name']);
 
             return $this->success([
                 'request' => $treasuryRequest,
@@ -304,9 +279,7 @@ class TreasuryController extends ApiController
         }
     }
 
-    /**
-     * Delete a treasury request (only draft status).
-     */
+    // Delete a treasury request (only draft status)
     public function delete(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -325,19 +298,16 @@ class TreasuryController extends ApiController
 
         $treasuryRequest = TreasuryRequest::findOrFail($request->id);
 
-        // Check ownership
         if ($treasuryRequest->requested_by !== $user->id) {
             return $this->forbidden('You can only delete your own requests');
         }
 
-        // Check if deletable (only draft)
         if ($treasuryRequest->status !== 'draft') {
             return $this->error('Cannot delete a request that has been submitted');
         }
 
-        // Delete attachments from storage
-        foreach ($treasuryRequest->attachments as $attachment) {
-            Storage::delete($attachment->file_path);
+        if ($treasuryRequest->attachment_path) {
+            Storage::disk('public')->delete($treasuryRequest->attachment_path);
         }
 
         $treasuryRequest->delete();
@@ -345,9 +315,7 @@ class TreasuryController extends ApiController
         return $this->success(null, 'Treasury request deleted successfully');
     }
 
-    /**
-     * Submit a draft request for review, or resubmit a rejected request.
-     */
+    // Submit a draft request for review or resubmit a rejected request
     public function submit(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -366,19 +334,15 @@ class TreasuryController extends ApiController
 
         $treasuryRequest = TreasuryRequest::findOrFail($request->id);
 
-        // Check ownership
         if ($treasuryRequest->requested_by !== $user->id) {
             return $this->forbidden('You can only submit your own requests');
         }
 
-        // Check if submittable (draft or rejected)
         if (!in_array($treasuryRequest->status, ['draft', 'rejected'])) {
             return $this->error('This request cannot be submitted. Only draft or rejected requests can be submitted.');
         }
 
-        // If resubmitting a rejected request, clear old approvals
         if ($treasuryRequest->status === 'rejected') {
-            // Delete old approval records so the request goes through fresh approval cycle
             $treasuryRequest->approvals()->delete();
         }
 
@@ -394,10 +358,7 @@ class TreasuryController extends ApiController
         ], $message);
     }
 
-    /**
-     * Approve a treasury request.
-     * Approval flow: Leader must approve first, then Treasurer.
-     */
+    // Approve a treasury request (Leader first, then Treasurer)
     public function approve(Request $request): JsonResponse
     {
         if ($response = $this->ensurePermission('approve treasury requests', 'You do not have permission to approve treasury requests')) {
@@ -416,34 +377,28 @@ class TreasuryController extends ApiController
         $user = Auth::user();
         $treasuryRequest = TreasuryRequest::with('approvals')->findOrFail($request->id);
 
-        // Check if request is in a state that can be approved
         if (!in_array($treasuryRequest->status, ['submitted', 'under_review'])) {
             return $this->error('This request cannot be approved in its current state');
         }
 
-        // Check if user already approved
         if ($treasuryRequest->approvals()->where('user_id', $user->id)->exists()) {
             return $this->error('You have already reviewed this request');
         }
 
-        // Check if request is already rejected
         if ($treasuryRequest->isRejected()) {
             return $this->error('This request has already been rejected');
         }
 
-        // Determine approval level based on user role
         $approvalLevel = $this->determineApprovalLevel($user, $treasuryRequest);
 
         if ($approvalLevel === null) {
             return $this->error('You are not authorized to approve at this stage');
         }
 
-        // Validate approval order: Leader must approve before Treasurer
         if ($approvalLevel === 'treasurer' && !$treasuryRequest->hasLeaderApproval()) {
             return $this->error('A leader must approve this request first');
         }
 
-        // Create approval record
         TreasuryRequestApproval::create([
             'treasury_request_id' => $treasuryRequest->id,
             'user_id' => $user->id,
@@ -452,7 +407,6 @@ class TreasuryController extends ApiController
             'notes' => $request->notes,
         ]);
 
-        // Recalculate status
         $treasuryRequest->recalculateStatus();
         $treasuryRequest->refresh();
         $treasuryRequest->load(['approvals.approver:id,name']);
@@ -468,10 +422,7 @@ class TreasuryController extends ApiController
         ], $message);
     }
 
-    /**
-     * Reject a treasury request.
-     * Any rejection immediately rejects the entire request.
-     */
+    // Reject a treasury request
     public function reject(Request $request): JsonResponse
     {
         if ($response = $this->ensurePermission('approve treasury requests', 'You do not have permission to reject treasury requests')) {
@@ -480,7 +431,7 @@ class TreasuryController extends ApiController
 
         $validator = Validator::make($request->all(), [
             'id' => 'required|integer|exists:treasury_requests,id',
-            'notes' => 'required|string|max:1000', // Reason is required for rejection
+            'notes' => 'required|string|max:1000',
         ]);
 
         if ($validator->fails()) {
@@ -490,24 +441,20 @@ class TreasuryController extends ApiController
         $user = Auth::user();
         $treasuryRequest = TreasuryRequest::with('approvals')->findOrFail($request->id);
 
-        // Check if request is in a state that can be rejected
         if (!in_array($treasuryRequest->status, ['submitted', 'under_review'])) {
             return $this->error('This request cannot be rejected in its current state');
         }
 
-        // Check if user already reviewed
         if ($treasuryRequest->approvals()->where('user_id', $user->id)->exists()) {
             return $this->error('You have already reviewed this request');
         }
 
-        // Determine approval level
         $approvalLevel = $this->determineApprovalLevel($user, $treasuryRequest);
 
         if ($approvalLevel === null) {
             return $this->error('You are not authorized to reject this request');
         }
 
-        // Create rejection record
         TreasuryRequestApproval::create([
             'treasury_request_id' => $treasuryRequest->id,
             'user_id' => $user->id,
@@ -516,7 +463,6 @@ class TreasuryController extends ApiController
             'notes' => $request->notes,
         ]);
 
-        // Update status to rejected
         $treasuryRequest->status = 'rejected';
         $treasuryRequest->approval_notes = $request->notes;
         $treasuryRequest->save();
@@ -529,10 +475,7 @@ class TreasuryController extends ApiController
         ], 'Treasury request rejected');
     }
 
-    /**
-     * Get treasury statistics and reports.
-     * Only accessible by users with 'view treasury reports' permission.
-     */
+    // Get treasury statistics and reports
     public function stats(Request $request): JsonResponse
     {
         if ($response = $this->ensurePermission('view treasury reports', 'You do not have permission to view treasury reports')) {
@@ -550,19 +493,15 @@ class TreasuryController extends ApiController
 
         $year = $request->input('year', now()->year);
 
-        // Financial Records (from Add Report)
         $financialIncome = FinancialRecord::where('type', 'income')->sum('amount');
         $financialExpenses = FinancialRecord::where('type', 'expense')->sum('amount');
 
-        // Approved TreasuryRequests (reimbursements and fund requests that were paid out)
         $approvedReimbursements = TreasuryRequest::whereIn('status', ['approved', 'paid'])
             ->sum('amount');
 
-        // Total expenses = Financial expenses + approved reimbursements/fund requests
         $totalExpenses = $financialExpenses + $approvedReimbursements;
         $totalIncome = $financialIncome;
 
-        // Summary statistics
         $summary = [
             'total_income' => $totalIncome,
             'total_expenses' => $totalExpenses,
@@ -575,7 +514,6 @@ class TreasuryController extends ApiController
             'total_pending_amount' => TreasuryRequest::whereIn('status', ['submitted', 'under_review'])->sum('amount'),
         ];
 
-        // Monthly breakdown from FinancialRecord
         $monthlyFinancialData = FinancialRecord::selectRaw('
                 EXTRACT(MONTH FROM record_date)::integer as month,
                 type,
@@ -586,7 +524,6 @@ class TreasuryController extends ApiController
             ->orderBy('month')
             ->get();
 
-        // Monthly breakdown from approved TreasuryRequests
         $monthlyRequestData = TreasuryRequest::selectRaw('
                 EXTRACT(MONTH FROM request_date)::integer as month,
                 SUM(amount) as total_amount
@@ -597,7 +534,6 @@ class TreasuryController extends ApiController
             ->orderBy('month')
             ->get();
 
-        // Format monthly data for charts - combining both sources
         $chartData = [];
         for ($m = 1; $m <= 12; $m++) {
             $financialMonthData = $monthlyFinancialData->where('month', $m);
@@ -614,7 +550,6 @@ class TreasuryController extends ApiController
             ];
         }
 
-        // Category breakdown - combining FinancialRecord expenses and TreasuryRequestItem
         $financialCategories = FinancialRecord::selectRaw('category, SUM(amount) as total_amount, COUNT(*) as count')
             ->where('type', 'expense')
             ->whereNotNull('category')
@@ -630,7 +565,6 @@ class TreasuryController extends ApiController
             ->get()
             ->keyBy('category');
 
-        // Merge categories from both sources
         $allCategories = collect();
         $allCategoryKeys = $financialCategories->keys()->merge($requestCategories->keys())->unique();
         
@@ -655,7 +589,6 @@ class TreasuryController extends ApiController
 
         $categoryBreakdown = $allCategories->sortByDesc('total_amount')->values();
 
-        // Income category breakdown from FinancialRecord
         $incomeCategoryBreakdown = FinancialRecord::selectRaw('category, SUM(amount) as total_amount, COUNT(*) as count')
             ->where('type', 'income')
             ->whereNotNull('category')
@@ -672,7 +605,6 @@ class TreasuryController extends ApiController
             ->sortByDesc('total_amount')
             ->values();
 
-        // Recent requests pending approval
         $pendingApproval = TreasuryRequest::with(['requester:id,name', 'division:id,name', 'approvals.approver:id,name'])
             ->whereIn('status', ['submitted', 'under_review'])
             ->orderBy('created_at', 'desc')
@@ -694,10 +626,7 @@ class TreasuryController extends ApiController
         ], 'Treasury statistics retrieved successfully');
     }
 
-    /**
-     * Upload an attachment for a treasury request.
-     * Now stores attachment directly on the treasury_requests table (1 per request).
-     */
+    // Upload an attachment for a treasury request
     public function uploadAttachment(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -717,17 +646,14 @@ class TreasuryController extends ApiController
 
         $treasuryRequest = TreasuryRequest::findOrFail($request->treasury_request_id);
 
-        // Check ownership
         if ($treasuryRequest->requested_by !== $user->id) {
             return $this->forbidden('You can only add attachments to your own requests');
         }
 
-        // Check if editable (allow rejected so users can add new proof before resubmit)
         if (!in_array($treasuryRequest->status, ['draft', 'submitted', 'rejected'])) {
             return $this->error('Cannot add attachments to a request that is under review or processed');
         }
 
-        // Delete old attachment if exists
         if ($treasuryRequest->attachment_path) {
             Storage::disk('public')->delete($treasuryRequest->attachment_path);
         }
@@ -736,7 +662,6 @@ class TreasuryController extends ApiController
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs('treasury_attachments', $filename, 'public');
 
-        // Update treasury request with attachment info
         $treasuryRequest->update([
             'attachment_filename' => $filename,
             'attachment_original_name' => $file->getClientOriginalName(),
@@ -757,9 +682,7 @@ class TreasuryController extends ApiController
         ], 'Attachment uploaded successfully');
     }
 
-    /**
-     * Delete the attachment from a treasury request.
-     */
+    // Delete the attachment from a treasury request
     public function deleteAttachment(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -778,12 +701,10 @@ class TreasuryController extends ApiController
 
         $treasuryRequest = TreasuryRequest::findOrFail($request->treasury_request_id);
 
-        // Check ownership
         if ($treasuryRequest->requested_by !== $user->id) {
             return $this->forbidden('You can only delete attachments from your own requests');
         }
 
-        // Check if editable (allow rejected so users can manage attachments before resubmit)
         if (!in_array($treasuryRequest->status, ['draft', 'submitted', 'rejected'])) {
             return $this->error('Cannot delete attachments from a request that is under review or processed');
         }
@@ -792,10 +713,8 @@ class TreasuryController extends ApiController
             return $this->error('No attachment to delete');
         }
 
-        // Delete file from storage
         Storage::disk('public')->delete($treasuryRequest->attachment_path);
 
-        // Clear attachment fields
         $treasuryRequest->update([
             'attachment_filename' => null,
             'attachment_original_name' => null,
@@ -807,9 +726,7 @@ class TreasuryController extends ApiController
         return $this->success(null, 'Attachment deleted successfully');
     }
 
-    /**
-     * Get list of expense categories.
-     */
+    // Get list of expense categories
     public function categories(): JsonResponse
     {
         return $this->success([
@@ -817,32 +734,23 @@ class TreasuryController extends ApiController
         ], 'Categories retrieved successfully');
     }
 
-    /**
-     * Determine the approval level for the current user.
-     * Returns 'leader', 'treasurer', or null if not authorized.
-     */
+    // Determine the approval level for the current user
     private function determineApprovalLevel($user, TreasuryRequest $treasuryRequest): ?string
     {
-        // Check if user is treasurer (has treasurer role)
         $isTreasurer = $user->hasRole('treasurer');
-
-        // Check if user is a leader (division_leader role or leads any division)
         $isLeader = $user->hasRole('division_leader') ||
                     $user->hasRole('admin') ||
                     $user->hasRole('sysadmin') ||
                     $user->leadsDivisions()->exists();
 
-        // If treasurer and leader already approved, user can approve as treasurer
         if ($isTreasurer && $treasuryRequest->hasLeaderApproval()) {
             return 'treasurer';
         }
 
-        // If leader and no leader approval yet, user can approve as leader
         if ($isLeader && !$treasuryRequest->hasLeaderApproval()) {
             return 'leader';
         }
 
-        // Sysadmin can approve at any level
         if ($user->hasRole('sysadmin')) {
             if (!$treasuryRequest->hasLeaderApproval()) {
                 return 'leader';
@@ -855,14 +763,7 @@ class TreasuryController extends ApiController
         return null;
     }
 
-    // =====================================================
-    // FINANCIAL RECORDS - Organization Income/Expense Tracking
-    // =====================================================
-
-    /**
-     * List financial records.
-     * Only users with 'view treasury reports' permission can access.
-     */
+    // List financial records
     public function listRecords(Request $request): JsonResponse
     {
         if ($response = $this->ensurePermission('view treasury reports', 'You do not have permission to view financial records')) {
@@ -912,10 +813,7 @@ class TreasuryController extends ApiController
         ], 'Financial records retrieved successfully');
     }
 
-    /**
-     * Create a new financial record.
-     * Only treasurers/admins can create records.
-     */
+    // Create a new financial record
     public function createRecord(Request $request): JsonResponse
     {
         if ($response = $this->ensurePermission('view treasury reports', 'You do not have permission to create financial records')) {
@@ -943,7 +841,6 @@ class TreasuryController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        // Validate category matches type
         $categories = $request->type === 'income' 
             ? array_keys(FinancialRecord::incomeCategories())
             : array_keys(FinancialRecord::expenseCategories());
@@ -973,9 +870,7 @@ class TreasuryController extends ApiController
         ], 'Financial record created successfully');
     }
 
-    /**
-     * Update a financial record.
-     */
+    // Update a financial record
     public function updateRecord(Request $request): JsonResponse
     {
         if ($response = $this->ensurePermission('view treasury reports', 'You do not have permission to update financial records')) {
@@ -1025,9 +920,7 @@ class TreasuryController extends ApiController
         ], 'Financial record updated successfully');
     }
 
-    /**
-     * Delete a financial record.
-     */
+    // Delete a financial record
     public function deleteRecord(Request $request): JsonResponse
     {
         if ($response = $this->ensurePermission('view treasury reports', 'You do not have permission to delete financial records')) {
@@ -1048,9 +941,7 @@ class TreasuryController extends ApiController
         return $this->success(null, 'Financial record deleted successfully');
     }
 
-    /**
-     * Get financial record categories.
-     */
+    // Get financial record categories
     public function recordCategories(): JsonResponse
     {
         return $this->success([

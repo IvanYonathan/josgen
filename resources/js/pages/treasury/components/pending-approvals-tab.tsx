@@ -5,6 +5,7 @@ import { RequestCard } from './request-card';
 interface PendingApprovalsTabProps {
     requests: TreasuryRequest[];
     loading: boolean;
+    currentUserId?: number;
     onApprove: (request: TreasuryRequest) => void;
     onReject: (request: TreasuryRequest) => void;
     onView: (request: TreasuryRequest) => void;
@@ -13,6 +14,7 @@ interface PendingApprovalsTabProps {
 export function PendingApprovalsTab({
     requests,
     loading,
+    currentUserId,
     onApprove,
     onReject,
     onView,
@@ -20,6 +22,12 @@ export function PendingApprovalsTab({
     const pendingApprovals = requests.filter(r =>
         r.status === 'submitted' || r.status === 'under_review'
     );
+
+    // Check if current user has already reviewed a request
+    const hasUserReviewed = (request: TreasuryRequest): boolean => {
+        if (!currentUserId || !request.approvals) return false;
+        return request.approvals.some(a => a.user_id === currentUserId);
+    };
 
     if (loading) {
         return (
@@ -47,7 +55,7 @@ export function PendingApprovalsTab({
                 <RequestCard
                     key={request.id}
                     request={request}
-                    showApprovalActions
+                    showApprovalActions={!hasUserReviewed(request)}
                     onApprove={() => onApprove(request)}
                     onReject={() => onReject(request)}
                     onView={() => onView(request)}
@@ -56,3 +64,4 @@ export function PendingApprovalsTab({
         </div>
     );
 }
+

@@ -128,7 +128,6 @@ export function RequestDetailDialog({
                                     Proof / Evidence
                                 </h4>
                                 <div className="border rounded-lg overflow-hidden">
-                                    {/* Image Preview */}
                                     {(request.attachment_type?.startsWith('image/') ||
                                         /\.(jpg|jpeg|png|gif|webp)$/i.test(request.attachment_filename || '')) && (
                                         <div className="bg-gray-100 p-2">

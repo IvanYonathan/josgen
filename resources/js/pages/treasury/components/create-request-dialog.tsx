@@ -84,7 +84,7 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
         if (selectedFiles && selectedFiles.length > 0) {
             const selectedFile = selectedFiles[0];
             if (selectedFile.size > 10 * 1024 * 1024) {
-                toast.error('File exceeds 10MB limit');
+                toast.error('File exceeds 10MB limit', { duration: 5000 });
                 return;
             }
             setFile(selectedFile);
@@ -97,7 +97,7 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
         if (droppedFiles && droppedFiles.length > 0) {
             const droppedFile = droppedFiles[0];
             if (droppedFile.size > 10 * 1024 * 1024) {
-                toast.error('File exceeds 10MB limit');
+                toast.error('File exceeds 10MB limit', { duration: 5000 });
                 return;
             }
             setFile(droppedFile);
@@ -147,36 +147,14 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) {
-            toast.error('Please fill in all required fields');
+            toast.error('Please fill in all required fields', { duration: 5000 });
             return false;
         }
 
         return true;
     };
 
-    const uploadFiles = async (requestId: number) => {
-        if (files.length === 0) return;
 
-        let uploadedCount = 0;
-        for (const file of files) {
-            try {
-                await uploadTreasuryAttachment({
-                    treasury_request_id: requestId,
-                    file,
-                });
-                uploadedCount++;
-                console.log('Uploaded file:', file.name);
-            } catch (err: any) {
-                console.error('Failed to upload file:', file.name, err);
-                const errorMsg = err?.response?.data?.message || err?.message || 'Unknown error';
-                toast.error(`Failed to upload ${file.name}: ${errorMsg}`);
-            }
-        }
-
-        if (uploadedCount > 0) {
-            toast.success('File uploaded successfully');
-        }
-    };
 
     const uploadFile = async (requestId: number) => {
         if (!file) return;
@@ -190,7 +168,7 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
         } catch (err: any) {
             console.error('Failed to upload file:', file.name, err);
             const errorMsg = err?.response?.data?.message || err?.message || 'Unknown error';
-            toast.error(`Failed to upload ${file.name}: ${errorMsg}`);
+            toast.error(`Failed to upload ${file.name}: ${errorMsg}`, { duration: 5000 });
         }
     };
 
@@ -260,7 +238,7 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
                 requestId = result.request.id;
 
                 // Upload files after creation
-                await uploadFiles(requestId);
+                await uploadFile(requestId);
 
                 toast.success('Request submitted successfully');
             }
@@ -269,7 +247,7 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
             resetForm();
             onSuccess();
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : `Failed to ${isEditMode ? 'update' : 'create'} request`);
+            toast.error(err instanceof Error ? err.message : `Failed to ${isEditMode ? 'update' : 'create'} request`, { duration: 5000 });
         } finally {
             setLoading(false);
         }
@@ -380,11 +358,13 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
                                 </Label>
                                 <Input
                                     id="amount"
-                                    type="number"
-                                    placeholder="0.00"
-                                    value={formData.amount}
+                                    type="text"
+                                    placeholder="0"
+                                    value={formData.amount ? formData.amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
                                     onChange={(e) => {
-                                        setFormData({ ...formData, amount: e.target.value });
+                                        // Remove all non-numeric characters except the value
+                                        const rawValue = e.target.value.replace(/\D/g, '');
+                                        setFormData({ ...formData, amount: rawValue });
                                         clearError('amount');
                                     }}
                                     className={errors.amount ? 'border-red-500' : ''}

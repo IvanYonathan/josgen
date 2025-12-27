@@ -70,7 +70,7 @@ export function TreasuryPage() {
         setPendingCount(pending);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to load requests');
+      toast.error(err instanceof Error ? err.message : 'Failed to load requests', { duration: 5000 });
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ export function TreasuryPage() {
       loadRequests();
       loadStats();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to approve request');
+      toast.error(err instanceof Error ? err.message : 'Failed to approve request', { duration: 5000 });
     }
   };
 
@@ -139,7 +139,7 @@ export function TreasuryPage() {
       toast.success('Request deleted successfully');
       loadRequests();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete request');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete request', { duration: 5000 });
     }
   };
 
@@ -170,7 +170,7 @@ export function TreasuryPage() {
       toast.success('Request resubmitted successfully! It will go through a fresh approval cycle.');
       loadRequests();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to resubmit request');
+      toast.error(err instanceof Error ? err.message : 'Failed to resubmit request', { duration: 5000 });
     }
   };
 
@@ -296,6 +296,7 @@ export function TreasuryPage() {
             <PendingApprovalsTab
               requests={requests}
               loading={loading}
+              currentUserId={auth?.user?.id}
               onApprove={handleApprove}
               onReject={openRejectDialog}
               onView={openDetailDialog}

@@ -20,7 +20,7 @@ export function RejectDialog({ open, onOpenChange, request, onSuccess }: RejectD
 
     const handleReject = async () => {
         if (!request || !reason.trim()) {
-            toast.error('Please provide a reason for rejection');
+            toast.error('Please provide a reason for rejection', { duration: 5000 });
             return;
         }
 
@@ -32,7 +32,7 @@ export function RejectDialog({ open, onOpenChange, request, onSuccess }: RejectD
             setReason('');
             onSuccess();
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : 'Failed to reject request');
+            toast.error(err instanceof Error ? err.message : 'Failed to reject request', { duration: 5000 });
         } finally {
             setLoading(false);
         }

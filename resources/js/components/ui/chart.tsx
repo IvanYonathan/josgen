@@ -21,13 +21,13 @@ import { cn } from "@/lib/utils"
 
 // Chart colors
 export const CHART_COLORS = {
-    income: "#22c55e",     // green-500
-    expense: "#ef4444",    // red-500
-    primary: "#3b82f6",    // blue-500
-    secondary: "#8b5cf6",  // violet-500
-    muted: "#6b7280",      // gray-500
+    income: "#22c55e",     
+    expense: "#ef4444",    
+    primary: "#3b82f6",    
+    secondary: "#8b5cf6",  
+    muted: "#6b7280",      
     approved: "#22c55e",
-    pending: "#eab308",    // yellow-500
+    pending: "#eab308",    
     rejected: "#ef4444",
 } as const
 
@@ -62,7 +62,7 @@ export function ChartTooltipContent({
     active,
     payload,
     label,
-    formatter = (value) => value.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
+    formatter = (value) => `Rp${Math.abs(value).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`
 }: ChartTooltipContentProps) {
     if (!active || !payload?.length) return null
 

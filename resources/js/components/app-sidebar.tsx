@@ -136,9 +136,6 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <div className="px-2 py-0">
-                    <div className="text-sm font-medium text-sidebar-foreground/70 mb-2">
-                        Platform
-                    </div>
                     <SidebarMenu>
                         {renderNavItems(mainNavItems)}
                     </SidebarMenu>

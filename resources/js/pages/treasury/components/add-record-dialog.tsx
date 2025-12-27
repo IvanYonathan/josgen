@@ -58,7 +58,7 @@ export function AddRecordDialog({
     e.preventDefault();
 
     if (!formData.title || !formData.amount || !formData.category) {
-      toast.error('Please fill in all required fields');
+      toast.error('Please fill in all required fields', { duration: 5000 });
       return;
     }
 
@@ -81,7 +81,7 @@ export function AddRecordDialog({
       resetForm();
       onSuccess();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to add record');
+      toast.error(err instanceof Error ? err.message : 'Failed to add record', { duration: 5000 });
     } finally {
       setLoading(false);
     }
@@ -162,10 +162,13 @@ export function AddRecordDialog({
               <Label htmlFor="record-amount">Amount</Label>
               <Input
                 id="record-amount"
-                type="number"
-                placeholder="0.00"
-                value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                type="text"
+                placeholder="0"
+                value={formData.amount ? formData.amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                onChange={(e) => {
+                  const rawValue = e.target.value.replace(/\D/g, '');
+                  setFormData({ ...formData, amount: rawValue });
+                }}
               />
             </div>
             <div className="space-y-2">
