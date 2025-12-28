@@ -10,10 +10,11 @@ import { CreateEventSheet } from './components/create-event-sheet';
 import { EditEventSheet } from './components/edit-event-sheet';
 import { listEvents } from '@/lib/api/event/list-events';
 import { Event } from '@/types/event/event';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { EventCard } from './components/event-card';
 
 function EventPageContent() {
+  const { toast } = useToast();
   const { t } = useTranslation('event');
   const {
     events,
@@ -72,7 +73,7 @@ function EventPageContent() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('failed_to_load_events');
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(err, { title: t('failed_to_load_events') });
     } finally {
       setLoading(false);
     }
@@ -82,7 +83,7 @@ function EventPageContent() {
     if (event.can_edit) {
       openEditMode(event);
     } else {
-      toast.info(t('view_only'));
+      toast.warning({ title: t('view_only') });
     }
   };
 

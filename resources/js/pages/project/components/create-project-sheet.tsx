@@ -13,13 +13,14 @@ import { createProject } from '@/lib/api/project/create-project';
 import { listDivisions } from '@/lib/api/division/list-divisions';
 import { listUsers } from '@/lib/api/user/list-users';
 import { createProjectSchema, cleanProjectFormData, type CreateProjectFormData } from '../schemas/project-schemas';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { DivisionListResponse } from '@/types/division/division';
 import { User } from '@/types/user/user';
 import { ProjectUnsavedChangesDialog } from './unsaved-changes-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 
 export function CreateProjectSheet() {
+  const { toast } = useToast();
   const { closeCreateMode, addProject } = useProjectManagementStore();
   const { t } = useTranslation('project');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,7 +54,7 @@ export function CreateProjectSheet() {
         setDivisions(divisionsRes.divisions || []);
         setUsers(usersRes.users || []);
       } catch (error) {
-        toast.error(t('failed_to_load_divisions_and_users'));
+        toast.error(error, { title: t('failed_to_load_divisions_and_users') });
       } finally {
         setLoadingData(false);
       }
@@ -82,15 +83,16 @@ export function CreateProjectSheet() {
   };
 
   const onSubmit = async (data: any) => {
+    const { id } = toast.loading({ title: 'Creating project...' });
     try {
       setIsSubmitting(true);
       const cleanedData = cleanProjectFormData(data);
       const response = await createProject(cleanedData);
       addProject(response.project);
-      toast.success(t('create_success'));
+      toast.success({ itemID: id, title: t('create_success') });
       closeCreateMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('create_error'));
+      toast.error(error, { itemID: id, title: t('create_error') });
     } finally {
       setIsSubmitting(false);
     }

@@ -12,7 +12,7 @@ import { UpdateEventFormData, updateEventSchema, cleanEventFormData } from '../s
 import { updateEvent } from '@/lib/api/event/update-event';
 import { deleteEvent } from '@/lib/api/event/delete-event';
 import { useEventManagementStore } from '../store/event-management-store';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { listDivisions } from '@/lib/api/division/list-divisions';
 import { listUsers } from '@/lib/api/user/list-users';
 import { Event } from '@/types/event/event';
@@ -22,6 +22,7 @@ import { DeleteConfirmationDialog } from './delete-confirmation-dialog';
 import { EventUnsavedChangesDialog } from './event-unsaved-changes-dialog';
 
 export function EditEventSheet() {
+  const { toast } = useToast();
   const { closeEditMode, selectedEvent, updateEventInList, removeEvent: removeEventFromList } = useEventManagementStore();
   const { t } = useTranslation('event');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,7 +80,7 @@ export function EditEventSheet() {
         setUsers(usersRes.users || []);
       } catch (error) {
         console.error('Failed to load data:', error);
-        toast.error(t('failed_to_load_divisions_and_users'));
+        toast.error(error, { title: t('failed_to_load_divisions_and_users') });
       } finally {
         setLoadingData(false);
       }
@@ -101,15 +102,16 @@ export function EditEventSheet() {
   };
 
   const onSubmit = async (data: any) => {
+    const { id } = toast.loading({ title: 'Updating event...' });
     try {
       setIsSubmitting(true);
       const cleanedData = cleanEventFormData(data);
       const response = await updateEvent(cleanedData as UpdateEventFormData);
       updateEventInList(response.event);
-      toast.success(t('update_success'));
+      toast.success({ itemID: id, title: t('update_success') });
       closeEditMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('update_error'));
+      toast.error(error, { itemID: id, title: t('update_error') });
       console.error('Failed to update event:', error);
     } finally {
       setIsSubmitting(false);
@@ -117,15 +119,16 @@ export function EditEventSheet() {
   };
 
   const handleDelete = async () => {
+    const { id } = toast.loading({ title: 'Deleting event...' });
     try {
       setIsDeleting(true);
       await deleteEvent({ id: selectedEvent.id });
       removeEventFromList(selectedEvent.id);
-      toast.success(t('delete_success'));
+      toast.success({ itemID: id, title: t('delete_success') });
       setShowDeleteDialog(false);
       closeEditMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('delete_error'));
+      toast.error(error, { itemID: id, title: t('delete_error') });
       console.error('Failed to delete event:', error);
     } finally {
       setIsDeleting(false);

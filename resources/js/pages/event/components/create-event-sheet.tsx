@@ -11,7 +11,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { CreateEventFormData, createEventSchema, cleanEventFormData } from '../schemas/event-schemas';
 import { createEvent } from '@/lib/api/event/create-event';
 import { useEventManagementStore } from '../store/event-management-store';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { listDivisions } from '@/lib/api/division/list-divisions';
 import { listUsers } from '@/lib/api/user/list-users';
 import { MultiSelect, MultiSelectTrigger, MultiSelectValue, MultiSelectContent, MultiSelectEmpty, MultiSelectGroup, MultiSelectItem } from '@/components/ui/multi-select';
@@ -19,6 +19,7 @@ import { ParticipantSelector } from './participant-selector';
 import { EventUnsavedChangesDialog } from './event-unsaved-changes-dialog';
 
 export function CreateEventSheet() {
+  const { toast } = useToast();
   const { closeCreateMode, addEvent } = useEventManagementStore();
   const { t } = useTranslation('event');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,7 +69,7 @@ export function CreateEventSheet() {
         setUsers(usersRes.users || []);
       } catch (error) {
         console.error('Failed to load data:', error);
-        toast.error(t('failed_to_load_divisions_and_users'));
+        toast.error(error, { title: t('failed_to_load_divisions_and_users') });
       } finally {
         setLoadingData(false);
       }
@@ -90,15 +91,16 @@ export function CreateEventSheet() {
   };
 
   const onSubmit = async (data: any) => {
+    const { id } = toast.loading({ title: 'Creating event...' });
     try {
       setIsSubmitting(true);
       const cleanedData = cleanEventFormData(data);
       const response = await createEvent(cleanedData as CreateEventFormData);
       addEvent(response.event);
-      toast.success(t('create_success'));
+      toast.success({ itemID: id, title: t('create_success') });
       closeCreateMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('create_error'));
+      toast.error(error, { itemID: id, title: t('create_error') });
       console.error('Failed to create event:', error);
     } finally {
       setIsSubmitting(false);

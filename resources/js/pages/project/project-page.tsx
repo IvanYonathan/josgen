@@ -10,10 +10,11 @@ import { CreateProjectSheet } from './components/create-project-sheet';
 import { EditProjectSheet } from './components/edit-project-sheet';
 import { listProjects } from '@/lib/api/project/list-projects';
 import { Project } from '@/types/project/project';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { ProjectCard } from './components/project-card';
 
 function ProjectPageContent() {
+  const { toast } = useToast();
   const { t } = useTranslation('project');
   const {
     projects,
@@ -67,7 +68,7 @@ function ProjectPageContent() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('failed_to_load_projects');
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(err, { title: t('failed_to_load_projects') });
     } finally {
       setLoading(false);
     }
@@ -77,7 +78,7 @@ function ProjectPageContent() {
     if (project.can_edit) {
       openEditMode(project);
     } else {
-      toast.info(t('view_only'));
+      toast.warning({ title: t('view_only') });
       openEditMode(project);
     }
   };
