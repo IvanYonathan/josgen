@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { TreasuryRequest } from '@/types/treasury/treasury';
 import { rejectTreasury } from '@/lib/api/treasury';
 
@@ -14,25 +14,27 @@ interface RejectDialogProps {
     onSuccess: () => void;
 }
 
-export function RejectDialog({ open, onOpenChange, request, onSuccess }: RejectDialogProps) {
+export function RejectDialog({ open, onOpenChange, request, onSuccess }: Readonly<RejectDialogProps>) {
+    const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [reason, setReason] = useState('');
 
     const handleReject = async () => {
         if (!request || !reason.trim()) {
-            toast.error('Please provide a reason for rejection', { duration: 5000 });
+            toast.error(new Error('Please provide a reason for rejection'), { title: 'Validation error' });
             return;
         }
 
+        const { id } = toast.loading({ title: 'Rejecting request...' });
         try {
             setLoading(true);
             await rejectTreasury({ id: request.id, notes: reason });
-            toast.success('Request rejected successfully');
+            toast.success({ itemID: id, title: 'Request rejected successfully' });
             onOpenChange(false);
             setReason('');
             onSuccess();
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : 'Failed to reject request', { duration: 5000 });
+            toast.error(err, { itemID: id, title: 'Failed to reject request' });
         } finally {
             setLoading(false);
         }

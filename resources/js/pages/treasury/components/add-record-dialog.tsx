@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, TrendingUp, TrendingDown } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { AxiosJosgen, ApiResponse } from '@/lib/axios/axios-josgen';
 
 interface AddRecordDialogProps {
@@ -23,7 +23,8 @@ export function AddRecordDialog({
   onSuccess,
   incomeCategories,
   expenseCategories
-}: AddRecordDialogProps) {
+}: Readonly<AddRecordDialogProps>) {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: 'income' as 'income' | 'expense',
@@ -58,17 +59,18 @@ export function AddRecordDialog({
     e.preventDefault();
 
     if (!formData.title || !formData.amount || !formData.category) {
-      toast.error('Please fill in all required fields', { duration: 5000 });
+      toast.error(new Error('Please fill in all required fields'), { title: 'Validation error' });
       return;
     }
 
+    const { id } = toast.loading({ title: 'Adding financial record...' });
     try {
       setLoading(true);
       const response = await AxiosJosgen.post<ApiResponse<any>>('/treasury/records/create', {
         type: formData.type,
         title: formData.title,
         description: formData.description,
-        amount: parseFloat(formData.amount),
+        amount: Number.parseFloat(formData.amount),
         record_date: formData.record_date,
         category: formData.category,
         reference_number: formData.reference_number,
@@ -76,12 +78,12 @@ export function AddRecordDialog({
 
       if (!response.data.status) throw new Error(response.data.message);
 
-      toast.success('Financial record added successfully');
+      toast.success({ itemID: id, title: 'Financial record added successfully' });
       onOpenChange(false);
       resetForm();
       onSuccess();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to add record', { duration: 5000 });
+      toast.error(err, { itemID: id, title: 'Failed to add record' });
     } finally {
       setLoading(false);
     }

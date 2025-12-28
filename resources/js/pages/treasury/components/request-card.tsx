@@ -78,7 +78,7 @@ export function RequestCard({
     onApprove,
     onReject,
     hideAmounts = false
-}: RequestCardProps) {
+}: Readonly<RequestCardProps>) {
     const canEdit = request.status === 'draft' || request.status === 'submitted' || request.status === 'rejected';
     const canDelete = request.status === 'draft';
     const canResubmit = request.status === 'rejected';

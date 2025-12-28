@@ -3,7 +3,7 @@ import { usePage } from '@inertiajs/react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, PlusCircle, Eye, EyeOff } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { TreasuryRequest, TreasuryStats } from '@/types/treasury/treasury';
 import { listTreasury, getTreasuryStats, deleteTreasury, approveTreasury } from '@/lib/api/treasury';
 import type { SharedData } from '@/types';
@@ -26,6 +26,7 @@ const hasAdminAccess = (role?: string): boolean => {
 };
 
 export function TreasuryPage() {
+  const { toast } = useToast();
   const { auth } = usePage<SharedData>().props;
   const userRole = auth?.user?.role;
   const canAccessAdmin = hasAdminAccess(userRole);
@@ -70,7 +71,7 @@ export function TreasuryPage() {
         setPendingCount(pending);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to load requests', { duration: 5000 });
+      toast.error(err, { title: 'Failed to load requests' });
     } finally {
       setLoading(false);
     }
@@ -121,25 +122,27 @@ export function TreasuryPage() {
 
   // Handlers
   const handleApprove = async (request: TreasuryRequest) => {
+    const { id } = toast.loading({ title: 'Approving request...' });
     try {
       await approveTreasury({ id: request.id });
-      toast.success('Request approved successfully');
+      toast.success({ itemID: id, title: 'Request approved successfully' });
       loadRequests();
       loadStats();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to approve request', { duration: 5000 });
+      toast.error(err, { itemID: id, title: 'Failed to approve request' });
     }
   };
 
   const handleDelete = async (request: TreasuryRequest) => {
     if (!confirm('Are you sure you want to delete this request?')) return;
 
+    const { id } = toast.loading({ title: 'Deleting request...' });
     try {
       await deleteTreasury(request.id);
-      toast.success('Request deleted successfully');
+      toast.success({ itemID: id, title: 'Request deleted successfully' });
       loadRequests();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete request', { duration: 5000 });
+      toast.error(err, { itemID: id, title: 'Failed to delete request' });
     }
   };
 
@@ -165,12 +168,13 @@ export function TreasuryPage() {
   };
 
   const handleResubmit = async (request: TreasuryRequest) => {
+    const { id } = toast.loading({ title: 'Resubmitting request...' });
     try {
       await AxiosJosgen.post<ApiResponse<any>>('/treasury/submit', { id: request.id });
-      toast.success('Request resubmitted successfully! It will go through a fresh approval cycle.');
+      toast.success({ itemID: id, title: 'Request resubmitted successfully! It will go through a fresh approval cycle.' });
       loadRequests();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to resubmit request', { duration: 5000 });
+      toast.error(err, { itemID: id, title: 'Failed to resubmit request' });
     }
   };
 

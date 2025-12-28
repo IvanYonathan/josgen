@@ -27,7 +27,7 @@ export function RequestDetailDialog({
     onOpenChange,
     request,
     hideAmounts = false
-}: RequestDetailDialogProps) {
+}: Readonly<RequestDetailDialogProps>) {
     if (!request) return null;
 
     return (

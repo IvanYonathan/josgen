@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Upload, FileText, X, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { expense_categories, TreasuryRequest } from '@/types/treasury/treasury';
 import { createTreasury, updateTreasury, uploadTreasuryAttachment, deleteTreasuryAttachment } from '@/lib/api/treasury';
 
@@ -26,7 +26,8 @@ interface FieldErrors {
     request_date?: string;
 }
 
-export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest }: CreateRequestDialogProps) {
+export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest }: Readonly<CreateRequestDialogProps>) {
+    const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -84,7 +85,7 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
         if (selectedFiles && selectedFiles.length > 0) {
             const selectedFile = selectedFiles[0];
             if (selectedFile.size > 10 * 1024 * 1024) {
-                toast.error('File exceeds 10MB limit', { duration: 5000 });
+                toast.error(new Error('File exceeds 10MB limit'), { title: 'File too large' });
                 return;
             }
             setFile(selectedFile);
@@ -97,7 +98,7 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
         if (droppedFiles && droppedFiles.length > 0) {
             const droppedFile = droppedFiles[0];
             if (droppedFile.size > 10 * 1024 * 1024) {
-                toast.error('File exceeds 10MB limit', { duration: 5000 });
+                toast.error(new Error('File exceeds 10MB limit'), { title: 'File too large' });
                 return;
             }
             setFile(droppedFile);
@@ -134,7 +135,7 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
         if (!formData.description.trim()) {
             newErrors.description = 'Description is required';
         }
-        if (!formData.amount || parseFloat(formData.amount) <= 0) {
+        if (!formData.amount || Number.parseFloat(formData.amount) <= 0) {
             newErrors.amount = 'Amount must be greater than 0';
         }
         if (!formData.category) {
@@ -147,7 +148,7 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) {
-            toast.error('Please fill in all required fields', { duration: 5000 });
+            toast.error(new Error('Please fill in all required fields'), { title: 'Validation error' });
             return false;
         }
 
@@ -164,11 +165,10 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
                 treasury_request_id: requestId,
                 file,
             });
-            toast.success('File uploaded successfully');
+            toast.success({ title: 'File uploaded successfully' });
         } catch (err: any) {
             console.error('Failed to upload file:', file.name, err);
-            const errorMsg = err?.response?.data?.message || err?.message || 'Unknown error';
-            toast.error(`Failed to upload ${file.name}: ${errorMsg}`, { duration: 5000 });
+            toast.error(err, { title: `Failed to upload ${file.name}` });
         }
     };
 
@@ -184,6 +184,7 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
     const handleConfirmSubmit = async () => {
         setShowSubmitConfirm(false);
 
+        const { id } = toast.loading({ title: isEditMode ? 'Updating request...' : 'Submitting request...' });
         try {
             setLoading(true);
             let requestId: number;
@@ -195,11 +196,11 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
                     type: formData.type,
                     title: formData.title,
                     description: formData.description,
-                    amount: parseFloat(formData.amount),
+                    amount: Number.parseFloat(formData.amount),
                     request_date: formData.request_date,
                     items: [{
                         description: formData.title,
-                        amount: parseFloat(formData.amount),
+                        amount: Number.parseFloat(formData.amount),
                         category: formData.category,
                     }],
                 });
@@ -219,18 +220,18 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
                 // Upload new file if any
                 await uploadFile(requestId);
 
-                toast.success('Request updated successfully');
+                toast.success({ itemID: id, title: 'Request updated successfully' });
             } else {
                 // Create new request and submit immediately
                 const result = await createTreasury({
                     type: formData.type,
                     title: formData.title,
                     description: formData.description,
-                    amount: parseFloat(formData.amount),
+                    amount: Number.parseFloat(formData.amount),
                     request_date: formData.request_date,
                     items: [{
                         description: formData.title,
-                        amount: parseFloat(formData.amount),
+                        amount: Number.parseFloat(formData.amount),
                         category: formData.category,
                     }],
                     submit: true, // Submit immediately
@@ -240,14 +241,14 @@ export function CreateRequestDialog({ open, onOpenChange, onSuccess, editRequest
                 // Upload files after creation
                 await uploadFile(requestId);
 
-                toast.success('Request submitted successfully');
+                toast.success({ itemID: id, title: 'Request submitted successfully' });
             }
 
             onOpenChange(false);
             resetForm();
             onSuccess();
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : `Failed to ${isEditMode ? 'update' : 'create'} request`, { duration: 5000 });
+            toast.error(err, { itemID: id, title: `Failed to ${isEditMode ? 'update' : 'create'} request` });
         } finally {
             setLoading(false);
         }

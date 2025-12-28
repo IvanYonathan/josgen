@@ -21,7 +21,7 @@ export function MyRequestsTab({
     onView,
     onResubmit,
     onCreateNew,
-}: MyRequestsTabProps) {
+}: Readonly<MyRequestsTabProps>) {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">

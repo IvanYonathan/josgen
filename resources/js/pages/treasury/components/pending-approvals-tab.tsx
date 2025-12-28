@@ -18,7 +18,7 @@ export function PendingApprovalsTab({
     onApprove,
     onReject,
     onView,
-}: PendingApprovalsTabProps) {
+}: Readonly<PendingApprovalsTabProps>) {
     const pendingApprovals = requests.filter(r =>
         r.status === 'submitted' || r.status === 'under_review'
     );

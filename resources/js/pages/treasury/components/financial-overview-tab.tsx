@@ -10,9 +10,6 @@ import {
     RefreshCw,
     XCircle,
     FileText,
-    Eye,
-    EyeOff,
-    PlusCircle,
 } from 'lucide-react';
 import { TreasuryStats } from '@/types/treasury/treasury';
 import { formatCurrency, formatDate, getStatusBadgeClass } from './request-card';
@@ -35,7 +32,7 @@ export function FinancialOverviewTab({
     onToggleHideAmounts,
     onLoadStats,
     onAddReport,
-}: FinancialOverviewTabProps) {
+}: Readonly<FinancialOverviewTabProps>) {
     // Prepare chart data - now using income/expense from FinancialRecord
     const chartData = stats?.chart_data?.map(d => ({
         month: d.month,
@@ -45,13 +42,13 @@ export function FinancialOverviewTab({
 
     const categoryData = stats?.category_breakdown?.map((c, i) => ({
         name: c.label,
-        value: parseFloat(String(c.total_amount)) || 0,
+        value: Number.parseFloat(String(c.total_amount)) || 0,
         color: PIE_COLORS[i % PIE_COLORS.length],
     })) || [];
 
     const incomeCategoryData = stats?.income_category_breakdown?.map((c, i) => ({
         name: c.label,
-        value: parseFloat(String(c.total_amount)) || 0,
+        value: Number.parseFloat(String(c.total_amount)) || 0,
         color: PIE_COLORS[(i + 3) % PIE_COLORS.length], // Offset colors to differentiate from expense
     })) || [];
 
