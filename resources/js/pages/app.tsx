@@ -4,7 +4,7 @@ import {
   Route,
   RouterProvider,
 } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
 import { ApplicationLayout } from '@/layouts/application-layout';
 import { DashboardLayout } from '@/layouts/dashboard-layout';
 import DivisionPage from './division/division-page';
@@ -82,12 +82,7 @@ function App() {
   return (
     <>
       <RouterProvider router={router} />
-      <Toaster
-        position="top-right"
-        richColors
-        closeButton
-        duration={5000}
-      />
+      <Toaster />
     </>
   );
 }
