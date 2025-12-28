@@ -12,7 +12,8 @@ import {
     FileText,
 } from 'lucide-react';
 import { TreasuryStats } from '@/types/treasury/treasury';
-import { formatCurrency, formatDate, getStatusBadgeClass } from './request-card';
+import { formatCurrency, getStatusBadgeClass } from './request-card';
+import { formatDate } from '@/utils/date';
 
 interface FinancialOverviewTabProps {
     stats: TreasuryStats | null;
@@ -211,7 +212,7 @@ export function FinancialOverviewTab({
                                         <div>
                                             <p className="font-medium">{request.title}</p>
                                             <p className="text-sm text-muted-foreground">
-                                                {request.division?.name} • {formatDate(request.request_date)}
+                                                {request.division?.name} • {formatDate(request.request_date, { format: 'MMM DD, YYYY' })}
                                             </p>
                                         </div>
                                     </div>

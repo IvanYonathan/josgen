@@ -13,7 +13,8 @@ import {
     Download,
 } from 'lucide-react';
 import { TreasuryRequest } from '@/types/treasury/treasury';
-import { formatCurrency, formatDate, getStatusBadgeClass } from './request-card';
+import { formatCurrency, getStatusBadgeClass } from './request-card';
+import { formatDate } from '@/utils/date';
 
 interface RequestDetailDialogProps {
     open: boolean;
@@ -84,13 +85,13 @@ export function RequestDetailDialog({
                             <div className="flex items-center gap-2 text-sm">
                                 <Calendar className="h-4 w-4 text-muted-foreground" />
                                 <span className="text-muted-foreground">Request date:</span>
-                                <span className="font-medium">{formatDate(request.request_date)}</span>
+                                <span className="font-medium">{formatDate(request.request_date, { format: 'MMM DD, YYYY' })}</span>
                             </div>
                             {request.needed_by_date && (
                                 <div className="flex items-center gap-2 text-sm">
                                     <Clock className="h-4 w-4 text-muted-foreground" />
                                     <span className="text-muted-foreground">Needed by:</span>
-                                    <span className="font-medium">{formatDate(request.needed_by_date)}</span>
+                                    <span className="font-medium">{formatDate(request.needed_by_date, { format: 'MMM DD, YYYY' })}</span>
                                 </div>
                             )}
                         </div>
@@ -205,7 +206,7 @@ export function RequestDetailDialog({
                                                         </span>
                                                     </div>
                                                     <span className="text-xs text-muted-foreground">
-                                                        {formatDate(approval.created_at)}
+                                                        {formatDate(approval.created_at, { format: 'MMM DD, YYYY' })}
                                                     </span>
                                                 </div>
                                                 <p className="text-sm text-muted-foreground">

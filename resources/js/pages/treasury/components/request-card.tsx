@@ -15,6 +15,7 @@ import {
     RefreshCw,
     AlertCircle,
 } from 'lucide-react';
+import { formatDate } from '@/utils/date';
 
 // Helpers
 export const getStatusBadgeClass = (status: TreasuryRequest['status']) => {
@@ -36,14 +37,6 @@ export const formatCurrency = (amount: number, currency: string = 'IDR', hidden:
         .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     const prefix = currency === 'IDR' ? 'Rp' : currency + ' ';
     return amount < 0 ? `-${prefix}${formatted}` : `${prefix}${formatted}`;
-};
-
-export const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
 };
 
 const getApprovalStageLabel = (stage: string) => {
@@ -133,7 +126,7 @@ export function RequestCard({
                     )}
                     <div className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5" />
-                        <span>{formatDate(request.request_date)}</span>
+                        <span>{formatDate(request.request_date, { format: 'MMM DD, YYYY' })}</span>
                     </div>
                 </div>
 
