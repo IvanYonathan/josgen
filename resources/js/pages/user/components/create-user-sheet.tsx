@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { createUser } from '@/lib/api/user/create-user';
 import { User } from '@/types/user/user';
 import { Loader2 } from 'lucide-react';
@@ -81,6 +81,7 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
 
     const handleSubmit = form.handleSubmit(async (values) => {
         setServerErrors({});
+        const { id } = toast.loading({ title: t('toast.creating') });
 
         try {
             const cleanedData = cleanUserFormData(values);
@@ -88,10 +89,7 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
             const response = await createUser(cleanedData as any, avatarFile ?? undefined);
             onUserCreated(response.user);
             onOpenChange(false);
-            toast({
-                title: t('success'),
-                description: t('create_success'),
-            });
+            toast.success({ itemID: id, title: t('toast.createSuccess') });
 
             form.reset();
             if (avatarPreview) URL.revokeObjectURL(avatarPreview);
@@ -99,13 +97,9 @@ export function CreateUserSheet({ open, onOpenChange, onUserCreated }: Readonly<
             setAvatarPreview(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
         } catch (error: any) {
-            const errors = error.response?.data?.errors || { general: t('create_error') };
+            const errors = error.response?.data?.errors || { general: t('toast.createError') };
             setServerErrors(errors);
-            toast({
-                variant: 'destructive',
-                title: t('error'),
-                description: error.response?.data?.message || t('create_error'),
-            });
+            toast.error(error, { itemID: id, title: t('toast.createError') });
         }
     });
 

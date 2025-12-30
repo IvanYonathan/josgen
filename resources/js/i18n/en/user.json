@@ -40,6 +40,7 @@
     "failed_to_delete_user": "Failed to delete user",
     "failed_to_fetch_user_detail": "Failed to fetch user detail",
     "noUsersFound": "No users found",
+    "updating_user": "Updating user...",
 
 
 
@@ -142,7 +143,29 @@
             "delete": "Delete User",
             "cancel": "Cancel"
         }
-    }   
+    },
+    "toast": {
+        "creating": "Creating user...",
+        "createSuccess": "User created successfully",
+        "createError": "Failed to create user",
+        "updating": "Updating user...",
+        "updateSuccess": "User updated successfully",
+        "updateError": "Failed to update user",
+        "deleting": "Deleting user...",
+        "deleteSuccess": "User deleted successfully",
+        "deleteError": "Failed to delete user",
+        "refreshing": "Refreshing user list...",
+        "refreshError": "Failed to refresh user list",
+        "viewingUser": "Loading user details...",
+        "viewUserSuccess": "User details loaded",
+        "viewUserError": "Failed to load user details",
+        "exporting": "Exporting users...",
+        "exportSuccess": "Users exported successfully",
+        "exportError": "Failed to export users",
+        "bulkDeleting": "Deleting selected users...",
+        "bulkDeleteSuccess": "Selected users deleted successfully",
+        "bulkDeleteError": "Failed to delete selected users"
+    }
 }
 
 

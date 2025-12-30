@@ -67,6 +67,7 @@
       "cancel": "Cancel"
     },
     "messages": {
+      "creating": "Creating role...",
       "success": "Role created successfully.",
       "error": "Failed to create role."
     }
@@ -93,6 +94,7 @@
       "cancel": "Cancel"
     },
     "messages": {
+      "updating": "Updating role...",
       "success": "Role updated successfully.",
       "error": "Failed to update role.",
       "loadError": "Unable to load role details."
@@ -102,6 +104,7 @@
     "title": "Delete role",
     "description": "Are you sure you want to delete {{role}}? This action cannot be undone.",
     "button": "Delete",
+    "deleting": "Deleting role...",
     "success": "Role deleted successfully.",
     "error": "Failed to delete role."
   },

@@ -24,6 +24,7 @@ import {
   UserMinus
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
+import { useToast } from '@/hooks/use-toast';
 import { Division, DivisionListResponse, UpdateDivisionRequest } from '@/types/division/division';
 import { DivisionMembersResponse } from '@/types/division/members/division-members';
 import { User } from '@/types/user/user';
@@ -47,6 +48,7 @@ type ViewMode = 'list' | 'detail';
 
 export default function DivisionPage() {
     const { t } = useTranslation('division');
+    const { toast } = useToast();
 
     // View state
     const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -210,6 +212,8 @@ export default function DivisionPage() {
             return;
         }
 
+        const { id } = toast.loading({ title: t('toast.updating') });
+
         try {
             setSaveLoading(true);
             setDetailErrors({});
@@ -222,10 +226,13 @@ export default function DivisionPage() {
             setDivisions(prev =>
                 prev.map(div => div.id === response.division.id ? response.division : div)
             );
+
+            toast.success({ itemID: id, title: t('toast.updateSuccess') });
         } catch (error) {
             setDetailErrors({
                 general: error instanceof Error ? error.message : 'Failed to update division'
             });
+            toast.error(error, { itemID: id, title: t('toast.updateError') });
         } finally {
             setSaveLoading(false);
         }
@@ -234,17 +241,21 @@ export default function DivisionPage() {
     const handleDelete = async () => {
         if (!selectedDivision) return;
 
+        const { id } = toast.loading({ title: t('toast.deleting') });
+
         try {
             setDeleteLoading(true);
             await deleteDivision({ id: selectedDivision.id });
 
             // Remove from divisions list and go back to list view
             setDivisions(prev => prev.filter(div => div.id !== selectedDivision.id));
+            toast.success({ itemID: id, title: t('toast.deleteSuccess') });
             handleBackToList();
         } catch (error) {
             setDetailErrors({
                 general: error instanceof Error ? error.message : 'Failed to delete division'
             });
+            toast.error(error, { itemID: id, title: t('toast.deleteError') });
         } finally {
             setDeleteLoading(false);
         }
@@ -253,6 +264,8 @@ export default function DivisionPage() {
     // Handle member management
     const handleRemoveMember = async (userId: number) => {
         if (!selectedDivision) return;
+
+        const { id } = toast.loading({ title: t('toast.removingMember') });
 
         try {
             await removeDivisionMember({
@@ -268,10 +281,12 @@ export default function DivisionPage() {
 
             setDivisionMembers(membersResponse);
             setSelectedDivision(divisionResponse.division);
+            toast.success({ itemID: id, title: t('toast.removeMemberSuccess') });
         } catch (error) {
             setDetailErrors({
                 general: error instanceof Error ? error.message : 'Failed to remove member'
             });
+            toast.error(error, { itemID: id, title: t('toast.removeMemberError') });
         }
     };
 

@@ -48,5 +48,22 @@
             "delete": "Delete Division",
             "cancel": "Cancel"
         }
+    },
+    "toast": {
+        "creating": "Creating division...",
+        "createSuccess": "Division created successfully",
+        "createError": "Failed to create division",
+        "updating": "Updating division...",
+        "updateSuccess": "Division updated successfully",
+        "updateError": "Failed to update division",
+        "deleting": "Deleting division...",
+        "deleteSuccess": "Division deleted successfully",
+        "deleteError": "Failed to delete division",
+        "removingMember": "Removing member...",
+        "removeMemberSuccess": "Member removed successfully",
+        "removeMemberError": "Failed to remove member",
+        "addingMembers": "Adding members...",
+        "addMembersSuccess": "Members added successfully",
+        "addMembersError": "Failed to add members"
     }
 }

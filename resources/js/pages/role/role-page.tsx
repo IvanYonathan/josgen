@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
 import { CreateRoleSheet } from './components/create-role-sheet';
 import { EditRoleSheet } from './components/edit-role-sheet';
@@ -24,7 +21,7 @@ import { getRoleWithUsers } from '@/lib/api/role/get-role';
 import { deleteRole } from '@/lib/api/role/delete-role';
 import { me } from '@/lib/api/auth/me';
 import { Role, RolePermission } from '@/types/role/role';
-import { Loader2, PlusCircle, RefreshCw, Shield, ShieldAlert, Pencil, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, RefreshCw } from 'lucide-react';
 import { DataTable } from '@/components/common/tables/data-table';
 import { useRoleColumns } from './columns/role-table-columns';
 import { formatRoleLabel } from '@/lib/utils/role-label';
@@ -120,6 +117,7 @@ export default function RolePage() {
 
   const handleDeleteRole = async () => {
     if (!deleteTarget) return;
+    const { id } = toast.loading({ title: tRef.current?.('deleteRole.deleting') });
     try {
       setDeleteLoading(true);
       await deleteRole({ id: deleteTarget.id });
@@ -133,19 +131,14 @@ export default function RolePage() {
         });
         return next;
       });
-      toast({ title: tRef.current?.('deleteRole.success') ?? 'Role deleted successfully' });
+      toast.success({ itemID: id, title: tRef.current?.('deleteRole.success')});
 
       if (viewMode === 'detail' && deleteTarget.id === detailRole?.id) {
         handleBackToList();
       }
     } catch (err: any) {
       const fallback = tRef.current?.('deleteRole.error') ?? 'Failed to delete role';
-      const message = err?.response?.data?.message || fallback;
-      toast({
-        variant: 'destructive',
-        title: fallback,
-        description: message,
-      });
+      toast.error(err, { itemID: id, title: fallback });
     } finally {
       setDeleteLoading(false);
       setDeleteDialogOpen(false);
