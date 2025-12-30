@@ -10,6 +10,7 @@ import { addDivisionMember } from '@/lib/api/division/members/add-division-membe
 import { CreateDivisionRequest, Division } from '@/types/division/division';
 import { User } from '@/types/user/user';
 import { useTranslation } from '@/hooks/use-translation';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 interface CreateDivisionSheetProps {
@@ -26,6 +27,7 @@ export function CreateDivisionSheet({
   availableUsers,
 }: Readonly<CreateDivisionSheetProps>) {
   const { t } = useTranslation('division');
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CreateDivisionRequest>({
     name: '',
@@ -42,6 +44,8 @@ export function CreateDivisionSheet({
       setErrors({ name: 'Division name is required' });
       return;
     }
+
+    const { id } = toast.loading({ title: t('toast.creating') });
 
     try {
       setLoading(true);
@@ -72,12 +76,15 @@ export function CreateDivisionSheet({
       // Notify parent component
       onDivisionCreated(newDivision);
 
+      toast.success({ itemID: id, title: t('toast.createSuccess') });
+
       // Close sheet
       onOpenChange(false);
     } catch (error) {
       setErrors({
         general: error instanceof Error ? error.message : 'Failed to create division'
       });
+      toast.error(error, { itemID: id, title: t('toast.createError') });
     } finally {
       setLoading(false);
     }

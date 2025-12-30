@@ -4,6 +4,7 @@ import {
   Route,
   RouterProvider,
 } from 'react-router-dom';
+import { Toaster } from '@/components/ui/sonner';
 import { ApplicationLayout } from '@/layouts/application-layout';
 import { DashboardLayout } from '@/layouts/dashboard-layout';
 import DivisionPage from './division/division-page';
@@ -78,7 +79,13 @@ function App() {
     )
   );
 
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <Toaster />
+    </>
+  );
 }
 
 export default App;
+

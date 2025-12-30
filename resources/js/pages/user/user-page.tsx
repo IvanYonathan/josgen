@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
 import { deleteUser } from '@/lib/api/user/delete-user';
 import { getUser } from '@/lib/api/user/get-user';
@@ -197,71 +197,49 @@ function UserPage() {
 
     // Handlers
     const handleUserCreated = async (_user: User) => {
+        const { id } = toast.loading({ title: t('toast.refreshing') });
         try {
             if (pagination.page !== 1) {
                 setPage(1);
             } else {
                 await fetchUsers();
             }
-            toast({
-                title: 'Success',
-                description: 'User created successfully and list refreshed.',
-            });
         } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: error.message || 'Failed to refresh user list after creation',
-            });
+            toast.error(error, { itemID: id, title: t('toast.refreshError') });
         }
     };
 
     const handleUserUpdated = async (updatedUser: User) => {
+        const { id } = toast.loading({ title: t('toast.refreshing') });
         try {
             await fetchUsers();
             if (detailUser && detailUser.id === updatedUser.id) {
                 setDetailUser(updatedUser);
             }
-            toast({
-                title: 'Success',
-                description: 'User updated successfully and list refreshed.',
-            });
         } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: error.message || 'Failed to refresh user list after update',
-            });
+            toast.error(error, { itemID: id, title: t('toast.refreshError') });
         }
     };
 
     const handleUserDeleted = async (userId: number): Promise<void> => {
+        const { id } = toast.loading({ title: t('toast.deleting') });
         try {
             await deleteUser({ id: userId });
             await fetchUsers();
-            toast({
-                title: t('success'),
-                description: t('user_deleted'),
-            });
+            toast.success({ itemID: id, title: t('toast.deleteSuccess')});
         } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: t('error'),
-                description: error.message || t('failed_to_delete_user'),
-            });
+            toast.error(error, { itemID: id, title: t('toast.deleteError') });
         }
     };
 
     const handleViewUser = async (user: User) => {
+        const { id } = toast.loading({ title: t('toast.viewingUser') });
         try {
             const response = await getUser({ id: user.id });
             setDetailUser(response.user);
+            toast.success({ itemID: id, title: t('toast.viewUserSuccess') });
         } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: t('error'),
-                description: error.message || t('failed_to_fetch_user_detail'),
-            });
+            toast.error(error, { itemID: id, title: t('toast.viewUserError') });
         }
     };
 
@@ -284,17 +262,11 @@ function UserPage() {
 
     // Feature flag handlers (placeholder implementations)
     const handleExportUsers = () => {
-        toast({
-            title: 'Export Users',
-            description: 'Export feature coming soon!',
-        });
+        toast.warning({ title: 'Export feature coming soon!' });
     };
 
     const handleBulkDelete = () => {
-        toast({
-            title: 'Bulk Delete',
-            description: 'Bulk delete feature coming soon!',
-        });
+        toast.warning({ title: 'Bulk delete feature coming soon!' });
     };
 
     const sortSelection =

@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Loader2, Plus, Search, Users } from 'lucide-react';
 import { User } from '@/types/user/user';
 import { addDivisionMembersBulk } from '@/lib/api/division/members/add-division-members-bulk';
+import { useTranslation } from '@/hooks/use-translation';
+import { useToast } from '@/hooks/use-toast';
 
 interface BulkMemberSelectionDialogProps {
   open: boolean;
@@ -25,6 +27,8 @@ export function BulkMemberSelectionDialog({
   currentMembers,
   onMembersAdded,
 }: Readonly<BulkMemberSelectionDialogProps>) {
+  const { t } = useTranslation('division');
+  const { toast } = useToast();
   const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,6 +70,8 @@ export function BulkMemberSelectionDialog({
       return;
     }
 
+    const { id } = toast.loading({ title: t('toast.addingMembers') });
+
     try {
       setLoading(true);
       setErrors({});
@@ -82,11 +88,13 @@ export function BulkMemberSelectionDialog({
 
       // Notify parent and close
       onMembersAdded();
+      toast.success({ itemID: id, title: t('toast.addMembersSuccess') });
       onOpenChange(false);
     } catch (error) {
       setErrors({
         general: error instanceof Error ? error.message : 'Failed to add members'
       });
+      toast.error(error, { itemID: id, title: t('toast.addMembersError') });
     } finally {
       setLoading(false);
     }
@@ -104,7 +112,7 @@ export function BulkMemberSelectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-4xl max-h flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />

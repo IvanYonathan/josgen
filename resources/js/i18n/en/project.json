@@ -1,0 +1,232 @@
+{
+    "projects": "Projects",
+    "title": "Projects",
+    "description": "View and Manage Projects here",
+
+    "create_project": "Create Project",
+    "edit_project": "Edit Project",
+    "delete_project": "Delete Project",
+    "view_details": "View Details",
+
+    "back": "Back",
+    "refresh": "Refresh",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save_changes": "Save Changes",
+
+    "search_projects_placeholder": "Search projects by name or description...",
+    "filter_by_status": "Filter by status",
+    "all_status": "All Status",
+
+    "planning": "Planning",
+    "active": "Active",
+    "on_hold": "On Hold",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+
+    "noProjectsFound": "No projects found",
+    "noProjectsFoundMatchingFilters": "No projects found matching your filters",
+    "create_first_project": "Create your first project",
+    "showing_projects": "Showing {{shown}} of {{total}} projects",
+
+    "progress": "Progress",
+    "members_count_one": "{{count}} member",
+    "members_count_other": "{{count}} members",
+
+    "failed_to_load_projects": "Failed to load projects",
+    "view_only": "You can only view this project",
+    "failed_to_load_project_details": "Failed to load project details",
+    "failed_to_refresh_project": "Failed to refresh project",
+    "failed_to_load_divisions_and_users": "Failed to load divisions and users",
+
+    "create_success": "Project created successfully",
+    "create_error": "Failed to create project",
+    "update_success": "Project updated successfully",
+    "update_error": "Failed to update project",
+    "delete_success": "Project deleted successfully",
+    "delete_error": "Failed to delete project",
+
+    "project_details": "Project Details",
+    "tasks_tab": "Tasks ({{count}})",
+    "tasks_available_after_creation": "Tasks (Available After Creation)",
+    "tasks_can_be_added_after_creation": "Tasks can be added after creating the project",
+
+    "no_tasks_yet": "No tasks yet",
+    "add_first_task": "Add First Task",
+    "add_task": "Add Task",
+    "toggle_completion": "Toggle Completion",
+    "selected_count": "{{count}} selected",
+    "completed_label": "Completed",
+    "task_start": "Start: {{date}}",
+    "task_end": "End: {{date}}",
+    "task_assigned_to": "Assigned to: {{name}}",
+
+    "select_at_least_one_task": "Please select at least one task",
+    "tasks_toggled_success_one": "{{count}} task toggled successfully",
+    "tasks_toggled_success_other": "{{count}} tasks toggled successfully",
+    "failed_to_toggle_tasks": "Failed to toggle tasks",
+
+    "task_create_success": "Task created successfully",
+    "task_create_error": "Failed to create task",
+    "task_delete_success": "Task deleted successfully",
+    "task_delete_error": "Failed to delete task",
+    "task_update_success": "Task updated successfully",
+    "task_update_error": "Failed to update task",
+
+    "confirm_delete_project": "Are you sure you want to delete <bold>{{projectName}}</bold>? This action cannot be undone.",
+    "confirm_delete_task": "Are you sure you want to delete <bold>{{taskTitle}}</bold>? This action cannot be undone.",
+
+    "createProject": {
+        "title": "Create Project",
+        "description": "Add a new project to your organization",
+        "tabs": {
+            "details": "Project Details",
+            "tasks": "Tasks (Available After Creation)"
+        },
+        "form": {
+            "name": {
+                "label": "Project Name",
+                "placeholder": "Enter project name"
+            },
+            "description": {
+                "label": "Description",
+                "placeholder": "Enter project description"
+            },
+            "start_date": {
+                "label": "Start Date"
+            },
+            "end_date": {
+                "label": "End Date"
+            },
+            "division_ids": {
+                "label": "Assigned Divisions",
+                "placeholder": "Select divisions..."
+            },
+            "member_ids": {
+                "label": "Team Members",
+                "description": "Select team members from the assigned divisions",
+                "placeholder_divisions_first": "Select divisions first...",
+                "placeholder_select": "Select team members...",
+                "empty_users": "No users found in selected divisions"
+            }
+        },
+        "button": {
+            "create": "Create Project",
+            "cancel": "Cancel"
+        }
+    },
+    "editProject": {
+        "description": "Edit project details and manage tasks",
+        "tabs": {
+            "details": "Project Details",
+            "tasks": "Tasks ({{count}})"
+        },
+        "form": {
+            "name": {
+                "label": "Project Name"
+            },
+            "description": {
+                "label": "Description"
+            },
+            "start_date": {
+                "label": "Start Date"
+            },
+            "end_date": {
+                "label": "End Date"
+            },
+            "status": {
+                "label": "Status"
+            },
+            "division_ids": {
+                "label": "Assigned Divisions",
+                "placeholder": "Select divisions..."
+            },
+            "member_ids": {
+                "label": "Team Members",
+                "placeholder": "Select team members..."
+            }
+        },
+        "members_cannot_modify": "Members cannot be modified because the project status is {{status}}",
+        "view_only_warning": "You can view this project but don't have permission to edit it.",
+        "button": {
+            "cancel": "Cancel",
+            "save": "Save Changes",
+            "delete": "Delete"
+        }
+    },
+    "dialog": {
+        "unsavedChanges": {
+            "title": "Unsaved Changes",
+            "description": "You have unsaved changes. Are you sure you want to go back? All your changes will be lost.",
+            "cancel": "Cancel",
+            "confirm": "Discard Changes"
+        },
+        "deleteProject": {
+            "title": "Delete Project",
+            "cancel": "Cancel",
+            "confirm": "Delete Project"
+        },
+        "deleteTask": {
+            "title": "Delete Task",
+            "cancel": "Cancel",
+            "confirm": "Delete"
+        },
+        "addTask": {
+            "title": "Add New Task",
+            "form": {
+                "title": {
+                    "label": "Task Title",
+                    "placeholder": "Enter task title"
+                },
+                "description": {
+                    "label": "Description"
+                },
+                "start_date": {
+                    "label": "Start Date"
+                },
+                "end_date": {
+                    "label": "End Date"
+                },
+                "assigned_to": {
+                    "label": "Assign To",
+                    "placeholder": "Select team member..."
+                }
+            },
+            "button": {
+                "cancel": "Cancel",
+                "add": "Add Task"
+            }
+        },
+        "editTask": {
+            "title": "Edit Task",
+            "form": {
+                "title": {
+                    "label": "Task Title",
+                    "placeholder": "Enter task title"
+                },
+                "description": {
+                    "label": "Description"
+                },
+                "start_date": {
+                    "label": "Start Date"
+                },
+                "end_date": {
+                    "label": "End Date"
+                },
+                "assigned_to": {
+                    "label": "Assign To",
+                    "placeholder": "Unassigned - Select team member..."
+                },
+                "is_completed": {
+                    "label": "Mark as completed"
+                }
+            },
+            "button": {
+                "cancel": "Cancel",
+                "save": "Save Changes",
+                "clear_assignment": "Clear Assignment"
+            }
+        }
+    }
+}
+

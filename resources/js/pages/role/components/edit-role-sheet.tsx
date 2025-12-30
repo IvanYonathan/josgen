@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
 import { getRole } from '@/lib/api/role/get-role';
 import { updateRole } from '@/lib/api/role/update-role';
@@ -84,6 +84,8 @@ export function EditRoleSheet({
       return;
     }
 
+    const { id } = toast.loading({ title: t('editRole.messages.updating')});
+
     try {
       setSaving(true);
       setError(null);
@@ -95,16 +97,12 @@ export function EditRoleSheet({
       });
 
       onRoleUpdated(response.role);
-      toast({ title: t('editRole.messages.success') });
+      toast.success({ itemID: id, title: t('editRole.messages.success') });
       onOpenChange(false);
     } catch (err: any) {
       const message = err?.response?.data?.message || t('editRole.messages.error');
       setError(message);
-      toast({
-        variant: 'destructive',
-        title: t('editRole.messages.error'),
-        description: message,
-      });
+      toast.error(err, { itemID: id, title: t('editRole.messages.error') });
     } finally {
       setSaving(false);
     }

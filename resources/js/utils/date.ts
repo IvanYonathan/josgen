@@ -55,8 +55,9 @@ export function formatDate(date?: Date | string | number | 'now', opts?: FormatD
   }
   else if (typeof date === "string" && date.endsWith('Z'))
   {
-    // ISO 8601 with 'Z' suffix - treat as already adjusted time
-    return moment.utc(date).format(opts.format)
+    // ISO 8601 with 'Z' suffix - remove 'Z' to treat as local time
+    const localDateString = date.replace('Z', '');
+    return moment(localDateString).format(opts.format)
   }
   else
   {

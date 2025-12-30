@@ -1,5 +1,11 @@
 {
-    "dataTable": {
+  "toast": {
+    "loading": "Loading...",
+    "success": "Success",
+    "warning": "Warning",
+    "error": "Something Went Wrong"
+  },
+  "dataTable": {
     "noResult": "No results.",
     "pagination": {
       "rowsPerPage": "Rows per page",
@@ -7,7 +13,7 @@
     },
     "filter": {
       "select": {
-        "nonePlaceholder": "None" 
+        "nonePlaceholder": "None"
       },
       "reset": "Reset"
     }

@@ -8,7 +8,7 @@ import { User} from "@/types/user/user";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useTranslation } from '@/hooks/use-translation';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { resolveAvatarSrc } from "@/components/user/user-avatar";
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -107,6 +107,7 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Reado
 
     const handleSubmit = form.handleSubmit(async (values) => {
         setServerErrors({});
+        const { id } = toast.loading({ title: t("toast.updating")});
 
         try {
             // Clean form data (remove empty optional fields)
@@ -115,18 +116,11 @@ export function EditUserSheet({ user, open, onOpenChange, onUserUpdated }: Reado
             const response = await updateUser(cleanedData as any, avatarFile ?? undefined);
             onUserUpdated(response.user);
             onOpenChange(false);
-            toast({
-                title: t("success"),
-                description: t("update_success"),
-            });
+            toast.success({ itemID: id, title: t("toast.updateSuccess") });
         } catch (error: any) {
-            const errors = error.response?.data?.errors || { general: t("update_error") };
+            const errors = error.response?.data?.errors || { general: t("toast.updateError") };
             setServerErrors(errors);
-            toast({
-                variant: "destructive",
-                title: t("error"),
-                description: error.response?.data?.message || t("update_error"),
-            });
+            toast.error(error, { itemID: id, title: t("toast.updateError")});
         }
     });
 

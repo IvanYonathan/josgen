@@ -8,10 +8,10 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\ImageController;
-// use App\Http\Controllers\Api\EventController;
-// use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\Api\ProjectController;
 // use App\Http\Controllers\Api\TodoListController;
-// use App\Http\Controllers\Api\TreasuryController;
+use App\Http\Controllers\Api\TreasuryController;
 use Illuminate\Support\Facades\Route;
 
 // Auth endpoints (no auth required)
@@ -91,8 +91,6 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('get', [PermissionController::class, 'get']);
     });
 
-    // TODO: Uncomment when controllers are created
-    /*
     // Event endpoints
     Route::prefix('event')->group(function () {
         Route::post('list', [EventController::class, 'list']);
@@ -100,6 +98,8 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('create', [EventController::class, 'create']);
         Route::post('update', [EventController::class, 'update']);
         Route::post('delete', [EventController::class, 'delete']);
+        Route::post('participants/add', [EventController::class, 'addParticipants']);
+        Route::post('participants/remove', [EventController::class, 'removeParticipants']);
     });
 
     // Project endpoints
@@ -109,7 +109,16 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('create', [ProjectController::class, 'create']);
         Route::post('update', [ProjectController::class, 'update']);
         Route::post('delete', [ProjectController::class, 'delete']);
+        Route::post('members/add', [ProjectController::class, 'addMembers']);
+        Route::post('members/remove', [ProjectController::class, 'removeMembers']);
+        Route::post('tasks/create', [ProjectController::class, 'createTask']);
+        Route::post('tasks/update', [ProjectController::class, 'updateTask']);
+        Route::post('tasks/delete', [ProjectController::class, 'deleteTask']);
+        Route::post('tasks/toggle-completion', [ProjectController::class, 'toggleTaskCompletion']);
     });
+
+    // TODO: Uncomment when controllers are created
+    /*
 
     // TodoList endpoints
     Route::prefix('todo-list')->group(function () {
@@ -124,18 +133,31 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('items/delete', [TodoListController::class, 'deleteItem']);
         Route::post('items/toggle', [TodoListController::class, 'toggleItem']);
     });
+    */
 
     // Treasury endpoints
     Route::prefix('treasury')->group(function () {
-        Route::post('requests/list', [TreasuryController::class, 'requestsList']);
-        Route::post('requests/get', [TreasuryController::class, 'getRequest']);
-        Route::post('requests/create', [TreasuryController::class, 'createRequest']);
-        Route::post('requests/update', [TreasuryController::class, 'updateRequest']);
-        Route::post('requests/delete', [TreasuryController::class, 'deleteRequest']);
-        Route::post('requests/approve', [TreasuryController::class, 'approveRequest']);
-        Route::post('requests/reject', [TreasuryController::class, 'rejectRequest']);
+        // Treasury Requests
+        Route::post('list', [TreasuryController::class, 'list']);
+        Route::post('get', [TreasuryController::class, 'get']);
+        Route::post('create', [TreasuryController::class, 'create']);
+        Route::post('update', [TreasuryController::class, 'update']);
+        Route::post('delete', [TreasuryController::class, 'delete']);
+        Route::post('submit', [TreasuryController::class, 'submit']);
+        Route::post('approve', [TreasuryController::class, 'approve']);
+        Route::post('reject', [TreasuryController::class, 'reject']);
+        Route::post('stats', [TreasuryController::class, 'stats']);
+        Route::post('categories', [TreasuryController::class, 'categories']);
+        Route::post('attachment/upload', [TreasuryController::class, 'uploadAttachment']);
+        Route::post('attachment/delete', [TreasuryController::class, 'deleteAttachment']);
+        
+        // Financial Records (Treasurer-managed organization transactions)
+        Route::post('records/list', [TreasuryController::class, 'listRecords']);
+        Route::post('records/create', [TreasuryController::class, 'createRecord']);
+        Route::post('records/update', [TreasuryController::class, 'updateRecord']);
+        Route::post('records/delete', [TreasuryController::class, 'deleteRecord']);
+        Route::post('records/categories', [TreasuryController::class, 'recordCategories']);
     });
-    */
 
     // Note endpoints
     Route::prefix('note')->group(function () {

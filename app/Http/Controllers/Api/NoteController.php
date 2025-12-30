@@ -44,10 +44,11 @@ class NoteController extends ApiController
 
         // Search in title and content
         if (!empty($filters['search'])) {
-            $search = $filters['search'];
+            $search = mb_strtolower(trim($filters['search']));
+
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('content', 'like', "%{$search}%");
+                $q->whereRaw('LOWER(title) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(content) LIKE ?', ["%{$search}%"]);
             });
         }
 

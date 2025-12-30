@@ -1,0 +1,115 @@
+{
+  "title": "Peran",
+  "description": "Kelola peran aplikasi dan izin mereka.",
+  "buttons": {
+    "create": "Buat Peran",
+    "refresh": "Segarkan",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "viewDetails": "Lihat Detail",
+    "backToList": "Kembali ke Daftar"
+  },
+  "stats": {
+    "roles": "Total peran",
+    "permissions": "Izin tersedia"
+  },
+  "table": {
+    "title": "Daftar peran",
+    "description": "Pilih peran untuk memeriksa atau memperbaruinya.",
+    "searchPlaceholder": "Cari peran...",
+    "role": "Peran",
+    "guard": "Guard",
+    "permissions": "Izin",
+    "updated": "Diperbarui",
+    "actions": "Aksi",
+    "loading": "Memuat peran...",
+    "empty": "Tidak ada peran ditemukan."
+  },
+  "detail": {
+    "title": "Detail peran",
+    "helper": "Pilih peran untuk melihat metadata dan izinnya.",
+    "guard": "Guard",
+    "permissions": "Izin yang ditetapkan",
+    "noPermissions": "Peran ini belum memiliki izin.",
+    "protected": "Dilindungi",
+    "information": "Informasi Peran",
+    "informationDescription": "Informasi dasar tentang peran ini",
+    "assignedUsers": "Pengguna yang Ditugaskan",
+    "assignedUsersDescription": "Pengguna yang memiliki peran ini",
+    "noAssignedUsers": "Belum ada pengguna yang ditugaskan ke peran ini.",
+    "noRoleSelected": "Tidak ada peran dipilih",
+    "metadata": {
+      "created": "Dibuat",
+      "updated": "Diperbarui"
+    }
+  },
+  "createRole": {
+    "title": "Buat peran",
+    "description": "Tentukan peran baru dan tetapkan izin.",
+    "form": {
+      "name": {
+        "label": "Nama peran",
+        "placeholder": "contoh: division_editor",
+        "helper": "Gunakan nama huruf kecil; garis bawah diperbolehkan."
+      },
+      "guard": {
+        "label": "Guard",
+        "placeholder": "web",
+        "helper": "Biarkan kosong untuk menggunakan guard default."
+      },
+      "permissions": {
+        "label": "Izin",
+        "helper": "Pilih izin untuk ditetapkan ke peran ini."
+      }
+    },
+    "button": {
+      "create": "Buat",
+      "cancel": "Batal"
+    },
+    "messages": {
+      "creating": "Membuat peran...",
+      "success": "Peran berhasil dibuat.",
+      "error": "Gagal membuat peran."
+    }
+  },
+  "editRole": {
+    "title": "Edit peran",
+    "description": "Perbarui detail peran dan izin.",
+    "form": {
+      "name": {
+        "label": "Nama peran",
+        "helper": "Mengubah nama peran yang dilindungi tidak diizinkan."
+      },
+      "guard": {
+        "label": "Guard",
+        "helper": "Biarkan kosong untuk mempertahankan guard saat ini."
+      },
+      "permissions": {
+        "label": "Izin",
+        "helper": "Perbarui izin yang ditetapkan ke peran ini."
+      }
+    },
+    "button": {
+      "save": "Simpan perubahan",
+      "cancel": "Batal"
+    },
+    "messages": {
+      "updating": "Memperbarui peran...",
+      "success": "Peran berhasil diperbarui.",
+      "error": "Gagal memperbarui peran.",
+      "loadError": "Tidak dapat memuat detail peran."
+    }
+  },
+  "deleteRole": {
+    "title": "Hapus peran",
+    "description": "Apakah Anda yakin ingin menghapus {{role}}? Tindakan ini tidak dapat dibatalkan.",
+    "button": "Hapus",
+    "deleting": "Menghapus peran...",
+    "success": "Peran berhasil dihapus.",
+    "error": "Gagal menghapus peran."
+  },
+  "permissions": {
+    "search": "Cari izin...",
+    "empty": "Tidak ada izin yang cocok dengan pencarian Anda."
+  }
+}

@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { RoleBadge } from '@/components/user/role-badge';
 import { UserAvatar } from '@/components/user/user-avatar';
 import { useTranslation } from '@/hooks/use-translation';
@@ -75,17 +75,8 @@ export function UserDataTable({
         try {
             setDeletingId(userToDelete.id);
             await onDelete(userToDelete.id);
-            toast({
-                title: t('success'),
-                description: t('user_deleted'),
-            });
         } catch (error) {
-            const description = error instanceof Error ? error.message : t('delete_error');
-            toast({
-                variant: 'destructive',
-                title: t('error'),
-                description,
-            });
+            toast.error(error, { title: t('toast.deleteError')});
         } finally {
             setDeletingId(null);
             setDeleteDialogOpen(false);
