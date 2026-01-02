@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\ProjectController;
-// use App\Http\Controllers\Api\TodoListController;
+use App\Http\Controllers\Api\TodoListController;
 use App\Http\Controllers\Api\TreasuryController;
 use Illuminate\Support\Facades\Route;
 
@@ -117,9 +117,6 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('tasks/toggle-completion', [ProjectController::class, 'toggleTaskCompletion']);
     });
 
-    // TODO: Uncomment when controllers are created
-    /*
-
     // TodoList endpoints
     Route::prefix('todo-list')->group(function () {
         Route::post('list', [TodoListController::class, 'list']);
@@ -127,13 +124,11 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('create', [TodoListController::class, 'create']);
         Route::post('update', [TodoListController::class, 'update']);
         Route::post('delete', [TodoListController::class, 'delete']);
-        Route::post('items/list', [TodoListController::class, 'itemsList']);
         Route::post('items/add', [TodoListController::class, 'addItem']);
         Route::post('items/update', [TodoListController::class, 'updateItem']);
         Route::post('items/delete', [TodoListController::class, 'deleteItem']);
         Route::post('items/toggle', [TodoListController::class, 'toggleItem']);
     });
-    */
 
     // Treasury endpoints
     Route::prefix('treasury')->group(function () {
