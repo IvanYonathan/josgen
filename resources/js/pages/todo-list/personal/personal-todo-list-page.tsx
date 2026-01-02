@@ -104,24 +104,33 @@ function PersonalTodoListPageContent() {
 
     if (selectedItems.length === 0) return;
 
-    // Determine if we should mark as complete or incomplete
-    // If ALL selected items are completed, mark as incomplete; otherwise mark as complete
-    const allCompleted = selectedItems.every((item: TodoItem) => item.completed);
-    const newCompletedState = !allCompleted;
+    const completedItems = selectedItems.filter((item: TodoItem) => item.completed);
+    const incompleteItems = selectedItems.filter((item: TodoItem) => !item.completed);
 
     try {
-      const result = await toggleTodoItem({
-        ids: selectedItems.map((item: TodoItem) => item.id),
-        completed: newCompletedState,
-      });
+      const allUpdatedItems: TodoItem[] = [];
+      if (completedItems.length > 0) {
+        const result = await toggleTodoItem({
+          ids: completedItems.map((item: TodoItem) => item.id),
+          completed: false,
+        });
+        const items = Array.isArray(result) ? result : [result];
+        allUpdatedItems.push(...items);
+      }
+      if (incompleteItems.length > 0) {
+        const result = await toggleTodoItem({
+          ids: incompleteItems.map((item: TodoItem) => item.id),
+          completed: true,
+        });
+        const items = Array.isArray(result) ? result : [result];
+        allUpdatedItems.push(...items);
+      }
 
-      const updatedItems = Array.isArray(result) ? result : [result];
-      updateItemsInList(listId, updatedItems);
+      updateItemsInList(listId, allUpdatedItems);
 
       selectedItems.forEach((item: TodoItem) => toggleItemSelection(item.id));
 
-      const action = newCompletedState ? 'completed' : 'uncompleted';
-      toast.success({ title: `${updatedItems.length} task(s) marked as ${action}` });
+      toast.success({ title: `${allUpdatedItems.length} task(s) toggled` });
     } catch (err) {
       toast.error({ title: err instanceof Error ? err.message : 'Failed to toggle tasks' });
     }
