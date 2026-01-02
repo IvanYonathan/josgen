@@ -38,18 +38,22 @@ import { deleteDivision } from '@/lib/api/division/delete-division';
 import { listDivisionMembers } from '@/lib/api/division/members/list-division-members';
 import { removeDivisionMember } from '@/lib/api/division/members/remove-division-members';
 import { listUsers } from '@/lib/api/user/list-users';
-
-//TODO (Ivan Yonathan) : Add pagination
-//TODO (Ivan Yonathan) : Add sorting
-//TODO (Ivan Yonathan) : Add filtering
-//TODO (Ivan Yonathan) : Add searching
+import { listEvents } from '@/lib/api/event/list-events';
+import { listProjects } from '@/lib/api/project/list-projects';
+import { listTodoLists } from '@/lib/api/todo-list/list-todo-lists';
+import { Event } from '@/types/event/event';
+import { Project } from '@/types/project/project';
+import { TodoList } from '@/types/todo-list/todo-list';
+import { DivisionEventCard } from './components/division-event-card';
+import { DivisionProjectCard } from './components/division-project-card';
+import { DivisionTodoListCard } from './components/division-todolist-card';
 
 type ViewMode = 'list' | 'detail';
 
 export default function DivisionPage() {
     const { t } = useTranslation('division');
     const { toast } = useToast();
-
+    
     // View state
     const [viewMode, setViewMode] = useState<ViewMode>('list');
     const [selectedDivisionId, setSelectedDivisionId] = useState<number | null>(null);
@@ -71,6 +75,13 @@ export default function DivisionPage() {
     const [saveLoading, setSaveLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [detailErrors, setDetailErrors] = useState<Record<string, string>>({});
+
+    const [divisionEvents, setDivisionEvents] = useState<Event[]>([]);
+    const [divisionProjects, setDivisionProjects] = useState<Project[]>([]);
+    const [divisionTodoLists, setDivisionTodoLists] = useState<TodoList[]>([]);
+    const [eventsLoading, setEventsLoading] = useState(false);
+    const [projectsLoading, setProjectsLoading] = useState(false);
+    const [todoListsLoading, setTodoListsLoading] = useState(false);
 
     // Sheet and dialog states
     const [createSheetOpen, setCreateSheetOpen] = useState(false);
@@ -309,6 +320,52 @@ export default function DivisionPage() {
         }
     };
 
+    const loadDivisionEvents = async (divisionId: number) => {
+        try {
+            setEventsLoading(true);
+            const response = await listEvents({
+                filters: { division_id: divisionId },
+                limit: 100,
+            });
+            setDivisionEvents(response.events);
+        } catch (error) {
+            console.error('Failed to load division events:', error);
+        } finally {
+            setEventsLoading(false);
+        }
+    };
+
+    const loadDivisionProjects = async (divisionId: number) => {
+        try {
+            setProjectsLoading(true);
+            const response = await listProjects({
+                filters: { division_id: divisionId },
+                limit: 100,
+            });
+            setDivisionProjects(response.projects);
+        } catch (error) {
+            console.error('Failed to load division projects:', error);
+        } finally {
+            setProjectsLoading(false);
+        }
+    };
+
+    const loadDivisionTodoLists = async (divisionId: number) => {
+        try {
+            setTodoListsLoading(true);
+            const response = await listTodoLists({
+                type: 'division',
+                division_id: divisionId,
+                limit: 100,
+            });
+            setDivisionTodoLists(response.todo_lists);
+        } catch (error) {
+            console.error('Failed to load division todo lists:', error);
+        } finally {
+            setTodoListsLoading(false);
+        }
+    };
+
     // Handle tab changes and trigger appropriate data refetch
     const handleTabChange = async (tabValue: string) => {
         if (!selectedDivision) return;
@@ -325,13 +382,17 @@ export default function DivisionPage() {
                     const divisionResponse = await getDivision({ id: selectedDivision.id });
                     setSelectedDivision(divisionResponse.division);
                     break;
+                case 'events':
+                    // Load division events
+                    await loadDivisionEvents(selectedDivision.id);
+                    break;
                 case 'projects':
-                    // TODO: Implement project refetch when project API is ready
-                    console.log('Projects tab selected - will implement refetch when project API is ready');
+                    // Load division projects
+                    await loadDivisionProjects(selectedDivision.id);
                     break;
                 case 'todo-lists':
-                    // TODO: Implement todo lists refetch when todo lists API is ready
-                    console.log('Todo Lists tab selected - will implement refetch when todo lists API is ready');
+                    // Load division todo lists
+                    await loadDivisionTodoLists(selectedDivision.id);
                     break;
                 default:
                     break;
@@ -529,9 +590,10 @@ export default function DivisionPage() {
                             </div>
                         ) : selectedDivision ? (
                             <Tabs defaultValue="overview" className="w-full" onValueChange={handleTabChange}>
-                                <TabsList className="grid w-full grid-cols-4">
+                                <TabsList className="grid w-full grid-cols-5">
                                     <TabsTrigger value="overview">Overview</TabsTrigger>
                                     <TabsTrigger value="members">Members</TabsTrigger>
+                                    <TabsTrigger value="events">Events</TabsTrigger>
                                     <TabsTrigger value="projects">Projects</TabsTrigger>
                                     <TabsTrigger value="todo-lists">Todo Lists</TabsTrigger>
                                 </TabsList>
@@ -764,32 +826,100 @@ export default function DivisionPage() {
                                     </Card>
                                 </TabsContent>
 
+                                <TabsContent value="events" className="space-y-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">Events ({divisionEvents.length})</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                Events associated with this division
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {eventsLoading ? (
+                                        <div className="flex items-center justify-center py-12">
+                                            <Loader2 className="h-8 w-8 animate-spin" />
+                                        </div>
+                                    ) : divisionEvents.length === 0 ? (
+                                        <Card>
+                                            <CardContent className="flex items-center justify-center py-12">
+                                                <div className="text-center">
+                                                    <CalendarDays className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                                    <p className="text-muted-foreground">No events found for this division</p>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {divisionEvents.map(event => (
+                                                <DivisionEventCard key={event.id} event={event} />
+                                            ))}
+                                        </div>
+                                    )}
+                                </TabsContent>
+
                                 <TabsContent value="projects" className="space-y-6">
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Projects</CardTitle>
-                                            <CardDescription>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">Projects ({divisionProjects.length})</h3>
+                                            <p className="text-sm text-muted-foreground">
                                                 Projects associated with this division
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-gray-500 text-sm">Project management will be implemented soon</p>
-                                        </CardContent>
-                                    </Card>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {projectsLoading ? (
+                                        <div className="flex items-center justify-center py-12">
+                                            <Loader2 className="h-8 w-8 animate-spin" />
+                                        </div>
+                                    ) : divisionProjects.length === 0 ? (
+                                        <Card>
+                                            <CardContent className="flex items-center justify-center py-12">
+                                                <div className="text-center">
+                                                    <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                                    <p className="text-muted-foreground">No projects found for this division</p>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {divisionProjects.map(project => (
+                                                <DivisionProjectCard key={project.id} project={project} />
+                                            ))}
+                                        </div>
+                                    )}
                                 </TabsContent>
 
                                 <TabsContent value="todo-lists" className="space-y-6">
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Todo Lists</CardTitle>
-                                            <CardDescription>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">Todo Lists ({divisionTodoLists.length})</h3>
+                                            <p className="text-sm text-muted-foreground">
                                                 Todo lists associated with this division
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-gray-500 text-sm">Todo list management will be implemented soon</p>
-                                        </CardContent>
-                                    </Card>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {todoListsLoading ? (
+                                        <div className="flex items-center justify-center py-12">
+                                            <Loader2 className="h-8 w-8 animate-spin" />
+                                        </div>
+                                    ) : divisionTodoLists.length === 0 ? (
+                                        <Card>
+                                            <CardContent className="flex items-center justify-center py-12">
+                                                <div className="text-center">
+                                                    <ListTodo className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                                    <p className="text-muted-foreground">No todo lists found for this division</p>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {divisionTodoLists.map(todoList => (
+                                                <DivisionTodoListCard key={todoList.id} todoList={todoList} />
+                                            ))}
+                                        </div>
+                                    )}
                                 </TabsContent>
                             </Tabs>
                         ) : (
