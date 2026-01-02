@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import {
   PlusCircle,
@@ -492,25 +493,61 @@ export default function DivisionPage() {
                                         </CardContent>
 
                                         <CardFooter className="flex justify-between border-t pt-4">
-                                            <Badge variant="outline" className="flex items-center gap-1">
-                                                <Users className="h-3 w-3" />
-                                                {division.members_count || 0}
-                                            </Badge>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Badge variant="outline" className="flex items-center gap-1 cursor-pointer">
+                                                            <Users className="h-3 w-3" />
+                                                            {division.members_count || 0}
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Total Members</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
 
-                                            <Badge variant="outline" className="flex items-center gap-1">
-                                                <CalendarDays className="h-3 w-3" />
-                                                {division.events_count || 0}
-                                            </Badge>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Badge variant="outline" className="flex items-center gap-1 cursor-pointer">
+                                                            <CalendarDays className="h-3 w-3" />
+                                                            {division.events_count || 0}
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Total Events</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
 
-                                            <Badge variant="outline" className="flex items-center gap-1">
-                                                <Briefcase className="h-3 w-3" />
-                                                {division.projects_count || 0}
-                                            </Badge>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Badge variant="outline" className="flex items-center gap-1 cursor-pointer">
+                                                            <Briefcase className="h-3 w-3" />
+                                                            {division.projects_count || 0}
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Total Projects</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
 
-                                            <Badge variant="outline" className="flex items-center gap-1">
-                                                <ListTodo className="h-3 w-3" />
-                                                {division.todo_lists_count || 0}
-                                            </Badge>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Badge variant="outline" className="flex items-center gap-1 cursor-pointer">
+                                                            <ListTodo className="h-3 w-3" />
+                                                            {division.todo_lists_count || 0}
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Total Todo Lists</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
                                         </CardFooter>
                                     </Card>
                                 ))}
