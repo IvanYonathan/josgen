@@ -302,8 +302,8 @@ class TreasuryController extends ApiController
             return $this->forbidden('You can only delete your own requests');
         }
 
-        if ($treasuryRequest->status !== 'draft') {
-            return $this->error('Cannot delete a request that has been submitted');
+        if (!in_array($treasuryRequest->status, ['draft', 'submitted', 'approved'])) {
+            return $this->error('Cannot delete a request that is under review, rejected, or already paid');
         }
 
         if ($treasuryRequest->attachment_path) {
