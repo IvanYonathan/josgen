@@ -5,6 +5,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { Role } from '@/types/role/role';
 import { Loader2, ArrowLeft, Shield, ShieldAlert, Users, Trash2 } from 'lucide-react';
 import { formatRoleLabel } from '@/lib/utils/role-label';
+import { resolveAvatarSrc } from '@/components/user/user-avatar';
 
 interface RoleDetailViewProps {
   role: Role | null;
@@ -13,6 +14,7 @@ interface RoleDetailViewProps {
     name: string;
     email: string;
     avatar?: string | null;
+    ava?: string | null;
   }>;
   loading: boolean;
   error: string | null;
@@ -133,14 +135,16 @@ export function RoleDetailView({
               <CardContent>
                 {users.length > 0 ? (
                   <div className="space-y-2">
-                    {users.map((user) => (
+                    {users.map((user) => {
+                      const avatarSrc = resolveAvatarSrc(user.ava) ?? resolveAvatarSrc(user.avatar);
+                      return (
                       <div
                         key={user.id}
                         className="flex items-center gap-3 rounded border p-3 hover:bg-accent/50 transition-colors"
                       >
-                        {user.avatar ? (
+                        {avatarSrc ? (
                           <img
-                            src={user.avatar}
+                            src={avatarSrc}
                             alt={user.name}
                             className="h-10 w-10 rounded-full object-cover"
                           />
@@ -154,7 +158,8 @@ export function RoleDetailView({
                           <p className="text-xs text-muted-foreground">{user.email}</p>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="py-8 text-center text-sm text-muted-foreground">

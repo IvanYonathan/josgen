@@ -47,12 +47,14 @@ class ProjectController extends ApiController
         $filters = $validated['filters'] ?? [];
         $sort = $validated['sort'] ?? [];
 
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
         // Base query: projects where user is manager, member, or user's division is assigned
         $query = Project::query()
-            ->where(function ($q) use ($user) {
+            ->where(function ($q) use ($user, $userDivisionIds) {
                 $q->where('manager_id', $user->id) // User is manager
-                    ->orWhereHas('divisions', function ($subQ) use ($user) {
-                        $subQ->where('divisions.id', $user->division_id); // User's division assigned
+                    ->orWhereHas('divisions', function ($subQ) use ($userDivisionIds) {
+                        $subQ->whereIn('divisions.id', $userDivisionIds); // User's divisions assigned
                     })
                     ->orWhereHas('members', function ($subQ) use ($user) {
                         $subQ->where('users.id', $user->id); // User is member
@@ -162,10 +164,13 @@ class ProjectController extends ApiController
             return $this->notFound('Project not found');
         }
 
+        // Get user's division IDs from the many-to-many relationship
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
         // Check access: user must be manager, member, or in assigned division
         $hasAccess = $project->manager_id === $user->id
             || $project->members->contains('id', $user->id)
-            || $project->divisions->contains('id', $user->division_id);
+            || $project->divisions->pluck('id')->intersect($userDivisionIds)->isNotEmpty();
 
         if (!$hasAccess) {
             return $this->forbidden('You do not have access to this project');

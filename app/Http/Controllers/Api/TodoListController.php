@@ -33,6 +33,7 @@ class TodoListController extends ApiController
         }
 
         $validated = $validator->validated();
+        $user = Auth::user();
 
         $page = (int) ($validated['page'] ?? 1);
         $limit = (int) min($validated['limit'] ?? 10, 100);
@@ -40,8 +41,23 @@ class TodoListController extends ApiController
         $sort = $validated['sort'] ?? [];
         $type = $validated['type'] ?? null;
 
+        // Get user's division IDs from the many-to-many relationship
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
+        // Base query: personal lists owned by user OR division lists for user's divisions
         $query = TodoList::query()
-            ->where('user_id', Auth::id())
+            ->where(function ($q) use ($user, $userDivisionIds) {
+                // Personal lists: owned by user
+                $q->where(function ($subQ) use ($user) {
+                    $subQ->where('type', 'personal')
+                         ->where('user_id', $user->id);
+                })
+                // OR Division lists: user is member of the division
+                ->orWhere(function ($subQ) use ($userDivisionIds) {
+                    $subQ->where('type', 'division')
+                         ->whereIn('division_id', $userDivisionIds);
+                });
+            })
             ->with(['user:id,name', 'division:id,name', 'items']);
 
         // Filter by type (personal or division)
@@ -123,8 +139,22 @@ class TodoListController extends ApiController
             return $this->validationError($validator->errors());
         }
 
+        $user = Auth::user();
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
         $todoList = TodoList::where('id', $request->id)
-            ->where('user_id', Auth::id())
+            ->where(function ($q) use ($user, $userDivisionIds) {
+                // Personal lists: owned by user
+                $q->where(function ($subQ) use ($user) {
+                    $subQ->where('type', 'personal')
+                         ->where('user_id', $user->id);
+                })
+                // OR Division lists: user is member of the division
+                ->orWhere(function ($subQ) use ($userDivisionIds) {
+                    $subQ->where('type', 'division')
+                         ->whereIn('division_id', $userDivisionIds);
+                });
+            })
             ->with(['user:id,name', 'division:id,name', 'items.assignedTo:id,name'])
             ->first();
 
@@ -195,8 +225,22 @@ class TodoListController extends ApiController
             return $this->validationError($validator->errors());
         }
 
+        $user = Auth::user();
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
         $todoList = TodoList::where('id', $request->id)
-            ->where('user_id', Auth::id())
+            ->where(function ($q) use ($user, $userDivisionIds) {
+                // Personal lists: owned by user
+                $q->where(function ($subQ) use ($user) {
+                    $subQ->where('type', 'personal')
+                         ->where('user_id', $user->id);
+                })
+                // OR Division lists: user is member of the division
+                ->orWhere(function ($subQ) use ($userDivisionIds) {
+                    $subQ->where('type', 'division')
+                         ->whereIn('division_id', $userDivisionIds);
+                });
+            })
             ->first();
 
         if (!$todoList) {
@@ -239,8 +283,22 @@ class TodoListController extends ApiController
             return $this->validationError($validator->errors());
         }
 
+        $user = Auth::user();
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
         $todoList = TodoList::where('id', $request->id)
-            ->where('user_id', Auth::id())
+            ->where(function ($q) use ($user, $userDivisionIds) {
+                // Personal lists: owned by user
+                $q->where(function ($subQ) use ($user) {
+                    $subQ->where('type', 'personal')
+                         ->where('user_id', $user->id);
+                })
+                // OR Division lists: user is member of the division
+                ->orWhere(function ($subQ) use ($userDivisionIds) {
+                    $subQ->where('type', 'division')
+                         ->whereIn('division_id', $userDivisionIds);
+                });
+            })
             ->first();
 
         if (!$todoList) {
@@ -270,9 +328,23 @@ class TodoListController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        // Check if user owns the todo list
+        $user = Auth::user();
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
+        // Check if user has access to the todo list
         $todoList = TodoList::where('id', $request->todo_list_id)
-            ->where('user_id', Auth::id())
+            ->where(function ($q) use ($user, $userDivisionIds) {
+                // Personal lists: owned by user
+                $q->where(function ($subQ) use ($user) {
+                    $subQ->where('type', 'personal')
+                         ->where('user_id', $user->id);
+                })
+                // OR Division lists: user is member of the division
+                ->orWhere(function ($subQ) use ($userDivisionIds) {
+                    $subQ->where('type', 'division')
+                         ->whereIn('division_id', $userDivisionIds);
+                });
+            })
             ->first();
 
         if (!$todoList) {
@@ -315,8 +387,22 @@ class TodoListController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        $todoItem = TodoItem::whereHas('todoList', function ($query) {
-            $query->where('user_id', Auth::id());
+        $user = Auth::user();
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
+        $todoItem = TodoItem::whereHas('todoList', function ($query) use ($user, $userDivisionIds) {
+            $query->where(function ($q) use ($user, $userDivisionIds) {
+                // Personal lists: owned by user
+                $q->where(function ($subQ) use ($user) {
+                    $subQ->where('type', 'personal')
+                         ->where('user_id', $user->id);
+                })
+                // OR Division lists: user is member of the division
+                ->orWhere(function ($subQ) use ($userDivisionIds) {
+                    $subQ->where('type', 'division')
+                         ->whereIn('division_id', $userDivisionIds);
+                });
+            });
         })->find($request->id);
 
         if (!$todoItem) {
@@ -368,8 +454,22 @@ class TodoListController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        $todoItem = TodoItem::whereHas('todoList', function ($query) {
-            $query->where('user_id', Auth::id());
+        $user = Auth::user();
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
+        $todoItem = TodoItem::whereHas('todoList', function ($query) use ($user, $userDivisionIds) {
+            $query->where(function ($q) use ($user, $userDivisionIds) {
+                // Personal lists: owned by user
+                $q->where(function ($subQ) use ($user) {
+                    $subQ->where('type', 'personal')
+                         ->where('user_id', $user->id);
+                })
+                // OR Division lists: user is member of the division
+                ->orWhere(function ($subQ) use ($userDivisionIds) {
+                    $subQ->where('type', 'division')
+                         ->whereIn('division_id', $userDivisionIds);
+                });
+            });
         })->find($request->id);
 
         if (!$todoItem) {
@@ -401,6 +501,9 @@ class TodoListController extends ApiController
             return $this->validationError($validator->errors());
         }
 
+        $user = Auth::user();
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
         // Determine if single or multiple IDs
         $ids = [];
         if ($request->has('id')) {
@@ -412,8 +515,19 @@ class TodoListController extends ApiController
         }
 
         // Get all items that belong to the user's todo lists
-        $todoItems = TodoItem::whereHas('todoList', function ($query) {
-            $query->where('user_id', Auth::id());
+        $todoItems = TodoItem::whereHas('todoList', function ($query) use ($user, $userDivisionIds) {
+            $query->where(function ($q) use ($user, $userDivisionIds) {
+                // Personal lists: owned by user
+                $q->where(function ($subQ) use ($user) {
+                    $subQ->where('type', 'personal')
+                         ->where('user_id', $user->id);
+                })
+                // OR Division lists: user is member of the division
+                ->orWhere(function ($subQ) use ($userDivisionIds) {
+                    $subQ->where('type', 'division')
+                         ->whereIn('division_id', $userDivisionIds);
+                });
+            });
         })->whereIn('id', $ids)->get();
 
         if ($todoItems->isEmpty()) {

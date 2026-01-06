@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    //base: '', turn on for ngrok or subdomain hosting
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
@@ -23,7 +24,7 @@ export default defineConfig({
         },
     },
     server: {
-        host: '127.0.0.1',
+        host: '127.0.0.1', //'127.0.0.1' or 'true' for LAN or ngrok
         port: 5174,  
     }
 });

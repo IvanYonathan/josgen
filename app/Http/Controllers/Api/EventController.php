@@ -46,12 +46,14 @@ class EventController extends ApiController
         $filters = $validated['filters'] ?? [];
         $sort = $validated['sort'] ?? [];
 
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
         // Base query: events where user is organizer or user's division is assigned
         $query = Event::query()
-            ->where(function ($q) use ($user) {
+            ->where(function ($q) use ($user, $userDivisionIds) {
                 $q->where('organizer_id', $user->id)
-                    ->orWhereHas('divisions', function ($subQ) use ($user) {
-                        $subQ->where('divisions.id', $user->division_id);
+                    ->orWhereHas('divisions', function ($subQ) use ($userDivisionIds) {
+                        $subQ->whereIn('divisions.id', $userDivisionIds);
                     });
             })
             ->with(['organizer:id,name', 'divisions:id,name', 'participants:id,name']);
@@ -160,10 +162,13 @@ class EventController extends ApiController
 
         $user = Auth::user();
 
-        $event = Event::where(function ($q) use ($user) {
+        // Get user's division IDs from the many-to-many relationship
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
+        $event = Event::where(function ($q) use ($user, $userDivisionIds) {
             $q->where('organizer_id', $user->id)
-                ->orWhereHas('divisions', function ($subQ) use ($user) {
-                    $subQ->where('divisions.id', $user->division_id);
+                ->orWhereHas('divisions', function ($subQ) use ($userDivisionIds) {
+                    $subQ->whereIn('divisions.id', $userDivisionIds);
                 });
         })
             ->with(['organizer:id,name', 'divisions:id,name', 'participants:id,name'])
