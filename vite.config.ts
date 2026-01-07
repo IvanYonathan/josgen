@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-    //base: '', turn on for ngrok or subdomain hosting
+    //base: '', //turn on for ngrok or subdomain hosting
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
