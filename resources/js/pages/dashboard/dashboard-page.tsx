@@ -270,7 +270,7 @@ export default function Dashboard() {
                         <TaskManager tasks={tasksToDisplay} onToggleTask={handleToggleTask} />
                         <div className="mt-4">
                             <Link
-                                href="/toDoList"
+                                href="/toDoList/personal"
                                 className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                             >
                                 View All Tasks
