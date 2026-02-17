@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePage } from '@inertiajs/react';
+import { useAuth } from '@/contexts/auth-context';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, PlusCircle, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { TreasuryRequest, TreasuryStats } from '@/types/treasury/treasury';
 import { listTreasury, getTreasuryStats, deleteTreasury, approveTreasury } from '@/lib/api/treasury';
-import type { SharedData } from '@/types';
 import { AxiosJosgen, ApiResponse } from '@/lib/axios/axios-josgen';
 
 import { MyRequestsTab } from './components/my-requests-tab';
@@ -27,8 +26,8 @@ const hasAdminAccess = (role?: string): boolean => {
 export function TreasuryPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { auth } = usePage<SharedData>().props;
-  const userRole = auth?.user?.role;
+  const { user } = useAuth();
+  const userRole = user.role;
   const canAccessAdmin = hasAdminAccess(userRole);
 
   // Tab state
@@ -261,7 +260,7 @@ export function TreasuryPage() {
             <PendingApprovalsTab
               requests={requests}
               loading={loading}
-              currentUserId={auth?.user?.id}
+              currentUserId={user.id}
               onApprove={handleApprove}
               onReject={openRejectDialog}
               onView={openDetailDialog}
