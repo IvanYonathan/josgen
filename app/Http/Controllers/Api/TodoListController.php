@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\TodoList;
 use App\Models\TodoItem;
+use App\Notifications\TodoItem\TodoItemAssignedNotification;
+use App\Notifications\TodoItem\TodoItemCompletedNotification;
+use App\Notifications\TodoItem\TodoItemUnassignedNotification;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -365,6 +369,10 @@ class TodoListController extends ApiController
 
         $todoItem->load('assignedTo:id,name');
 
+        if ($todoItem->assigned_to && $todoItem->assignedTo) {
+            $todoItem->assignedTo->notify(new TodoItemAssignedNotification($todoItem, $todoList, $user));
+        }
+
         return $this->success(['todo_item' => $todoItem], 'Todo item added successfully');
     }
 
@@ -409,6 +417,8 @@ class TodoListController extends ApiController
             return $this->notFound('Todo item not found or you do not have permission to update it');
         }
 
+        $previousAssignedTo = $todoItem->assigned_to;
+
         $validated = $validator->validated();
 
         if (isset($validated['title'])) {
@@ -436,7 +446,30 @@ class TodoListController extends ApiController
         }
 
         $todoItem->save();
-        $todoItem->load('assignedTo:id,name');
+        $todoItem->load('todoList:id,title,type,user_id,division_id', 'todoList.user:id,name', 'todoList.division.leader:id,name', 'assignedTo:id,name');
+
+        if ($todoItem->wasChanged('assigned_to') && $todoItem->assigned_to && $todoItem->assigned_to !== $previousAssignedTo && $todoItem->assignedTo && $todoItem->todoList) {
+            $todoItem->assignedTo->notify(new TodoItemAssignedNotification($todoItem, $todoItem->todoList, $user));
+        }
+
+        if ($todoItem->wasChanged('assigned_to') && $previousAssignedTo && $previousAssignedTo !== $todoItem->assigned_to && $todoItem->todoList) {
+            $previousAssignee = User::find($previousAssignedTo);
+            if ($previousAssignee && $previousAssignee->id !== $user->id) {
+                $previousAssignee->notify(new TodoItemUnassignedNotification($todoItem, $todoItem->todoList, $user, $todoItem->assignedTo));
+            }
+        }
+
+        if ($todoItem->wasChanged('completed') && $todoItem->completed && $todoItem->todoList) {
+            $owner = $todoItem->todoList->user;
+            if ($owner && $owner->id !== $user->id) {
+                $owner->notify(new TodoItemCompletedNotification($todoItem, $todoItem->todoList, $user));
+            }
+
+            $leader = $todoItem->todoList->division?->leader;
+            if ($leader && $leader->id !== $user->id) {
+                $leader->notify(new TodoItemCompletedNotification($todoItem, $todoItem->todoList, $user));
+            }
+        }
 
         return $this->success(['todo_item' => $todoItem], 'Todo item updated successfully');
     }
@@ -528,7 +561,10 @@ class TodoListController extends ApiController
                          ->whereIn('division_id', $userDivisionIds);
                 });
             });
-        })->whereIn('id', $ids)->get();
+        })
+        ->whereIn('id', $ids)
+        ->with(['todoList:id,title,type,user_id,division_id', 'todoList.user:id,name', 'todoList.division.leader:id,name', 'assignedTo:id,name'])
+        ->get();
 
         if ($todoItems->isEmpty()) {
             return $this->notFound('No todo items found or you do not have permission to toggle them');
@@ -542,6 +578,7 @@ class TodoListController extends ApiController
         // Toggle or set completion status
         $updatedItems = [];
         foreach ($todoItems as $item) {
+            $previousCompleted = (bool) $item->completed;
             if ($request->has('completed')) {
                 // Set to specific value
                 $item->completed = $request->completed;
@@ -550,7 +587,19 @@ class TodoListController extends ApiController
                 $item->completed = !$item->completed;
             }
             $item->save();
-            $item->load('assignedTo:id,name');
+
+            if ($item->completed && !$previousCompleted && $item->todoList) {
+                $owner = $item->todoList->user;
+                if ($owner && $owner->id !== $user->id) {
+                    $owner->notify(new TodoItemCompletedNotification($item, $item->todoList, $user));
+                }
+
+                $leader = $item->todoList->division?->leader;
+                if ($leader && $leader->id !== $user->id) {
+                    $leader->notify(new TodoItemCompletedNotification($item, $item->todoList, $user));
+                }
+            }
+
             $updatedItems[] = $item;
         }
 

@@ -5,6 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Models\Project;
 use App\Models\ProjectTask;
 use App\Models\User;
+use App\Notifications\Project\ProjectMemberAddedNotification;
+use App\Notifications\Project\ProjectMemberRemovedNotification;
+use App\Notifications\Project\ProjectStatusChangedNotification;
+use App\Notifications\Project\ProjectTaskAssignedNotification;
+use App\Notifications\Project\ProjectTaskCompletedNotification;
+use App\Notifications\Project\ProjectTaskUnassignedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -284,6 +290,8 @@ class ProjectController extends ApiController
             return $this->forbidden('You do not have permission to edit this project');
         }
 
+        $previousStatus = $project->status;
+
         // Update fields
         if (isset($validated['name'])) $project->name = $validated['name'];
         if (isset($validated['description'])) $project->description = $validated['description'];
@@ -325,6 +333,16 @@ class ProjectController extends ApiController
         $project->load(['manager:id,name', 'divisions:id,name', 'members:id,name', 'tasks']);
         $project->can_edit = $project->canBeEditedBy($user);
         $project->can_modify_members = $project->canModifyMembers();
+
+        if ($previousStatus !== $project->status) {
+            $recipients = collect($project->members)->push($project->manager)->unique('id')->filter();
+            foreach ($recipients as $recipient) {
+                if ($recipient->id === $user->id) {
+                    continue;
+                }
+                $recipient->notify(new ProjectStatusChangedNotification($project, $user, $previousStatus, $project->status));
+            }
+        }
 
         return $this->success(['project' => $project], 'Project updated successfully');
     }
@@ -425,6 +443,14 @@ class ProjectController extends ApiController
         // Attach new members
         $project->members()->attach($newMemberIds);
 
+        $newMembers = User::whereIn('id', $newMemberIds)->get();
+        foreach ($newMembers as $member) {
+            if ($member->id === $user->id) {
+                continue;
+            }
+            $member->notify(new ProjectMemberAddedNotification($project, $user));
+        }
+
         // Reload
         $project->load(['manager:id,name', 'divisions:id,name', 'members:id,name']);
         $project->can_edit = $project->canBeEditedBy($user);
@@ -469,15 +495,26 @@ class ProjectController extends ApiController
             return $this->error('Members cannot be modified because the project status is ' . $project->status, null, 400);
         }
 
+        $existingIds = $project->members->pluck('id')->toArray();
+        $removedIds = array_values(array_intersect($existingIds, $request->user_ids));
+
         // Detach members
-        $project->members()->detach($request->user_ids);
+        $project->members()->detach($removedIds);
+
+        $removedMembers = User::whereIn('id', $removedIds)->get();
+        foreach ($removedMembers as $member) {
+            if ($member->id === $user->id) {
+                continue;
+            }
+            $member->notify(new ProjectMemberRemovedNotification($project, $user));
+        }
 
         // Reload
         $project->load(['manager:id,name', 'divisions:id,name', 'members:id,name']);
         $project->can_edit = $project->canBeEditedBy($user);
         $project->can_modify_members = $project->canModifyMembers();
 
-        return $this->success(['project' => $project], count($request->user_ids) . ' member(s) removed successfully');
+        return $this->success(['project' => $project], count($removedIds) . ' member(s) removed successfully');
     }
 
     /**
@@ -530,6 +567,10 @@ class ProjectController extends ApiController
 
         $task->load('assignedUser:id,name');
 
+        if ($task->assigned_to && $task->assignedUser) {
+            $task->assignedUser->notify(new ProjectTaskAssignedNotification($task, $project, $user));
+        }
+
         // Recalculate progress
         $project->calculateProgress();
 
@@ -563,6 +604,8 @@ class ProjectController extends ApiController
         }
 
         $project = $task->project;
+        $previousAssignedTo = $task->assigned_to;
+        $previousIsCompleted = (bool) $task->is_completed;
 
         // Only manager can update tasks
         if ($project->manager_id !== $user->id) {
@@ -588,6 +631,23 @@ class ProjectController extends ApiController
 
         $task->save();
         $task->load('assignedUser:id,name');
+
+        if ($task->wasChanged('assigned_to') && $task->assigned_to && $task->assigned_to !== $previousAssignedTo && $task->assignedUser) {
+            $task->assignedUser->notify(new ProjectTaskAssignedNotification($task, $project, $user));
+        }
+
+        if ($task->wasChanged('assigned_to') && $previousAssignedTo && $previousAssignedTo !== $task->assigned_to) {
+            $previousAssignee = User::find($previousAssignedTo);
+            if ($previousAssignee && $previousAssignee->id !== $user->id) {
+                $previousAssignee->notify(new ProjectTaskUnassignedNotification($task, $project, $user, $task->assignedUser));
+            }
+        }
+
+        if ($task->is_completed && !$previousIsCompleted) {
+            if ($task->assignedUser && $task->assignedUser->id !== $user->id) {
+                $task->assignedUser->notify(new ProjectTaskCompletedNotification($task, $project, $user));
+            }
+        }
 
         // Recalculate progress
         $project->calculateProgress();
@@ -670,8 +730,16 @@ class ProjectController extends ApiController
 
         // Toggle completion status for all tasks
         foreach ($tasks as $task) {
+            $previousCompleted = (bool) $task->is_completed;
             $task->is_completed = !$task->is_completed;
             $task->save();
+
+            if ($task->is_completed && !$previousCompleted) {
+                $task->loadMissing(['assignedUser:id,name', 'project:id,name']);
+                if ($task->assignedUser && $task->assignedUser->id !== $user->id && $task->project) {
+                    $task->assignedUser->notify(new ProjectTaskCompletedNotification($task, $task->project, $user));
+                }
+            }
         }
 
         // Recalculate progress for affected projects

@@ -13,7 +13,7 @@ export function applyThrowErrorResponseInterceptors(
   axiosInstance.interceptors.response.use(
     (response: AxiosResponse<ApiResponse>) => {
       // Check if response indicates failure
-      if (response.data && response.data.success === false) {
+      if (response.data && response.data.status === false) {
         throw new Error(response.data.message || 'API request failed');
       }
       return response;

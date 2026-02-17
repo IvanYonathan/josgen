@@ -6,6 +6,13 @@ use App\Models\FinancialRecord;
 use App\Models\TreasuryRequest;
 use App\Models\TreasuryRequestApproval;
 use App\Models\TreasuryRequestItem;
+use App\Models\User;
+use App\Notifications\Treasury\TreasuryApprovalRequestedNotification;
+use App\Notifications\Treasury\TreasuryDecisionNotification;
+use App\Notifications\Treasury\TreasuryPaymentProcessedNotification;
+use App\Notifications\Treasury\TreasuryRequestEditedNotification;
+use App\Notifications\Treasury\TreasuryRequestSubmittedNotification;
+use App\Notifications\Treasury\TreasuryRequestWithdrawnNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +24,27 @@ use Illuminate\Validation\Rule;
 
 class TreasuryController extends ApiController
 {
+    private function treasuryHandlers(TreasuryRequest $treasuryRequest, ?int $excludeUserId = null)
+    {
+        $treasuryRequest->loadMissing(['division.leader:id,name']);
+
+        $recipients = collect();
+
+        $leader = $treasuryRequest->division?->leader;
+        if ($leader) {
+            $recipients->push($leader);
+        }
+
+        $recipients = $recipients
+            ->merge(User::role('sysadmin')->get())
+            ->merge(User::role('treasurer')->get())
+            ->unique('id')
+            ->filter(fn ($u) => $u && ($excludeUserId === null || $u->id !== $excludeUserId))
+            ->values();
+
+        return $recipients;
+    }
+
     // List treasury requests with optional type/status filters
     public function list(Request $request): JsonResponse
     {
@@ -229,6 +257,9 @@ class TreasuryController extends ApiController
             return $this->error('Cannot edit a request that is already under review or processed');
         }
 
+        $shouldNotifyEdited = $treasuryRequest->status === 'submitted';
+        $itemsChanged = false;
+
         DB::beginTransaction();
 
         try {
@@ -246,6 +277,10 @@ class TreasuryController extends ApiController
                     ->whereNotIn('id', $submittedItemIds)
                     ->delete();
 
+                if (count($existingItemIds) !== count($submittedItemIds)) {
+                    $itemsChanged = true;
+                }
+
                 foreach ($request->items as $item) {
                     if (isset($item['id']) && in_array($item['id'], $existingItemIds)) {
                         TreasuryRequestItem::where('id', $item['id'])->update([
@@ -254,6 +289,7 @@ class TreasuryController extends ApiController
                             'category' => $item['category'],
                             'item_date' => $item['item_date'] ?? null,
                         ]);
+                        $itemsChanged = true;
                     } else {
                         TreasuryRequestItem::create([
                             'treasury_request_id' => $treasuryRequest->id,
@@ -262,6 +298,7 @@ class TreasuryController extends ApiController
                             'category' => $item['category'],
                             'item_date' => $item['item_date'] ?? null,
                         ]);
+                        $itemsChanged = true;
                     }
                 }
             }
@@ -269,6 +306,12 @@ class TreasuryController extends ApiController
             DB::commit();
 
             $treasuryRequest->load(['requester:id,name', 'items', 'division:id,name']);
+
+            if ($shouldNotifyEdited && ($treasuryRequest->wasChanged() || $itemsChanged)) {
+                foreach ($this->treasuryHandlers($treasuryRequest, $user->id) as $recipient) {
+                    $recipient->notify(new TreasuryRequestEditedNotification($treasuryRequest, $user));
+                }
+            }
 
             return $this->success([
                 'request' => $treasuryRequest,
@@ -310,9 +353,60 @@ class TreasuryController extends ApiController
             Storage::disk('public')->delete($treasuryRequest->attachment_path);
         }
 
+        if (in_array($treasuryRequest->status, ['submitted', 'approved'])) {
+            foreach ($this->treasuryHandlers($treasuryRequest, $user->id) as $recipient) {
+                $recipient->notify(new TreasuryRequestWithdrawnNotification($treasuryRequest, $user));
+            }
+        }
+
         $treasuryRequest->delete();
 
         return $this->success(null, 'Treasury request deleted successfully');
+    }
+
+    public function markPaid(Request $request): JsonResponse
+    {
+        if ($response = $this->ensurePermission('approve treasury requests', 'You do not have permission to mark requests as paid')) {
+            return $response;
+        }
+
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:treasury_requests,id',
+            'payment_method' => 'nullable|string|max:255',
+            'payment_reference' => 'nullable|string|max:255',
+            'payment_date' => 'nullable|date',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationError($validator->errors());
+        }
+
+        $user = Auth::user();
+        $treasuryRequest = TreasuryRequest::with(['requester:id,name', 'division.leader:id,name'])->findOrFail($request->id);
+
+        if ($treasuryRequest->status !== 'approved') {
+            return $this->error('Only approved requests can be marked as paid');
+        }
+
+        $treasuryRequest->status = 'paid';
+        $treasuryRequest->payment_method = $request->payment_method;
+        $treasuryRequest->payment_reference = $request->payment_reference;
+        $treasuryRequest->payment_date = $request->payment_date ?? now()->toDateString();
+        $treasuryRequest->processed_by = $user->id;
+        $treasuryRequest->save();
+
+        if ($treasuryRequest->requester && $treasuryRequest->requester->id !== $user->id) {
+            $treasuryRequest->requester->notify(new TreasuryPaymentProcessedNotification($treasuryRequest, $user));
+        }
+
+        foreach ($this->treasuryHandlers($treasuryRequest, $user->id) as $recipient) {
+            $recipient->notify(new TreasuryPaymentProcessedNotification($treasuryRequest, $user));
+        }
+
+        return $this->success([
+            'request' => $treasuryRequest->refresh()->load(['requester:id,name', 'division:id,name', 'approvals.approver:id,name']),
+            'approval_stage' => $treasuryRequest->getApprovalStage(),
+        ], 'Treasury request marked as paid');
     }
 
     // Submit a draft request for review or resubmit a rejected request
@@ -348,6 +442,29 @@ class TreasuryController extends ApiController
 
         $treasuryRequest->status = 'submitted';
         $treasuryRequest->save();
+
+        // Notify the treasury handlers that a new request was submitted:
+        // - Division leader
+        // - Sysadmins
+        // - Treasurers
+        $treasuryRequest->load(['division.leader:id,name', 'requester:id,name']);
+        $recipients = collect();
+
+        $leader = $treasuryRequest->division?->leader;
+        if ($leader) {
+            $recipients->push($leader);
+        }
+
+        $recipients = $recipients
+            ->merge(User::role('sysadmin')->get())
+            ->merge(User::role('treasurer')->get())
+            ->unique('id')
+            ->filter(fn ($u) => $u && $u->id !== $user->id)
+            ->values();
+
+        foreach ($recipients as $recipient) {
+            $recipient->notify(new TreasuryRequestSubmittedNotification($treasuryRequest, $user));
+        }
 
         $message = $treasuryRequest->wasChanged('status') && $treasuryRequest->getOriginal('status') === 'rejected'
             ? 'Treasury request resubmitted successfully'
@@ -411,6 +528,23 @@ class TreasuryController extends ApiController
         $treasuryRequest->refresh();
         $treasuryRequest->load(['approvals.approver:id,name']);
 
+        // Notify requester about the decision
+        $treasuryRequest->loadMissing('requester:id,name');
+        if ($treasuryRequest->requester && $treasuryRequest->requester->id !== $user->id) {
+            $treasuryRequest->requester->notify(new TreasuryDecisionNotification($treasuryRequest, $user, 'approved', $approvalLevel));
+        }
+
+        // If leader approved and treasurer approval is next, notify treasurers
+        if ($treasuryRequest->getApprovalStage() === 'pending_treasurer') {
+            $treasurers = User::role(['treasurer'])->get();
+            foreach ($treasurers as $treasurer) {
+                if ($treasurer->id === $user->id) {
+                    continue;
+                }
+                $treasurer->notify(new TreasuryApprovalRequestedNotification($treasuryRequest, $treasuryRequest->requester ?? $user, 'treasurer'));
+            }
+        }
+
         $message = $treasuryRequest->isFullyApproved()
             ? 'Treasury request fully approved'
             : 'Treasury request approved at ' . $approvalLevel . ' level. Awaiting ' .
@@ -468,6 +602,11 @@ class TreasuryController extends ApiController
         $treasuryRequest->save();
 
         $treasuryRequest->load(['approvals.approver:id,name']);
+        $treasuryRequest->loadMissing('requester:id,name');
+
+        if ($treasuryRequest->requester && $treasuryRequest->requester->id !== $user->id) {
+            $treasuryRequest->requester->notify(new TreasuryDecisionNotification($treasuryRequest, $user, 'rejected', $approvalLevel));
+        }
 
         return $this->success([
             'request' => $treasuryRequest,

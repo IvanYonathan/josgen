@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\TodoListController;
 use App\Http\Controllers\Api\TreasuryController;
+use App\Http\Controllers\Api\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 // Auth endpoints (no auth required)
@@ -98,6 +99,7 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('create', [EventController::class, 'create']);
         Route::post('update', [EventController::class, 'update']);
         Route::post('delete', [EventController::class, 'delete']);
+        Route::post('cancel', [EventController::class, 'cancel']);
         Route::post('participants/add', [EventController::class, 'addParticipants']);
         Route::post('participants/remove', [EventController::class, 'removeParticipants']);
     });
@@ -141,6 +143,7 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
         Route::post('submit', [TreasuryController::class, 'submit']);
         Route::post('approve', [TreasuryController::class, 'approve']);
         Route::post('reject', [TreasuryController::class, 'reject']);
+        Route::post('mark-paid', [TreasuryController::class, 'markPaid']);
         Route::post('stats', [TreasuryController::class, 'stats']);
         Route::post('categories', [TreasuryController::class, 'categories']);
         Route::post('attachment/upload', [TreasuryController::class, 'uploadAttachment']);
@@ -167,5 +170,13 @@ Route::middleware(['auth:web,sanctum'])->group(function () {
     Route::prefix('image')->group(function () {
         Route::post('upload', [ImageController::class, 'upload']);
         Route::post('delete', [ImageController::class, 'delete']);
+    });
+
+    // Notification endpoints
+    Route::prefix('notification')->group(function () {
+        Route::post('list', [NotificationController::class, 'list']);
+        Route::post('unread-count', [NotificationController::class, 'unreadCount']);
+        Route::post('mark-read', [NotificationController::class, 'markRead']);
+        Route::post('mark-all-read', [NotificationController::class, 'markAllRead']);
     });
 });
