@@ -158,7 +158,7 @@ export default function DivisionPage() {
             const [divisionResponse, membersResponse, usersResponse] = await Promise.all([
                 getDivision({ id: divisionId }),
                 listDivisionMembers({ division_id: divisionId }),
-                listUsers()
+                listUsers({limit: 100})
             ]);
 
             setSelectedDivision(divisionResponse.division);

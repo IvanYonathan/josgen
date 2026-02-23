@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Division;
 use App\Models\User;
+use App\Notifications\Division\DivisionMemberAddedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -192,6 +193,8 @@ class DivisionController extends ApiController
         // Add user to division via pivot table
         $division->members()->attach($user->id);
 
+        $user->notify(new DivisionMemberAddedNotification($division, Auth::user()));
+
         return $this->success(null, 'Member added successfully');
     }
 
@@ -224,6 +227,11 @@ class DivisionController extends ApiController
 
         // Add users to division via pivot table
         $division->members()->attach($newMemberIds);
+
+        $newMembers = User::whereIn('id', $newMemberIds)->get();
+        foreach ($newMembers as $member) {
+            $member->notify(new DivisionMemberAddedNotification($division, Auth::user()));
+        }
 
         $addedCount = count($newMemberIds);
 

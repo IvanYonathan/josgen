@@ -8,6 +8,7 @@ export const createEventSchema = z.object({
   location: z.string().max(255, 'Location must be less than 255 characters').optional(),
   division_ids: z.array(z.number()).min(1, 'At least one division is required'),
   participant_ids: z.array(z.number()).optional().default([]),
+  reminder_presets: z.array(z.string()).optional().default([]),
 }).refine(
   (data) => {
     if (!data.start_date || !data.end_date) return true;
@@ -28,6 +29,7 @@ export const updateEventSchema = z.object({
   location: z.string().max(255, 'Location must be less than 255 characters').optional(),
   division_ids: z.array(z.number()).min(1, 'At least one division is required').optional(),
   participant_ids: z.array(z.number()).optional().default([]),
+  reminder_presets: z.array(z.string()).optional().default([]),
 }).refine(
   (data) => {
     if (!data.start_date || !data.end_date) return true;

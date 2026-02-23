@@ -212,6 +212,8 @@ class EventController extends ApiController
             'division_ids.*' => 'integer|exists:divisions,id',
             'participant_ids' => 'nullable|array',
             'participant_ids.*' => 'integer|exists:users,id',
+            'reminder_presets' => 'nullable|array',
+            'reminder_presets.*' => 'string|in:1_day,7_days,1_month',
         ]);
 
         if ($validator->fails()) {
@@ -228,10 +230,14 @@ class EventController extends ApiController
             'location' => $validated['location'] ?? null,
             'status' => 'upcoming',
             'organizer_id' => $user->id,
+            'reminder_presets' => $validated['reminder_presets'] ?? null,
         ]);
 
         // Attach divisions
         $event->divisions()->attach($validated['division_ids']);
+
+        // Sync reminder rows
+        $event->syncReminders($validated['reminder_presets'] ?? []);
 
         // Attach participants if provided
         if (!empty($validated['participant_ids'])) {
@@ -283,6 +289,8 @@ class EventController extends ApiController
             'division_ids.*' => 'integer|exists:divisions,id',
             'participant_ids' => 'nullable|array',
             'participant_ids.*' => 'integer|exists:users,id',
+            'reminder_presets' => 'nullable|array',
+            'reminder_presets.*' => 'string|in:1_day,7_days,1_month',
         ]);
 
         if ($validator->fails()) {
@@ -346,6 +354,13 @@ class EventController extends ApiController
         // Update participants if provided (only when status is 'upcoming')
         if (isset($validated['participant_ids']) && $event->canModifyParticipants()) {
             $event->participants()->sync($validated['participant_ids']);
+        }
+
+        // Update reminder presets if provided
+        if (array_key_exists('reminder_presets', $validated)) {
+            $event->reminder_presets = $validated['reminder_presets'];
+            $event->save();
+            $event->syncReminders($validated['reminder_presets'] ?? []);
         }
 
         $event->load(['organizer:id,name', 'divisions:id,name', 'participants:id,name']);

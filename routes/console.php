@@ -30,3 +30,8 @@ Schedule::command('notifications:send-event-starting-soon')
 Schedule::command('events:update-statuses')
     ->everyFifteenMinutes()
     ->description('Update event statuses based on current date (upcoming -> ongoing -> completed)');
+
+// Schedule custom event reminder notifications (runs every 15 minutes)
+Schedule::command('notifications:send-event-custom-reminders')
+    ->everyFifteenMinutes()
+    ->description('Send custom event reminder notifications set by organizers');

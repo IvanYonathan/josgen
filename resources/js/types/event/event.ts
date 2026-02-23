@@ -21,6 +21,7 @@ export interface Event {
   can_edit?: boolean;
   can_modify_participants?: boolean;
   participants_count?: number;
+  reminder_presets?: string[] | null;
 }
 
 export interface Division {

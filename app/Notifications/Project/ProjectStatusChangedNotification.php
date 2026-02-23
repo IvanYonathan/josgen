@@ -5,9 +5,11 @@ namespace App\Notifications\Project;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ProjectStatusChangedNotification extends Notification
+class ProjectStatusChangedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -21,7 +23,13 @@ class ProjectStatusChangedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        $channels = ['database'];
+
+        if ($this->to === 'completed') {
+            $channels[] = 'mail';
+        }
+
+        return $channels;
     }
 
     public function toDatabase(object $notifiable): array
@@ -39,5 +47,17 @@ class ProjectStatusChangedNotification extends Notification
                 'to' => $this->to,
             ],
         ];
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject("Project completed: {$this->project->name}")
+            ->greeting("Hello {$notifiable->name}!")
+            ->line("Great news! A project you are part of has been completed.")
+            ->line("**Project:** {$this->project->name}")
+            ->line("**Completed by:** {$this->changedBy->name}")
+            ->action('View Project', url('/project'))
+            ->line('Congratulations to everyone who contributed to this project!');
     }
 }

@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Mail\NewUserCredentialsMail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UserController extends ApiController
@@ -138,7 +141,6 @@ class UserController extends ApiController
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
             'phone' => 'nullable|string|max:20',
             'role' => ['required', 'string', 'max:255', Rule::exists('roles', 'name')],
             'birthday' => 'nullable|date',
@@ -160,7 +162,11 @@ class UserController extends ApiController
         }
 
         unset($data['avatar']);
-        $data['password'] = Hash::make($data['password']);
+
+        // Auto-generate a secure password and email it to the new user
+        // Note: User model has 'password' => 'hashed' cast, so pass plain text — no manual Hash::make()
+        $plainPassword = Str::random(12);
+        $data['password'] = $plainPassword;
 
         $roleName = $data['role'];
 
@@ -171,6 +177,9 @@ class UserController extends ApiController
         $newUser->assignRole($role);
         $newUser->load('roles', 'division');
         $this->appendPrimaryRole($newUser);
+
+        // Send credentials email to the new user
+        Mail::to($newUser)->queue(new NewUserCredentialsMail($newUser, $plainPassword));
 
         return $this->success([
             'user' => $newUser,
