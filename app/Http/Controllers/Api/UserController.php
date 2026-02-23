@@ -141,6 +141,7 @@ class UserController extends ApiController
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
             'phone' => 'nullable|string|max:20',
             'role' => ['required', 'string', 'max:255', Rule::exists('roles', 'name')],
             'birthday' => 'nullable|date',
@@ -163,10 +164,9 @@ class UserController extends ApiController
 
         unset($data['avatar']);
 
-        // Auto-generate a secure password and email it to the new user
-        // Note: User model has 'password' => 'hashed' cast, so pass plain text — no manual Hash::make()
-        $plainPassword = Str::random(12);
-        $data['password'] = $plainPassword;
+        // Use the admin-supplied password as plain text.
+        // The User model's 'hashed' cast handles hashing on create().
+        $plainPassword = $data['password'];
 
         $roleName = $data['role'];
 
