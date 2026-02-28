@@ -34,23 +34,18 @@ export function EditEventSheet() {
   const [loadingData, setLoadingData] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  if (!selectedEvent) {
-    closeEditMode();
-    return null;
-  }
-
   const form = useForm({
     resolver: zodResolver(updateEventSchema),
     defaultValues: {
-      id: selectedEvent.id,
-      title: selectedEvent.title,
-      description: selectedEvent.description || '',
-      start_date: selectedEvent.start_date ? selectedEvent.start_date.slice(0, 16) : '',
-      end_date: selectedEvent.end_date ? selectedEvent.end_date.slice(0, 16) : '',
-      location: selectedEvent.location || '',
-      division_ids: selectedEvent.divisions?.map(d => d.id) || [],
-      participant_ids: selectedEvent.participants?.map(p => p.id) || [],
-      reminder_presets: selectedEvent.reminder_presets || [],
+      id: selectedEvent?.id ?? 0,
+      title: selectedEvent?.title ?? '',
+      description: selectedEvent?.description || '',
+      start_date: selectedEvent?.start_date ? selectedEvent.start_date.slice(0, 16) : '',
+      end_date: selectedEvent?.end_date ? selectedEvent.end_date.slice(0, 16) : '',
+      location: selectedEvent?.location || '',
+      division_ids: selectedEvent?.divisions?.map(d => d.id) || [],
+      participant_ids: selectedEvent?.participants?.map(p => p.id) || [],
+      reminder_presets: selectedEvent?.reminder_presets || [],
     },
     mode: 'onChange',
   });
@@ -58,14 +53,13 @@ export function EditEventSheet() {
   const watchedFields = form.watch();
 
   useEffect(() => {
-    if (!hasUnsavedChanges) {
-      const changed =
-        watchedFields.title !== selectedEvent.title ||
-        watchedFields.description !== (selectedEvent.description || '') ||
-        watchedFields.location !== (selectedEvent.location || '');
-      if (changed) {
-        setHasUnsavedChanges(true);
-      }
+    if (!selectedEvent || !hasUnsavedChanges) return;
+    const changed =
+      watchedFields.title !== selectedEvent.title ||
+      watchedFields.description !== (selectedEvent.description || '') ||
+      watchedFields.location !== (selectedEvent.location || '');
+    if (changed) {
+      setHasUnsavedChanges(true);
     }
   }, [watchedFields, hasUnsavedChanges, selectedEvent]);
 
@@ -89,6 +83,11 @@ export function EditEventSheet() {
     loadData();
   }, []);
 
+  if (!selectedEvent) {
+    closeEditMode();
+    return null;
+  }
+
   const handleBackClick = () => {
     if (hasUnsavedChanges) {
       setShowUnsavedDialog(true);
@@ -102,7 +101,7 @@ export function EditEventSheet() {
     closeEditMode();
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: UpdateEventFormData) => {
     const { id } = toast.loading({ title: 'Updating event...' });
     try {
       setIsSubmitting(true);

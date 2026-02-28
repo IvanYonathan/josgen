@@ -10,7 +10,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
+        }
     }
 
     /**
@@ -18,8 +20,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement(
-            "ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('Sysadmin','Division_Leader','Treasurer','Member'))"
-        );
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement(
+                "ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('Sysadmin','Division_Leader','Treasurer','Member'))"
+            );
+        }
     }
 };

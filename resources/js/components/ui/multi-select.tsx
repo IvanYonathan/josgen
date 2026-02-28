@@ -112,10 +112,10 @@ const MultiSelect: React.FC<MultiSelectProps> = (({ value, onValueChange, defaul
 MultiSelect.displayName = "MultiSelect";
 
 
-interface MultiSelectPopoverWrapperProps extends React.ComponentPropsWithoutRef<typeof Popover> {}
+type MultiSelectPopoverWrapperProps = React.ComponentPropsWithoutRef<typeof Popover>
 
 // TODO (jeffjuann): this accept open and onOpenChange props, but it is not used in the component
-const MultiSelectPopoverWrapper: React.FC<MultiSelectPopoverWrapperProps> = ({ open, onOpenChange, defaultOpen, ...props }) => {
+const MultiSelectPopoverWrapper: React.FC<MultiSelectPopoverWrapperProps> = ({ open: _open, onOpenChange: _onOpenChange, defaultOpen: _defaultOpen, ...props }) => {
   
   const {
     open: isOpen,
@@ -182,7 +182,7 @@ interface MultiSelectValueProps extends React.ComponentPropsWithoutRef<"div">
 const MultiSelectValue = React.forwardRef<
   HTMLDivElement,
   MultiSelectValueProps
->(({ className, placeholder, itemComponent: ItemComponent = MultiSelectValueItem, ...props }, _) => {
+>(({ className, placeholder, itemComponent: ItemComponent = MultiSelectValueItem, ...props }, _ref) => {
   const { selected: values } = useMultiSelect('MultiSelectValue');
 
   return (
@@ -305,7 +305,7 @@ const MultiSelectItem = React.forwardRef<
 
   const isSelected = React.useMemo(() => {
     return values.find((v) => v === value)
-  }, [values]);
+  }, [values, value]);
 
   const handleSelect = () => {
     console.log(setValues)

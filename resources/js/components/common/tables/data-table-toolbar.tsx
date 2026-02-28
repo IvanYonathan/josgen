@@ -50,6 +50,8 @@ export function DataTableToolbar<TData>({
 }: Readonly<DataTableToolbarProps<TData>>)
 {
   const { t } = useTranslation('common');
+  const [filterValue, setFilterValue] = useState<FilterValue<TData>[]>(initialDataTableFilters);
+
   if(filterFields.length === 0)
   {
     return (
@@ -65,8 +67,6 @@ export function DataTableToolbar<TData>({
     )
   }
 
-  const [filterValue, setFilterValue] = useState<FilterValue<TData>[]>(initialDataTableFilters);
-  
   const onApplyDataTableFilters = () => setDataTableFilters(filterValue);
   const onResetDataTableFilters = () => setFilterValue([])
 

@@ -45,8 +45,8 @@ export function SelectCombobox({
 
     const measure = () => {
       const el = triggerRef.current!;
-      const w = (el as any)?.borderBoxSize?.[0]?.inlineSize
-        ?? (el as any)?.borderBoxSize?.inlineSize
+      const entry = el as unknown as { borderBoxSize?: Array<{ inlineSize: number }> | { inlineSize: number } };
+      const w = (Array.isArray(entry.borderBoxSize) ? entry.borderBoxSize[0]?.inlineSize : entry.borderBoxSize?.inlineSize)
         ?? el.offsetWidth;
       setTargetWidth(Math.max(0, Math.round(w)));
     };

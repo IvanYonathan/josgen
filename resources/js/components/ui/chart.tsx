@@ -53,7 +53,7 @@ export function ChartContainer({ children, className, ...props }: ChartContainer
 
 interface ChartTooltipContentProps {
     active?: boolean
-    payload?: any[]
+    payload?: Array<{ color: string; name: string; value: number }>
     label?: string
     formatter?: (value: number) => string
 }
@@ -93,7 +93,7 @@ interface MonthlyBarChartProps {
         expense?: number
         approved?: number
         pending?: number
-        [key: string]: any
+        [key: string]: string | number | undefined
     }>
     dataKeys?: { key: string; color: string; label: string }[]
     height?: number | string
@@ -162,7 +162,7 @@ export function CategoryPieChart({ data, height = 300 }: CategoryPieChartProps) 
                     paddingAngle={2}
                     dataKey="value"
                     nameKey="name"
-                    label={({ name, percent }: any) => `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`}
+                    label={({ name, percent }: { name: string; percent: number }) => `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`}
                     labelLine={false}
                 >
                     {data.map((entry, index) => (
@@ -182,7 +182,7 @@ export function CategoryPieChart({ data, height = 300 }: CategoryPieChartProps) 
 interface TrendLineChartProps {
     data: Array<{
         month: string
-        [key: string]: any
+        [key: string]: string | number | undefined
     }>
     dataKeys?: { key: string; color: string; label: string }[]
     height?: number | string
