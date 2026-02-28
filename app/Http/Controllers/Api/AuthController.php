@@ -133,7 +133,9 @@ class AuthController extends ApiController
             'can_edit_permissions' => $user->can('edit permissions'),
             'can_delete_permissions' => $user->can('delete permissions'),
             // Divisions
-            'can_view_divisions' => $user->can('view divisions'),
+            'can_view_own_divisions' => $user->can('view own divisions'),
+            'can_view_all_divisions' => $user->can('view all divisions'),
+            'can_view_divisions' => $user->can('view own divisions') || $user->can('view all divisions'),
             'can_create_divisions' => $user->can('create divisions'),
             'can_edit_divisions' => $user->can('edit divisions'),
             'can_delete_divisions' => $user->can('delete divisions'),

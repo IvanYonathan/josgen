@@ -82,6 +82,25 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all division IDs the user is associated with (member, assigned, or leader).
+     *
+     * @return array<int, int>
+     */
+    public function ownDivisionIds(): array
+    {
+        $ids = $this->divisions()->pluck('divisions.id')->toArray();
+
+        if ($this->division_id) {
+            $ids[] = $this->division_id;
+        }
+
+        $leaderIds = $this->leadsDivisions()->pluck('id')->toArray();
+        $ids = array_merge($ids, $leaderIds);
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
      * Get the events organized by the user.
      */
     public function organizedEvents(): HasMany

@@ -15,14 +15,21 @@ class DivisionController extends ApiController
 {
     public function list(Request $request): JsonResponse
     {
-        if ($response = $this->ensurePermission('view divisions', 'You do not have permission to view divisions')) {
-            return $response;
+        $canViewAll = $this->hasPermission('view all divisions');
+        $canViewOwn = $this->hasPermission('view own divisions');
+
+        if (!$canViewAll && !$canViewOwn) {
+            return $this->forbidden('You do not have permission to view divisions');
         }
 
-        $divisions = Division::with('leader:id,name')
-            ->withCount(['members', 'events', 'projects', 'todoLists'])
-            ->get()
-            ->makeHidden(['created_at', 'updated_at', 'leader_id']);
+        $query = Division::with('leader:id,name')
+            ->withCount(['members', 'events', 'projects', 'todoLists']);
+
+        if (!$canViewAll) {
+            $query->whereIn('id', Auth::user()->ownDivisionIds());
+        }
+
+        $divisions = $query->get()->makeHidden(['created_at', 'updated_at', 'leader_id']);
 
         return $this->success($divisions, 'Divisions retrieved successfully', $divisions->count());
     }
@@ -37,8 +44,15 @@ class DivisionController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        if ($response = $this->ensurePermission('view divisions', 'You do not have permission to view divisions')) {
-            return $response;
+        $canViewAll = $this->hasPermission('view all divisions');
+        $canViewOwn = $this->hasPermission('view own divisions');
+
+        if (!$canViewAll && !$canViewOwn) {
+            return $this->forbidden('You do not have permission to view divisions');
+        }
+
+        if (!$canViewAll && !in_array((int) $request->id, Auth::user()->ownDivisionIds())) {
+            return $this->forbidden('You do not have permission to view this division');
         }
 
         $division = Division::with(['leader', 'members', 'events', 'projects', 'todoLists'])
@@ -142,8 +156,15 @@ class DivisionController extends ApiController
 
         $division = Division::findOrFail($request->division_id);
 
-        if ($response = $this->ensurePermission('view divisions', 'You do not have permission to view division members')) {
-            return $response;
+        $canViewAll = $this->hasPermission('view all divisions');
+        $canViewOwn = $this->hasPermission('view own divisions');
+
+        if (!$canViewAll && !$canViewOwn) {
+            return $this->forbidden('You do not have permission to view division members');
+        }
+
+        if (!$canViewAll && !in_array((int) $request->division_id, Auth::user()->ownDivisionIds())) {
+            return $this->forbidden('You do not have permission to view this division');
         }
 
         $canManageMembers = $this->hasPermission('edit divisions') || Auth::user()->id === $division->leader_id;

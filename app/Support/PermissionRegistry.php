@@ -38,7 +38,8 @@ class PermissionRegistry
         'delete permissions',
 
         // Divisions
-        'view divisions',
+        'view own divisions',
+        'view all divisions',
         'create divisions',
         'edit divisions',
         'delete divisions',
@@ -84,6 +85,7 @@ class PermissionRegistry
         'member' => [
             'create treasury requests',
             'view own treasury requests',
+            'view own divisions',
             'view events',
             'view projects',
             'view todo lists',
@@ -105,7 +107,7 @@ class PermissionRegistry
             'view own treasury requests',
             'view all treasury requests',
             'approve treasury requests',
-            'view divisions',
+            'view own divisions',
             'edit divisions',
         ],
     ];
