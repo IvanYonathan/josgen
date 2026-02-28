@@ -31,7 +31,7 @@ class DivisionMemberAddedNotification extends Notification implements ShouldQueu
             'level' => 'info',
             'title' => 'Added to division',
             'body' => "{$this->addedBy->name} added you to {$this->division->name}.",
-            'action_url' => '/division',
+            'action_url' => '/divisions',
             'meta' => [
                 'division_id' => $this->division->id,
                 'added_by' => $this->addedBy->id,
