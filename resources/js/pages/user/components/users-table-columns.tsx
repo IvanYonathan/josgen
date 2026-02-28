@@ -20,6 +20,8 @@ export interface UserTableActions {
     onDeleteClick: (user: User) => void;
     onView?: (user: User) => void;
     deletingId?: number | null;
+    canEdit?: boolean;
+    canDelete?: boolean;
 }
 
 export const createUserColumns = (t: TFunction, actions: UserTableActions): ColumnDef<User>[] => [
@@ -60,7 +62,10 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
         size: 40,
         cell: ({ row }) => {
             const user = row.original;
-            const { onEdit, onDeleteClick, onView, deletingId } = actions;
+            const { onEdit, onDeleteClick, onView, deletingId, canEdit = true, canDelete = true } = actions;
+            const hasAnyAction = onView || canEdit || canDelete;
+
+            if (!hasAnyAction) return null;
 
             return (
                 <div className="flex justify-center">
@@ -87,21 +92,25 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
                                         <Eye className="mr-2 h-4 w-4" />
                                         {t('view')}
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
+                                    {(canEdit || canDelete) && <DropdownMenuSeparator />}
                                 </>
                             )}
-                            <DropdownMenuItem onClick={() => onEdit(user)}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                {t('edit')}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={() => onDeleteClick(user)}
-                                className="text-destructive focus:text-destructive"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                {t('delete')}
-                            </DropdownMenuItem>
+                            {canEdit && (
+                                <DropdownMenuItem onClick={() => onEdit(user)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    {t('edit')}
+                                </DropdownMenuItem>
+                            )}
+                            {canEdit && canDelete && <DropdownMenuSeparator />}
+                            {canDelete && (
+                                <DropdownMenuItem
+                                    onClick={() => onDeleteClick(user)}
+                                    className="text-destructive focus:text-destructive"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('delete')}
+                                </DropdownMenuItem>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

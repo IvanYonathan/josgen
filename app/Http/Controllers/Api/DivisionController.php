@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Division;
 use App\Models\User;
+use App\Notifications\Division\DivisionMemberAddedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,14 +15,21 @@ class DivisionController extends ApiController
 {
     public function list(Request $request): JsonResponse
     {
-        if ($response = $this->ensurePermission('view divisions', 'You do not have permission to view divisions')) {
-            return $response;
+        $canViewAll = $this->hasPermission('view all divisions');
+        $canViewOwn = $this->hasPermission('view own divisions');
+
+        if (!$canViewAll && !$canViewOwn) {
+            return $this->forbidden('You do not have permission to view divisions');
         }
 
-        $divisions = Division::with('leader:id,name')
-            ->withCount(['members', 'events', 'projects', 'todoLists'])
-            ->get()
-            ->makeHidden(['created_at', 'updated_at', 'leader_id']);
+        $query = Division::with('leader:id,name')
+            ->withCount(['members', 'events', 'projects', 'todoLists']);
+
+        if (!$canViewAll) {
+            $query->whereIn('id', Auth::user()->ownDivisionIds());
+        }
+
+        $divisions = $query->get()->makeHidden(['created_at', 'updated_at', 'leader_id']);
 
         return $this->success($divisions, 'Divisions retrieved successfully', $divisions->count());
     }
@@ -36,8 +44,15 @@ class DivisionController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        if ($response = $this->ensurePermission('view divisions', 'You do not have permission to view divisions')) {
-            return $response;
+        $canViewAll = $this->hasPermission('view all divisions');
+        $canViewOwn = $this->hasPermission('view own divisions');
+
+        if (!$canViewAll && !$canViewOwn) {
+            return $this->forbidden('You do not have permission to view divisions');
+        }
+
+        if (!$canViewAll && !in_array((int) $request->id, Auth::user()->ownDivisionIds())) {
+            return $this->forbidden('You do not have permission to view this division');
         }
 
         $division = Division::with(['leader', 'members', 'events', 'projects', 'todoLists'])
@@ -141,8 +156,15 @@ class DivisionController extends ApiController
 
         $division = Division::findOrFail($request->division_id);
 
-        if ($response = $this->ensurePermission('view divisions', 'You do not have permission to view division members')) {
-            return $response;
+        $canViewAll = $this->hasPermission('view all divisions');
+        $canViewOwn = $this->hasPermission('view own divisions');
+
+        if (!$canViewAll && !$canViewOwn) {
+            return $this->forbidden('You do not have permission to view division members');
+        }
+
+        if (!$canViewAll && !in_array((int) $request->division_id, Auth::user()->ownDivisionIds())) {
+            return $this->forbidden('You do not have permission to view this division');
         }
 
         $canManageMembers = $this->hasPermission('edit divisions') || Auth::user()->id === $division->leader_id;
@@ -152,8 +174,10 @@ class DivisionController extends ApiController
         }
 
         $members = $division->members()->with('roles')->get();
-        $availableUsers = User::whereNull('division_id')
-            ->orWhere('division_id', '!=', $division->id)
+
+        // Get users not already members of this division
+        $existingMemberIds = $division->members()->pluck('users.id')->toArray();
+        $availableUsers = User::whereNotIn('id', $existingMemberIds)
             ->get(['id', 'name', 'email']);
 
         return $this->success([
@@ -181,8 +205,16 @@ class DivisionController extends ApiController
         }
 
         $user = User::findOrFail($request->user_id);
-        $user->division_id = $division->id;
-        $user->save();
+
+        // Check if user is already a member
+        if ($division->members()->where('user_id', $user->id)->exists()) {
+            return $this->error('User is already a member of this division');
+        }
+
+        // Add user to division via pivot table
+        $division->members()->attach($user->id);
+
+        $user->notify(new DivisionMemberAddedNotification($division, Auth::user()));
 
         return $this->success(null, 'Member added successfully');
     }
@@ -206,11 +238,23 @@ class DivisionController extends ApiController
             return $this->forbidden('You do not have permission to manage division members');
         }
 
-        // Update all users in bulk
-        User::whereIn('id', $request->user_ids)
-            ->update(['division_id' => $division->id]);
+        // Get existing member IDs to avoid duplicates
+        $existingMemberIds = $division->members()->pluck('users.id')->toArray();
+        $newMemberIds = array_diff($request->user_ids, $existingMemberIds);
 
-        $addedCount = count($request->user_ids);
+        if (empty($newMemberIds)) {
+            return $this->error('All selected users are already members of this division');
+        }
+
+        // Add users to division via pivot table
+        $division->members()->attach($newMemberIds);
+
+        $newMembers = User::whereIn('id', $newMemberIds)->get();
+        foreach ($newMembers as $member) {
+            $member->notify(new DivisionMemberAddedNotification($division, Auth::user()));
+        }
+
+        $addedCount = count($newMemberIds);
 
         return $this->success(null, "Successfully added {$addedCount} member(s) to the division");
     }
@@ -240,8 +284,13 @@ class DivisionController extends ApiController
             return $this->error('Cannot remove the division leader');
         }
 
-        $user->division_id = null;
-        $user->save();
+        // Check if user is a member of this division
+        if (!$division->members()->where('user_id', $user->id)->exists()) {
+            return $this->error('User is not a member of this division');
+        }
+
+        // Remove user from division via pivot table
+        $division->members()->detach($user->id);
 
         return $this->success(null, 'Member removed successfully');
     }

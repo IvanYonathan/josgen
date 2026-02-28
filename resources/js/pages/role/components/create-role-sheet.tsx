@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
 import { createRole } from '@/lib/api/role/create-role';
 import { Role, RolePermission } from '@/types/role/role';
@@ -58,6 +58,8 @@ export function CreateRoleSheet({
       return;
     }
 
+    const { id } = toast.loading({ title: t('createRole.messages.creating') });
+
     try {
       setLoading(true);
       setError(null);
@@ -68,16 +70,12 @@ export function CreateRoleSheet({
       });
 
       onRoleCreated(response.role);
-      toast({ title: t('createRole.messages.success') });
+      toast.success({ itemID: id, title: t('createRole.messages.success') });
       handleClose(false);
     } catch (err: any) {
       const message = err?.response?.data?.message || t('createRole.messages.error');
       setError(message);
-      toast({
-        variant: 'destructive',
-        title: t('createRole.messages.error'),
-        description: message,
-      });
+      toast.error(err, { itemID: id, title: t('createRole.messages.error')});
     } finally {
       setLoading(false);
     }

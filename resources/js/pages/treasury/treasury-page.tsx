@@ -1,141 +1,167 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/auth-context';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, DollarSign, TrendingUp, TrendingDown, PlusCircle, RefreshCw, Calendar } from 'lucide-react';
-import { useTranslation } from '@/hooks/use-translation';
+import { RefreshCw, PlusCircle, Eye, EyeOff } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { TreasuryRequest, TreasuryStats } from '@/types/treasury/treasury';
+import { listTreasury, getTreasuryStats, deleteTreasury, approveTreasury } from '@/lib/api/treasury';
+import { AxiosJosgen, ApiResponse } from '@/lib/axios/axios-josgen';
 
-// Placeholder types - replace with actual API types
-interface TreasuryRequest {
-  id: number;
-  title: string;
-  description?: string;
-  amount: number;
-  currency: string;
-  type: 'income' | 'expense';
-  status: 'pending' | 'approved' | 'rejected';
-  requested_by: string;
-  request_date: string;
-  division_name?: string;
-}
-
-interface TreasuryStats {
-  total_income: number;
-  total_expenses: number;
-  pending_requests: number;
-  balance: number;
-}
-
-interface TreasuryResponse {
-  requests: TreasuryRequest[];
-  stats: TreasuryStats;
-  total: number;
-}
+import { MyRequestsTab } from './components/my-requests-tab';
+import { PendingApprovalsTab } from './components/pending-approvals-tab';
+import { FinancialOverviewTab } from './components/financial-overview-tab';
+import { RejectDialog } from './components/reject-dialog';
+import { RequestDetailDialog } from './components/request-detail-dialog';
+import { DeleteRequestDialog } from './components/delete-request-dialog';
 
 export function TreasuryPage() {
-  const { t } = useTranslation('treasury');
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user, permissions } = useAuth();
+  const canAccessAdmin = permissions.can_view_all_treasury_requests || permissions.can_approve_treasury_requests || permissions.can_view_treasury_reports;
+  const canCreateRequest = permissions.can_create_treasury_requests;
+  const canApprove = permissions.can_approve_treasury_requests;
+  const canViewReports = permissions.can_view_treasury_reports;
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState('my-requests');
+
+  // Data state
   const [requests, setRequests] = useState<TreasuryRequest[]>([]);
   const [stats, setStats] = useState<TreasuryStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState<string | null>(null);
+  const [pendingCount, setPendingCount] = useState(0);
 
-  // Load treasury data from API
-  const loadTreasuryData = async () => {
+  // Hide amounts toggle (only for Financial Overview)
+  const [hideAmounts, setHideAmounts] = useState(false);
+
+  // Dialog states
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<TreasuryRequest | null>(null);
+  const [deleteRequest, setDeleteRequest] = useState<TreasuryRequest | null>(null);
+
+  // Load requests
+  const loadRequests = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
+      const response = await listTreasury();
+      setRequests(response.requests);
 
-      // TODO: Replace with actual API call when treasury API is implemented
-      // const response = await listTreasuryRequests();
-      // setRequests(response.requests);
-      // setStats(response.stats);
-
-      // Mock data for now
-      const mockStats: TreasuryStats = {
-        total_income: 150000,
-        total_expenses: 85000,
-        pending_requests: 5,
-        balance: 65000
-      };
-
-      const mockRequests: TreasuryRequest[] = [
-        {
-          id: 1,
-          title: 'Office Equipment Purchase',
-          description: 'New laptops and monitors for the development team',
-          amount: 15000,
-          currency: 'USD',
-          type: 'expense',
-          status: 'pending',
-          requested_by: 'John Smith',
-          request_date: '2024-05-10',
-          division_name: 'Engineering'
-        },
-        {
-          id: 2,
-          title: 'Marketing Campaign Budget',
-          description: 'Q2 digital marketing campaign expenses',
-          amount: 8500,
-          currency: 'USD',
-          type: 'expense',
-          status: 'approved',
-          requested_by: 'Sarah Johnson',
-          request_date: '2024-05-08',
-          division_name: 'Marketing'
-        },
-        {
-          id: 3,
-          title: 'Client Payment Received',
-          description: 'Payment for Project ABC completion',
-          amount: 25000,
-          currency: 'USD',
-          type: 'income',
-          status: 'approved',
-          requested_by: 'Mike Chen',
-          request_date: '2024-05-05',
-          division_name: 'Sales'
-        },
-        {
-          id: 4,
-          title: 'Team Building Event',
-          description: 'Annual team building activities and catering',
-          amount: 3200,
-          currency: 'USD',
-          type: 'expense',
-          status: 'rejected',
-          requested_by: 'Emily Davis',
-          request_date: '2024-05-03',
-          division_name: 'HR'
-        }
-      ];
-
-      setRequests(mockRequests);
-      setStats(mockStats);
+      if (canAccessAdmin) {
+        const pending = response.requests.filter(r =>
+          r.status === 'submitted' || r.status === 'under_review'
+        ).length;
+        setPendingCount(pending);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load treasury data');
+      toast.error(err, { title: 'Failed to load requests' });
     } finally {
       setLoading(false);
     }
-  };
+  }, [canAccessAdmin]);
+
+  // Load stats
+  const loadStats = useCallback(async () => {
+    if (!canAccessAdmin) return;
+
+    try {
+      setStatsLoading(true);
+      setStatsError(null);
+      const statsData = await getTreasuryStats();
+      setStats(statsData);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load statistics';
+      setStatsError(errorMessage);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [canAccessAdmin]);
 
   useEffect(() => {
-    loadTreasuryData();
-  }, []);
+    loadRequests();
+    if (canAccessAdmin) {
+      loadStats();
+    }
+  }, [loadRequests, loadStats, canAccessAdmin]);
 
-  const getStatusColor = (status: TreasuryRequest['status']) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+  // Handlers
+  const handleApprove = async (request: TreasuryRequest) => {
+    const { id } = toast.loading({ title: 'Approving request...' });
+    try {
+      await approveTreasury({ id: request.id });
+      toast.success({ itemID: id, title: 'Request approved successfully' });
+      loadRequests();
+      loadStats();
+    } catch (err) {
+      toast.error(err, { itemID: id, title: 'Failed to approve request' });
     }
   };
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
+  const openDeleteDialog = (request: TreasuryRequest) => {
+    setDeleteRequest(request);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteRequest) return;
+
+    setDeleteLoading(true);
+    const { id } = toast.loading({ title: 'Deleting request...' });
+    try {
+      await deleteTreasury(deleteRequest.id);
+      toast.success({ itemID: id, title: 'Request deleted successfully' });
+      setDeleteDialogOpen(false);
+      setDeleteRequest(null);
+      loadRequests();
+    } catch (err) {
+      toast.error(err, { itemID: id, title: 'Failed to delete request' });
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const openRejectDialog = (request: TreasuryRequest) => {
+    setSelectedRequest(request);
+    setRejectDialogOpen(true);
+  };
+
+  const openDetailDialog = async (request: TreasuryRequest) => {
+    try {
+      // Fetch full request details including attachments
+      const response = await AxiosJosgen.post<ApiResponse<{ request: TreasuryRequest }>>('/treasury/get', { id: request.id });
+      if (response.data.status) {
+        setSelectedRequest(response.data.data.request);
+      } else {
+        setSelectedRequest(request); // Fallback to existing data
+      }
+    } catch (err) {
+      console.error('Failed to fetch request details:', err);
+      setSelectedRequest(request); // Fallback to existing data
+    }
+    setDetailDialogOpen(true);
+  };
+
+  const handleResubmit = async (request: TreasuryRequest) => {
+    const { id } = toast.loading({ title: 'Resubmitting request...' });
+    try {
+      await AxiosJosgen.post<ApiResponse<any>>('/treasury/submit', { id: request.id });
+      toast.success({ itemID: id, title: 'Request resubmitted successfully! It will go through a fresh approval cycle.' });
+      loadRequests();
+    } catch (err) {
+      toast.error(err, { itemID: id, title: 'Failed to resubmit request' });
+    }
+  };
+
+  const handleRefresh = () => {
+    loadRequests();
+    if (canAccessAdmin) loadStats();
   };
 
   return (
@@ -146,7 +172,7 @@ export function TreasuryPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={loadTreasuryData}
+            onClick={handleRefresh}
             disabled={loading}
             className="flex items-center gap-2"
           >
@@ -155,160 +181,114 @@ export function TreasuryPage() {
           </Button>
         </div>
 
-        <Button>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          New Request
-        </Button>
+        <div className="flex items-center gap-2">
+          {activeTab === 'financial-overview' ? (
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setHideAmounts(!hideAmounts)}
+                title={hideAmounts ? 'Show amounts' : 'Hide amounts'}
+              >
+                {hideAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+              {canViewReports && (
+                <Button onClick={() => navigate('/treasury/record/new')}>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add Report
+                </Button>
+              )}
+            </>
+          ) : (
+            canCreateRequest && (
+              <Button onClick={() => navigate('/treasury/request/new')}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                New Request
+              </Button>
+            )
+          )}
+        </div>
       </div>
 
-      {/* Error Display */}
-      {error && (
-        <div className="mb-6 p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
-          {error}
-        </div>
-      )}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="my-requests">My Requests</TabsTrigger>
+          {canViewReports && (
+            <TabsTrigger value="financial-overview">Financial Overview</TabsTrigger>
+          )}
+          {canApprove && (
+            <TabsTrigger value="pending-approvals" className="relative">
+              Pending Approvals
+              {pendingCount > 0 && (
+                <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {pendingCount}
+                </span>
+              )}
+            </TabsTrigger>
+          )}
+        </TabsList>
 
-      {/* Stats Cards */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Income</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(stats.total_income)}
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="my-requests">
+          <MyRequestsTab
+            requests={requests}
+            loading={loading}
+            onEdit={(req) => navigate(`/treasury/request/${req.id}/edit`)}
+            onDelete={openDeleteDialog}
+            onView={openDetailDialog}
+            onResubmit={handleResubmit}
+            onCreateNew={() => navigate('/treasury/request/new')}
+          />
+        </TabsContent>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-              <TrendingDown className="h-4 w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">
-                {formatCurrency(stats.total_expenses)}
-              </div>
-            </CardContent>
-          </Card>
+        {canViewReports && (
+          <TabsContent value="financial-overview">
+            <FinancialOverviewTab
+              stats={stats}
+              statsLoading={statsLoading}
+              statsError={statsError}
+              hideAmounts={hideAmounts}
+              onToggleHideAmounts={() => setHideAmounts(!hideAmounts)}
+              onLoadStats={loadStats}
+              onAddReport={() => navigate('/treasury/record/new')}
+            />
+          </TabsContent>
+        )}
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Current Balance</CardTitle>
-              <DollarSign className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {formatCurrency(stats.balance)}
-              </div>
-            </CardContent>
-          </Card>
+        {canApprove && (
+          <TabsContent value="pending-approvals">
+            <PendingApprovalsTab
+              requests={requests}
+              loading={loading}
+              currentUserId={user.id}
+              onApprove={handleApprove}
+              onReject={openRejectDialog}
+              onView={openDetailDialog}
+            />
+          </TabsContent>
+        )}
+      </Tabs>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
-              <Calendar className="h-4 w-4 text-yellow-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
-                {stats.pending_requests}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <RejectDialog
+        open={rejectDialogOpen}
+        onOpenChange={setRejectDialogOpen}
+        request={selectedRequest}
+        onSuccess={handleRefresh}
+      />
 
-      {/* Requests List */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      ) : requests.length === 0 ? (
-        <div className="text-center py-8">
-          <DollarSign className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">No treasury requests found</p>
-          <Button variant="outline">
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Create your first request
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Recent Requests</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {requests.map(request => (
-              <Card key={request.id} className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="line-clamp-1 text-base">{request.title}</CardTitle>
-                      {request.description && (
-                        <CardDescription className="mt-1 line-clamp-2">
-                          {request.description}
-                        </CardDescription>
-                      )}
-                    </div>
-                    <Badge className={getStatusColor(request.status)}>
-                      {request.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
+      <RequestDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        request={selectedRequest}
+        hideAmounts={hideAmounts}
+      />
 
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {request.type === 'income' ? (
-                        <TrendingUp className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <TrendingDown className="h-4 w-4 text-red-600" />
-                      )}
-                      <span className="text-sm capitalize">{request.type}</span>
-                    </div>
-                    <div className={`text-lg font-bold ${request.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(request.amount, request.currency)}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1 text-sm text-muted-foreground">
-                    <div className="flex justify-between">
-                      <span>Requested by:</span>
-                      <span className="font-medium">{request.requested_by}</span>
-                    </div>
-                    {request.division_name && (
-                      <div className="flex justify-between">
-                        <span>Division:</span>
-                        <span className="font-medium">{request.division_name}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span>Date:</span>
-                      <span className="font-medium">{new Date(request.request_date).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="border-t pt-4">
-                  <Button variant="outline" className="w-full">
-                    View Details
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* TODO: Add pagination when API supports it */}
-      {requests.length > 0 && (
-        <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Showing {requests.length} requests
-          </p>
-        </div>
-      )}
+      <DeleteRequestDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        request={deleteRequest}
+        isLoading={deleteLoading}
+      />
     </div>
   );
 }

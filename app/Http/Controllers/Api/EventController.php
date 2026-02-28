@@ -4,9 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Event;
 use App\Models\Division;
+use App\Models\User;
+use App\Notifications\Event\EventCreatedNotification;
+use App\Notifications\Event\EventCancelledNotification;
+use App\Notifications\Event\EventParticipantAddedNotification;
+use App\Notifications\Event\EventUpdatedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -46,12 +52,14 @@ class EventController extends ApiController
         $filters = $validated['filters'] ?? [];
         $sort = $validated['sort'] ?? [];
 
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
         // Base query: events where user is organizer or user's division is assigned
         $query = Event::query()
-            ->where(function ($q) use ($user) {
+            ->where(function ($q) use ($user, $userDivisionIds) {
                 $q->where('organizer_id', $user->id)
-                    ->orWhereHas('divisions', function ($subQ) use ($user) {
-                        $subQ->where('divisions.id', $user->division_id);
+                    ->orWhereHas('divisions', function ($subQ) use ($userDivisionIds) {
+                        $subQ->whereIn('divisions.id', $userDivisionIds);
                     });
             })
             ->with(['organizer:id,name', 'divisions:id,name', 'participants:id,name']);
@@ -160,10 +168,13 @@ class EventController extends ApiController
 
         $user = Auth::user();
 
-        $event = Event::where(function ($q) use ($user) {
+        // Get user's division IDs from the many-to-many relationship
+        $userDivisionIds = $user->divisions->pluck('id')->toArray();
+
+        $event = Event::where(function ($q) use ($user, $userDivisionIds) {
             $q->where('organizer_id', $user->id)
-                ->orWhereHas('divisions', function ($subQ) use ($user) {
-                    $subQ->where('divisions.id', $user->division_id);
+                ->orWhereHas('divisions', function ($subQ) use ($userDivisionIds) {
+                    $subQ->whereIn('divisions.id', $userDivisionIds);
                 });
         })
             ->with(['organizer:id,name', 'divisions:id,name', 'participants:id,name'])
@@ -201,6 +212,8 @@ class EventController extends ApiController
             'division_ids.*' => 'integer|exists:divisions,id',
             'participant_ids' => 'nullable|array',
             'participant_ids.*' => 'integer|exists:users,id',
+            'reminder_presets' => 'nullable|array',
+            'reminder_presets.*' => 'string|in:1_day,7_days,1_month',
         ]);
 
         if ($validator->fails()) {
@@ -217,10 +230,14 @@ class EventController extends ApiController
             'location' => $validated['location'] ?? null,
             'status' => 'upcoming',
             'organizer_id' => $user->id,
+            'reminder_presets' => $validated['reminder_presets'] ?? null,
         ]);
 
         // Attach divisions
         $event->divisions()->attach($validated['division_ids']);
+
+        // Sync reminder rows
+        $event->syncReminders($validated['reminder_presets'] ?? []);
 
         // Attach participants if provided
         if (!empty($validated['participant_ids'])) {
@@ -231,6 +248,23 @@ class EventController extends ApiController
         $event->can_edit = $event->canBeEditedBy($user);
         $event->can_modify_participants = $event->canModifyParticipants();
         $event->participants_count = $event->participants->count();
+
+        // Notify participants they were added (if any), and notify everyone else that a new event was created.
+        $participantIds = $validated['participant_ids'] ?? [];
+
+        if (!empty($participantIds)) {
+            $participants = User::whereIn('id', $participantIds)->get();
+            foreach ($participants as $participant) {
+                $participant->notify(new EventParticipantAddedNotification($event, $user));
+            }
+        }
+
+        User::query()
+            ->when(!empty($participantIds), fn ($q) => $q->whereNotIn('id', $participantIds))
+            ->orderBy('id')
+            ->chunk(200, function ($users) use ($event, $user) {
+                NotificationFacade::send($users, new EventCreatedNotification($event, $user));
+            });
 
         return $this->success(['event' => $event], 'Event created successfully');
     }
@@ -255,6 +289,8 @@ class EventController extends ApiController
             'division_ids.*' => 'integer|exists:divisions,id',
             'participant_ids' => 'nullable|array',
             'participant_ids.*' => 'integer|exists:users,id',
+            'reminder_presets' => 'nullable|array',
+            'reminder_presets.*' => 'string|in:1_day,7_days,1_month',
         ]);
 
         if ($validator->fails()) {
@@ -284,6 +320,9 @@ class EventController extends ApiController
             }
         }
 
+        $beforeDivisionIds = $event->divisions->pluck('id')->toArray();
+        $beforeParticipantIds = $event->participants->pluck('id')->toArray();
+
         if (isset($validated['title'])) {
             $event->title = $validated['title'];
         }
@@ -305,6 +344,7 @@ class EventController extends ApiController
         }
 
         $event->save();
+        $modelChanged = $event->wasChanged();
 
         // Update divisions if provided
         if (isset($validated['division_ids'])) {
@@ -316,10 +356,32 @@ class EventController extends ApiController
             $event->participants()->sync($validated['participant_ids']);
         }
 
+        // Update reminder presets if provided
+        if (array_key_exists('reminder_presets', $validated)) {
+            $event->reminder_presets = $validated['reminder_presets'];
+            $event->save();
+            $event->syncReminders($validated['reminder_presets'] ?? []);
+        }
+
         $event->load(['organizer:id,name', 'divisions:id,name', 'participants:id,name']);
         $event->can_edit = $event->canBeEditedBy($user);
         $event->can_modify_participants = $event->canModifyParticipants();
         $event->participants_count = $event->participants->count();
+
+        $afterDivisionIds = $event->divisions->pluck('id')->toArray();
+        $afterParticipantIds = $event->participants->pluck('id')->toArray();
+
+        $relationshipChanged = (isset($validated['division_ids']) && $beforeDivisionIds !== $afterDivisionIds)
+            || (isset($validated['participant_ids']) && $beforeParticipantIds !== $afterParticipantIds);
+
+        if ($modelChanged || $relationshipChanged) {
+            foreach ($event->participants as $participant) {
+                if ($participant->id === $user->id) {
+                    continue;
+                }
+                $participant->notify(new EventUpdatedNotification($event, $user));
+            }
+        }
 
         return $this->success(['event' => $event], 'Event updated successfully');
     }
@@ -343,7 +405,7 @@ class EventController extends ApiController
 
         $user = Auth::user();
 
-        $event = Event::find($request->id);
+        $event = Event::with('participants:id,name')->find($request->id);
 
         if (!$event) {
             return $this->notFound('Event not found');
@@ -354,9 +416,63 @@ class EventController extends ApiController
             return $this->forbidden('Only the event organizer can delete this event');
         }
 
+        foreach ($event->participants as $participant) {
+            if ($participant->id === $user->id) {
+                continue;
+            }
+            $participant->notify(new EventCancelledNotification($event, $user));
+        }
+
         $event->delete();
 
         return $this->success(null, 'Event deleted successfully');
+    }
+
+    public function cancel(Request $request): JsonResponse
+    {
+        if ($response = $this->ensurePermission('edit events', 'You do not have permission to cancel events')) {
+            return $response;
+        }
+
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:events,id',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationError($validator->errors());
+        }
+
+        $user = Auth::user();
+        $event = Event::with(['divisions', 'participants:id,name'])->find($request->id);
+
+        if (!$event) {
+            return $this->notFound('Event not found');
+        }
+
+        if (!$event->canBeEditedBy($user)) {
+            return $this->forbidden('You do not have permission to cancel this event');
+        }
+
+        if ($event->status === 'cancelled') {
+            return $this->success(['event' => $event], 'Event already cancelled');
+        }
+
+        $event->status = 'cancelled';
+        $event->save();
+
+        foreach ($event->participants as $participant) {
+            if ($participant->id === $user->id) {
+                continue;
+            }
+            $participant->notify(new EventCancelledNotification($event, $user));
+        }
+
+        $event->load(['organizer:id,name', 'divisions:id,name', 'participants:id,name']);
+        $event->can_edit = $event->canBeEditedBy($user);
+        $event->can_modify_participants = $event->canModifyParticipants();
+        $event->participants_count = $event->participants->count();
+
+        return $this->success(['event' => $event], 'Event cancelled successfully');
     }
 
     /**
@@ -402,7 +518,7 @@ class EventController extends ApiController
         $invalidUsers = [];
 
         foreach ($request->user_ids as $userId) {
-            $targetUser = \App\Models\User::find($userId);
+            $targetUser = User::find($userId);
             if ($targetUser && in_array($targetUser->division_id, $eventDivisionIds)) {
                 $validUserIds[] = $userId;
             } else {
@@ -432,6 +548,14 @@ class EventController extends ApiController
         $event->can_edit = $event->canBeEditedBy($user);
         $event->can_modify_participants = $event->canModifyParticipants();
         $event->participants_count = $event->participants->count();
+
+        $newParticipants = User::whereIn('id', $newParticipantIds)->get();
+        foreach ($newParticipants as $participant) {
+            if ($participant->id === $user->id) {
+                continue;
+            }
+            $participant->notify(new EventParticipantAddedNotification($event, $user));
+        }
 
         return $this->success(
             ['event' => $event],

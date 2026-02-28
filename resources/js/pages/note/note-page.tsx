@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2, StickyNote, PlusCircle, RefreshCw, Search, Filter } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
+import { useAuth } from '@/contexts/auth-context';
 import { NoteManagementProvider, useNoteManagementStore } from './store/note-management-store';
 import { listNotes } from '@/lib/api/note/list-notes';
 import { NoteCard } from './components/note-card';
@@ -20,6 +21,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 
 function NotePageContent() {
   const { t } = useTranslation('note');
+  const { permissions } = useAuth();
   const {
     notes,
     loading,
@@ -126,10 +128,12 @@ function NotePageContent() {
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               {t('refresh')}
             </Button>
-            <Button onClick={openCreateMode}>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              {t('new_note')}
-            </Button>
+            {permissions.can_create_notes && (
+              <Button onClick={openCreateMode}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                {t('new_note')}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -199,10 +203,12 @@ function NotePageContent() {
           <StickyNote className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
           <p className="text-lg font-semibold mb-2">{t('no_notes_found')}</p>
           <p className="text-muted-foreground mb-4">{t('no_notes_description')}</p>
-          <Button onClick={openCreateMode}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            {t('create_note')}
-          </Button>
+          {permissions.can_create_notes && (
+            <Button onClick={openCreateMode}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              {t('create_note')}
+            </Button>
+          )}
         </div>
       ) : (
         <>

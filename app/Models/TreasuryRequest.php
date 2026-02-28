@@ -31,6 +31,11 @@ class TreasuryRequest extends Model
         'payment_reference',
         'payment_date',
         'processed_by',
+        'attachment_filename',
+        'attachment_original_name',
+        'attachment_path',
+        'attachment_type',
+        'attachment_size',
     ];
 
     protected $casts = [
@@ -98,12 +103,124 @@ class TreasuryRequest extends Model
     }
 
     /**
-     * Get the attachments associated with the treasury request.
+     * Check if request has an attachment.
      */
-    public function attachments(): HasMany
+    public function hasAttachment(): bool
     {
-        return $this->hasMany(TreasuryAttachment::class);
+        return !empty($this->attachment_path);
     }
+
+    /**
+     * Get the approval records for this treasury request.
+     */
+    public function approvals(): HasMany
+    {
+        return $this->hasMany(TreasuryRequestApproval::class);
+    }
+
+    /**
+     * Check if the request has been rejected.
+     */
+    public function isRejected(): bool
+    {
+        return $this->approvals()->where('decision', 'rejected')->exists();
+    }
+
+    /**
+     * Check if leader has approved.
+     */
+    public function hasLeaderApproval(): bool
+    {
+        return $this->approvals()
+            ->where('approval_level', 'leader')
+            ->where('decision', 'approved')
+            ->exists();
+    }
+
+    /**
+     * Check if treasurer has approved.
+     */
+    public function hasTreasurerApproval(): bool
+    {
+        return $this->approvals()
+            ->where('approval_level', 'treasurer')
+            ->where('decision', 'approved')
+            ->exists();
+    }
+
+    /**
+     * Check if fully approved (both leader and treasurer).
+     */
+    public function isFullyApproved(): bool
+    {
+        return $this->hasLeaderApproval() && $this->hasTreasurerApproval();
+    }
+
+    /**
+     * Get the current approval stage.
+     * Returns: 'pending_leader', 'pending_treasurer', 'approved', 'rejected'
+     */
+    public function getApprovalStage(): string
+    {
+        if ($this->isRejected()) {
+            return 'rejected';
+        }
+
+        if ($this->isFullyApproved()) {
+            return 'approved';
+        }
+
+        if ($this->hasLeaderApproval()) {
+            return 'pending_treasurer';
+        }
+
+        return 'pending_leader';
+    }
+
+    /**
+     * Recalculate and update the status based on approvals.
+     */
+    public function recalculateStatus(): void
+    {
+        if ($this->status === 'draft') {
+            return; // Don't change draft status
+        }
+
+        if ($this->isRejected()) {
+            $this->status = 'rejected';
+        } elseif ($this->isFullyApproved()) {
+            $this->status = 'approved';
+            $this->approved_at = now();
+        } elseif ($this->hasLeaderApproval()) {
+            $this->status = 'under_review';
+        }
+
+        $this->save();
+    }
+
+    /**
+     * Get expense categories from config.
+     */
+    public static function expenseCategories(): array
+    {
+        return \App\Support\TreasuryCategories::expenseCategories();
+    }
+
+    /**
+     * Predefined expense categories (deprecated, use expenseCategories() method).
+     */
+    public const expense_categories = [
+        'transportation' => 'Transportation',
+        'food' => 'Food & Beverages',
+        'supplies' => 'Supplies & Materials',
+        'equipment' => 'Equipment',
+        'venue' => 'Venue & Rental',
+        'printing' => 'Printing & Stationery',
+        'communication' => 'Communication',
+        'utilities' => 'Utilities',
+        'maintenance' => 'Maintenance',
+        'other' => 'Other',
+    ];
 
     /**
      * Scope a query to only include fund requests.

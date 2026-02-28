@@ -5,16 +5,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Briefcase, PlusCircle, RefreshCw, Search } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useAuth } from '@/contexts/auth-context';
 import { ProjectManagementProvider, useProjectManagementStore } from './store/project-management-store';
 import { CreateProjectSheet } from './components/create-project-sheet';
 import { EditProjectSheet } from './components/edit-project-sheet';
 import { listProjects } from '@/lib/api/project/list-projects';
 import { Project } from '@/types/project/project';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { ProjectCard } from './components/project-card';
 
 function ProjectPageContent() {
+  const { toast } = useToast();
   const { t } = useTranslation('project');
+  const { permissions } = useAuth();
   const {
     projects,
     loading,
@@ -67,7 +70,7 @@ function ProjectPageContent() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('failed_to_load_projects');
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(err, { title: t('failed_to_load_projects') });
     } finally {
       setLoading(false);
     }
@@ -77,7 +80,7 @@ function ProjectPageContent() {
     if (project.can_edit) {
       openEditMode(project);
     } else {
-      toast.info(t('view_only'));
+      toast.warning({ title: t('view_only') });
       openEditMode(project);
     }
   };
@@ -102,10 +105,12 @@ function ProjectPageContent() {
           </Button>
         </div>
 
-        <Button onClick={openCreateMode}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          {t('create_project')}
-        </Button>
+        {permissions.can_create_projects && (
+          <Button onClick={openCreateMode}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            {t('create_project')}
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -153,10 +158,12 @@ function ProjectPageContent() {
               ? t('noProjectsFoundMatchingFilters')
               : t('noProjectsFound')}
           </p>
-          <Button variant="outline" onClick={openCreateMode}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            {t('create_first_project')}
-          </Button>
+          {permissions.can_create_projects && (
+            <Button variant="outline" onClick={openCreateMode}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              {t('create_first_project')}
+            </Button>
+          )}
         </div>
       ) : (
         <>

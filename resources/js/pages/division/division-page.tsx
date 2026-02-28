@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import {
   PlusCircle,
@@ -24,9 +25,10 @@ import {
   UserMinus
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
+import { useToast } from '@/hooks/use-toast';
 import { Division, DivisionListResponse, UpdateDivisionRequest } from '@/types/division/division';
 import { DivisionMembersResponse } from '@/types/division/members/division-members';
-import { User } from '@/types/user/user';
+import { User, UserOption } from '@/types/user/user';
 import { CreateDivisionSheet } from './components/create-division-sheet';
 import { BulkMemberSelectionDialog } from './components/bulk-member-selection-dialog';
 import { listDivisions } from '@/lib/api/division/list-divisions';
@@ -36,25 +38,30 @@ import { updateDivision } from '@/lib/api/division/update-division';
 import { deleteDivision } from '@/lib/api/division/delete-division';
 import { listDivisionMembers } from '@/lib/api/division/members/list-division-members';
 import { removeDivisionMember } from '@/lib/api/division/members/remove-division-members';
-import { listUsers } from '@/lib/api/user/list-users';
-
-//TODO (Ivan Yonathan) : Add pagination
-//TODO (Ivan Yonathan) : Add sorting
-//TODO (Ivan Yonathan) : Add filtering
-//TODO (Ivan Yonathan) : Add searching
+import { listUserOptions } from '@/lib/api/user/list-user-options';
+import { listEvents } from '@/lib/api/event/list-events';
+import { listProjects } from '@/lib/api/project/list-projects';
+import { listTodoLists } from '@/lib/api/todo-list/list-todo-lists';
+import { Event } from '@/types/event/event';
+import { Project } from '@/types/project/project';
+import { TodoList } from '@/types/todo-list/todo-list';
+import { DivisionEventCard } from './components/division-event-card';
+import { DivisionProjectCard } from './components/division-project-card';
+import { DivisionTodoListCard } from './components/division-todolist-card';
 
 type ViewMode = 'list' | 'detail';
 
 export default function DivisionPage() {
     const { t } = useTranslation('division');
-
+    const { toast } = useToast();
+    
     // View state
     const [viewMode, setViewMode] = useState<ViewMode>('list');
     const [selectedDivisionId, setSelectedDivisionId] = useState<number | null>(null);
 
     // Division list state
     const [divisions, setDivisions] = useState<DivisionListResponse[]>([]);
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<UserOption[]>([]);
     const [canCreate, setCanCreate] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -62,13 +69,20 @@ export default function DivisionPage() {
     // Division detail state
     const [selectedDivision, setSelectedDivision] = useState<Division | null>(null);
     const [divisionMembers, setDivisionMembers] = useState<DivisionMembersResponse | null>(null);
-    const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+    const [availableUsers, setAvailableUsers] = useState<UserOption[]>([]);
     const [detailLoading, setDetailLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [saveLoading, setSaveLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [detailErrors, setDetailErrors] = useState<Record<string, string>>({});
+
+    const [divisionEvents, setDivisionEvents] = useState<Event[]>([]);
+    const [divisionProjects, setDivisionProjects] = useState<Project[]>([]);
+    const [divisionTodoLists, setDivisionTodoLists] = useState<TodoList[]>([]);
+    const [eventsLoading, setEventsLoading] = useState(false);
+    const [projectsLoading, setProjectsLoading] = useState(false);
+    const [todoListsLoading, setTodoListsLoading] = useState(false);
 
     // Sheet and dialog states
     const [createSheetOpen, setCreateSheetOpen] = useState(false);
@@ -93,17 +107,16 @@ export default function DivisionPage() {
             setLoading(true);
             setError(null);
 
-            // Load divisions and user permissions in parallel
-            const [divisionsResponse, userResponse] = await Promise.all([
+            // Load divisions, user permissions, and user options in parallel
+            const [divisionsResponse, userResponse, userOptionsResponse] = await Promise.all([
                 listDivisions(),
-                me()
+                me(),
+                listUserOptions()
             ]);
 
             setDivisions(divisionsResponse.divisions);
             setCanCreate(userResponse.permissions.can_create_divisions);
-
-            // TODO: Load users list via API when needed for CreateDivisionSheet
-            setUsers([]);
+            setUsers(userOptionsResponse.users);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to load data');
             setCanCreate(false);
@@ -144,7 +157,7 @@ export default function DivisionPage() {
             const [divisionResponse, membersResponse, usersResponse] = await Promise.all([
                 getDivision({ id: divisionId }),
                 listDivisionMembers({ division_id: divisionId }),
-                listUsers()
+                listUserOptions()
             ]);
 
             setSelectedDivision(divisionResponse.division);
@@ -210,6 +223,8 @@ export default function DivisionPage() {
             return;
         }
 
+        const { id } = toast.loading({ title: t('toast.updating') });
+
         try {
             setSaveLoading(true);
             setDetailErrors({});
@@ -222,10 +237,13 @@ export default function DivisionPage() {
             setDivisions(prev =>
                 prev.map(div => div.id === response.division.id ? response.division : div)
             );
+
+            toast.success({ itemID: id, title: t('toast.updateSuccess') });
         } catch (error) {
             setDetailErrors({
                 general: error instanceof Error ? error.message : 'Failed to update division'
             });
+            toast.error(error, { itemID: id, title: t('toast.updateError') });
         } finally {
             setSaveLoading(false);
         }
@@ -234,17 +252,21 @@ export default function DivisionPage() {
     const handleDelete = async () => {
         if (!selectedDivision) return;
 
+        const { id } = toast.loading({ title: t('toast.deleting') });
+
         try {
             setDeleteLoading(true);
             await deleteDivision({ id: selectedDivision.id });
 
             // Remove from divisions list and go back to list view
             setDivisions(prev => prev.filter(div => div.id !== selectedDivision.id));
+            toast.success({ itemID: id, title: t('toast.deleteSuccess') });
             handleBackToList();
         } catch (error) {
             setDetailErrors({
                 general: error instanceof Error ? error.message : 'Failed to delete division'
             });
+            toast.error(error, { itemID: id, title: t('toast.deleteError') });
         } finally {
             setDeleteLoading(false);
         }
@@ -253,6 +275,8 @@ export default function DivisionPage() {
     // Handle member management
     const handleRemoveMember = async (userId: number) => {
         if (!selectedDivision) return;
+
+        const { id } = toast.loading({ title: t('toast.removingMember') });
 
         try {
             await removeDivisionMember({
@@ -268,10 +292,12 @@ export default function DivisionPage() {
 
             setDivisionMembers(membersResponse);
             setSelectedDivision(divisionResponse.division);
+            toast.success({ itemID: id, title: t('toast.removeMemberSuccess') });
         } catch (error) {
             setDetailErrors({
                 general: error instanceof Error ? error.message : 'Failed to remove member'
             });
+            toast.error(error, { itemID: id, title: t('toast.removeMemberError') });
         }
     };
 
@@ -294,6 +320,52 @@ export default function DivisionPage() {
         }
     };
 
+    const loadDivisionEvents = async (divisionId: number) => {
+        try {
+            setEventsLoading(true);
+            const response = await listEvents({
+                filters: { division_id: divisionId },
+                limit: 100,
+            });
+            setDivisionEvents(response.events);
+        } catch (error) {
+            console.error('Failed to load division events:', error);
+        } finally {
+            setEventsLoading(false);
+        }
+    };
+
+    const loadDivisionProjects = async (divisionId: number) => {
+        try {
+            setProjectsLoading(true);
+            const response = await listProjects({
+                filters: { division_id: divisionId },
+                limit: 100,
+            });
+            setDivisionProjects(response.projects);
+        } catch (error) {
+            console.error('Failed to load division projects:', error);
+        } finally {
+            setProjectsLoading(false);
+        }
+    };
+
+    const loadDivisionTodoLists = async (divisionId: number) => {
+        try {
+            setTodoListsLoading(true);
+            const response = await listTodoLists({
+                type: 'division',
+                division_id: divisionId,
+                limit: 100,
+            });
+            setDivisionTodoLists(response.todo_lists);
+        } catch (error) {
+            console.error('Failed to load division todo lists:', error);
+        } finally {
+            setTodoListsLoading(false);
+        }
+    };
+
     // Handle tab changes and trigger appropriate data refetch
     const handleTabChange = async (tabValue: string) => {
         if (!selectedDivision) return;
@@ -310,13 +382,17 @@ export default function DivisionPage() {
                     const divisionResponse = await getDivision({ id: selectedDivision.id });
                     setSelectedDivision(divisionResponse.division);
                     break;
+                case 'events':
+                    // Load division events
+                    await loadDivisionEvents(selectedDivision.id);
+                    break;
                 case 'projects':
-                    // TODO: Implement project refetch when project API is ready
-                    console.log('Projects tab selected - will implement refetch when project API is ready');
+                    // Load division projects
+                    await loadDivisionProjects(selectedDivision.id);
                     break;
                 case 'todo-lists':
-                    // TODO: Implement todo lists refetch when todo lists API is ready
-                    console.log('Todo Lists tab selected - will implement refetch when todo lists API is ready');
+                    // Load division todo lists
+                    await loadDivisionTodoLists(selectedDivision.id);
                     break;
                 default:
                     break;
@@ -416,25 +492,61 @@ export default function DivisionPage() {
                                         </CardContent>
 
                                         <CardFooter className="flex justify-between border-t pt-4">
-                                            <Badge variant="outline" className="flex items-center gap-1">
-                                                <Users className="h-3 w-3" />
-                                                {division.members_count || 0}
-                                            </Badge>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Badge variant="outline" className="flex items-center gap-1 cursor-pointer">
+                                                            <Users className="h-3 w-3" />
+                                                            {division.members_count || 0}
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Total Members</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
 
-                                            <Badge variant="outline" className="flex items-center gap-1">
-                                                <CalendarDays className="h-3 w-3" />
-                                                {division.events_count || 0}
-                                            </Badge>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Badge variant="outline" className="flex items-center gap-1 cursor-pointer">
+                                                            <CalendarDays className="h-3 w-3" />
+                                                            {division.events_count || 0}
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Total Events</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
 
-                                            <Badge variant="outline" className="flex items-center gap-1">
-                                                <Briefcase className="h-3 w-3" />
-                                                {division.projects_count || 0}
-                                            </Badge>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Badge variant="outline" className="flex items-center gap-1 cursor-pointer">
+                                                            <Briefcase className="h-3 w-3" />
+                                                            {division.projects_count || 0}
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Total Projects</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
 
-                                            <Badge variant="outline" className="flex items-center gap-1">
-                                                <ListTodo className="h-3 w-3" />
-                                                {division.todo_lists_count || 0}
-                                            </Badge>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Badge variant="outline" className="flex items-center gap-1 cursor-pointer">
+                                                            <ListTodo className="h-3 w-3" />
+                                                            {division.todo_lists_count || 0}
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Total Todo Lists</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
                                         </CardFooter>
                                     </Card>
                                 ))}
@@ -514,9 +626,10 @@ export default function DivisionPage() {
                             </div>
                         ) : selectedDivision ? (
                             <Tabs defaultValue="overview" className="w-full" onValueChange={handleTabChange}>
-                                <TabsList className="grid w-full grid-cols-4">
+                                <TabsList className="grid w-full grid-cols-5">
                                     <TabsTrigger value="overview">Overview</TabsTrigger>
                                     <TabsTrigger value="members">Members</TabsTrigger>
+                                    <TabsTrigger value="events">Events</TabsTrigger>
                                     <TabsTrigger value="projects">Projects</TabsTrigger>
                                     <TabsTrigger value="todo-lists">Todo Lists</TabsTrigger>
                                 </TabsList>
@@ -749,32 +862,100 @@ export default function DivisionPage() {
                                     </Card>
                                 </TabsContent>
 
+                                <TabsContent value="events" className="space-y-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">Events ({divisionEvents.length})</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                Events associated with this division
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {eventsLoading ? (
+                                        <div className="flex items-center justify-center py-12">
+                                            <Loader2 className="h-8 w-8 animate-spin" />
+                                        </div>
+                                    ) : divisionEvents.length === 0 ? (
+                                        <Card>
+                                            <CardContent className="flex items-center justify-center py-12">
+                                                <div className="text-center">
+                                                    <CalendarDays className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                                    <p className="text-muted-foreground">No events found for this division</p>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {divisionEvents.map(event => (
+                                                <DivisionEventCard key={event.id} event={event} />
+                                            ))}
+                                        </div>
+                                    )}
+                                </TabsContent>
+
                                 <TabsContent value="projects" className="space-y-6">
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Projects</CardTitle>
-                                            <CardDescription>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">Projects ({divisionProjects.length})</h3>
+                                            <p className="text-sm text-muted-foreground">
                                                 Projects associated with this division
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-gray-500 text-sm">Project management will be implemented soon</p>
-                                        </CardContent>
-                                    </Card>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {projectsLoading ? (
+                                        <div className="flex items-center justify-center py-12">
+                                            <Loader2 className="h-8 w-8 animate-spin" />
+                                        </div>
+                                    ) : divisionProjects.length === 0 ? (
+                                        <Card>
+                                            <CardContent className="flex items-center justify-center py-12">
+                                                <div className="text-center">
+                                                    <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                                    <p className="text-muted-foreground">No projects found for this division</p>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {divisionProjects.map(project => (
+                                                <DivisionProjectCard key={project.id} project={project} />
+                                            ))}
+                                        </div>
+                                    )}
                                 </TabsContent>
 
                                 <TabsContent value="todo-lists" className="space-y-6">
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Todo Lists</CardTitle>
-                                            <CardDescription>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">Todo Lists ({divisionTodoLists.length})</h3>
+                                            <p className="text-sm text-muted-foreground">
                                                 Todo lists associated with this division
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-gray-500 text-sm">Todo list management will be implemented soon</p>
-                                        </CardContent>
-                                    </Card>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {todoListsLoading ? (
+                                        <div className="flex items-center justify-center py-12">
+                                            <Loader2 className="h-8 w-8 animate-spin" />
+                                        </div>
+                                    ) : divisionTodoLists.length === 0 ? (
+                                        <Card>
+                                            <CardContent className="flex items-center justify-center py-12">
+                                                <div className="text-center">
+                                                    <ListTodo className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                                    <p className="text-muted-foreground">No todo lists found for this division</p>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {divisionTodoLists.map(todoList => (
+                                                <DivisionTodoListCard key={todoList.id} todoList={todoList} />
+                                            ))}
+                                        </div>
+                                    )}
                                 </TabsContent>
                             </Tabs>
                         ) : (

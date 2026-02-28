@@ -1,11 +1,11 @@
-import { useRef, useMemo, useEffect, useId } from 'react';
+import { useRef, useMemo, useId } from 'react';
 import ReactQuill, { Quill } from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import './rich-text-editor.css';
 import { uploadImage } from '@/lib/api/image/upload-image';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './tooltip';
-import ImageResize from 'quill-image-resize-module-react';
+import ImageResize from 'quill-image-resize';
 
 Quill.register('modules/imageResize', ImageResize);
 
@@ -23,7 +23,7 @@ export function RichTextEditor({
   placeholder = 'Write something...',
   className = '',
   disabled = false,
-}: RichTextEditorProps) {
+}: Readonly<RichTextEditorProps>) {
   const quillRef = useRef<ReactQuill>(null);
   const toolbarId = useId();
 
@@ -72,8 +72,7 @@ export function RichTextEditor({
         },
       },
       imageResize: {
-        parchment: Quill.import('parchment'),
-        modules: ['Resize', 'DisplaySize'],
+        modules: ['Resize', 'DisplaySize', 'Toolbar'],
       },
       clipboard: {
         matchVisual: false,
@@ -92,7 +91,6 @@ export function RichTextEditor({
     'strike',
     'blockquote',
     'list',
-    'bullet',
     'indent',
     'link',
     'image',
@@ -100,18 +98,6 @@ export function RichTextEditor({
     'background',
     'align',
   ];
-
-  const handleFormat = (format: string, value?: any) => {
-    const quill = quillRef.current?.getEditor();
-    if (!quill) return;
-
-    if (value !== undefined) {
-      quill.format(format, value);
-    } else {
-      const currentFormat = quill.getFormat();
-      quill.format(format, !currentFormat[format]);
-    }
-  };
 
   return (
     <TooltipProvider>

@@ -23,7 +23,7 @@ class DailyVerseController extends ApiController
         $verse = $this->dailyVerseService->getTodaysVerse();
 
         if (!$verse) {
-            return $this->error('No verse scheduled for today', 404);
+            return $this->error('No verse scheduled for today', null, 404);
         }
 
         return $this->success($verse, 'Daily verse retrieved successfully')
@@ -42,7 +42,7 @@ class DailyVerseController extends ApiController
         $verse = $this->dailyVerseService->getVerseByDate($request->date);
 
         if (!$verse) {
-            return $this->error('No verse scheduled for this date', 404);
+            return $this->error('No verse scheduled for this date', null, 404);
         }
 
         return $this->success($verse, 'Verse retrieved successfully')

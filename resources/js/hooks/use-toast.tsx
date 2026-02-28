@@ -43,7 +43,12 @@ interface ErrorToastOptions extends Omit<ToastOptions, "title">
   cancel?: ToastOptionsAction | React.ReactNode;
 }
 
-function customToast(jsx: (id: number | string) => React.ReactElement, { itemID, hideClose, ...props }: CustomToastOptions)
+interface ToastReturn
+{
+  id: number | string;
+}
+
+function customToast(jsx: (id: number | string) => React.ReactElement, { itemID, hideClose, ...props }: CustomToastOptions): ToastReturn
 {
   return {
     id: sonnerToast.custom(jsx, {
@@ -54,7 +59,7 @@ function customToast(jsx: (id: number | string) => React.ReactElement, { itemID,
   }
 }
 
-function loadingToast({ itemID, title, hideClose, ...props }: ToastOptions) {
+function loadingToast({ itemID, title, hideClose, ...props }: ToastOptions): ToastReturn {
   return {
     id: sonnerToast.loading(title ?? t("common:toast.loading"), {
       id: itemID,
@@ -66,7 +71,7 @@ function loadingToast({ itemID, title, hideClose, ...props }: ToastOptions) {
   }
 }
 
-function successToast({ itemID, title, hideClose, ...props }: ToastOptions) {
+function successToast({ itemID, title, hideClose, ...props }: ToastOptions): ToastReturn {
   return {
     id: sonnerToast.success(title ?? t("common:toast.success"), {
       id: itemID,
@@ -78,7 +83,7 @@ function successToast({ itemID, title, hideClose, ...props }: ToastOptions) {
   }
 }
 
-function warningToast({ itemID, title, hideClose, ...props }: ToastOptions) {
+function warningToast({ itemID, title, hideClose, ...props }: ToastOptions): ToastReturn {
   return {
     id: sonnerToast.warning(title ?? t("common:toast.warning"), {
       id: itemID,
@@ -90,11 +95,39 @@ function warningToast({ itemID, title, hideClose, ...props }: ToastOptions) {
   }
 }
 
-function errorToast({ itemID, title, hideClose, ...props }: ErrorToastOptions) {
+function errorToast(options: ErrorToastOptions): ToastReturn;
+function errorToast(error: unknown, options?: ErrorToastOptions): ToastReturn;
+function errorToast(
+  errorOrOptions: unknown,
+  maybeOptions?: ErrorToastOptions
+): ToastReturn {
+  let options: ErrorToastOptions;
+
+  if (!maybeOptions && typeof errorOrOptions === "object" && errorOrOptions && !("message" in errorOrOptions) && !("stack" in errorOrOptions)) {
+    options = errorOrOptions as ErrorToastOptions;
+  } else {
+    const error = errorOrOptions;
+    const passedOptions = maybeOptions ?? {};
+
+    options = {
+      ...passedOptions,
+      description:
+        error instanceof Error
+          // Error instance are expected to have a message, 
+          // If error.message is empty string or not provided, fallback to passed description or unknown error
+          ? error.message || (passedOptions.description ?? `Unknown Error (${formatDate('now', { fullFormat: true })})`)
+          // for Errors that are not instances of Error, description must be provided via options. 
+          // If error.message is not provided, fallback to unknown error
+          : passedOptions.description ?? `Unknown Error (${formatDate('now', { fullFormat: true })})`,
+    };
+  }
+
+  const { itemID, title, description, hideClose, ...props } = options;
+
   return {
     id: sonnerToast.error(title ?? t("common:toast.error"), {
       id: itemID,
-      description: formatDate('now', { fullFormat: true }),
+      description: description ?? `${formatDate('now', { fullFormat: true })}`,
       duration: 10000,
       closeButton: !hideClose,
       ...props,
@@ -104,16 +137,17 @@ function errorToast({ itemID, title, hideClose, ...props }: ErrorToastOptions) {
 
 function useToast()
 {
-  return {
-    toast: {
-      loading: loadingToast,
-      success: successToast,
-      warning: warningToast,
-      error: errorToast,
-      custom: customToast,
-    },
-    dismiss: sonnerToast.dismiss
-  }
+  const toast = React.useMemo(() => ({
+    loading: loadingToast,
+    success: successToast,
+    warning: warningToast,
+    error: errorToast,
+    custom: customToast,
+  }), []);
+
+  const dismiss = React.useMemo(() => sonnerToast.dismiss, []);
+
+  return { toast, dismiss };
 }
 
 export { 

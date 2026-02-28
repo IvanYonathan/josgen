@@ -1,3 +1,69 @@
 {
-    "test": "This is a test"
+    "title": "Divisi",
+    "description": "Lihat dan Kelola Divisi di sini",
+    "createDivision":{
+        "title": "Buat Divisi Baru",
+        "description": "Isi formulir di bawah ini untuk membuat divisi baru",
+        "form": {
+            "name": {
+                "label": "Nama Divisi",
+                "placeholder": "Masukkan nama divisi"
+            },
+            "description": {
+                "label": "Deskripsi",
+                "placeholder": "Masukkan deskripsi divisi (opsional)"
+            },
+            "leader": {
+                "label": "Kepala Divisi",
+                "placeholder": "Pilih kepala divisi (opsional)"
+            },
+            "members": {
+                "label": "Anggota"
+            }
+        },
+        "button":{
+            "create": "Buat Divisi",
+            "cancel": "Batal"
+        }
+    },
+    "editDivision":{
+        "title": "Edit Divisi",
+        "description": "Perbarui informasi divisi",
+        "form": {
+            "name": {
+                "label": "Nama Divisi",
+                "placeholder": "Masukkan nama divisi"
+            },
+            "description": {
+                "label": "Deskripsi",
+                "placeholder": "Masukkan deskripsi divisi (opsional)"
+            },
+            "leader": {
+                "label": "Kepala Divisi",
+                "placeholder": "Pilih kepala divisi (opsional)"
+            }
+        },
+        "button":{
+            "update": "Perbarui Divisi",
+            "delete": "Hapus Divisi",
+            "cancel": "Batal"
+        }
+    },
+    "toast": {
+        "creating": "Membuat divisi...",
+        "createSuccess": "Divisi berhasil dibuat",
+        "createError": "Gagal membuat divisi",
+        "updating": "Memperbarui divisi...",
+        "updateSuccess": "Divisi berhasil diperbarui",
+        "updateError": "Gagal memperbarui divisi",
+        "deleting": "Menghapus divisi...",
+        "deleteSuccess": "Divisi berhasil dihapus",
+        "deleteError": "Gagal menghapus divisi",
+        "removingMember": "Menghapus anggota...",
+        "removeMemberSuccess": "Anggota berhasil dihapus",
+        "removeMemberError": "Gagal menghapus anggota",
+        "addingMembers": "Menambahkan anggota...",
+        "addMembersSuccess": "Anggota berhasil ditambahkan",
+        "addMembersError": "Gagal menambahkan anggota"
+    }
 }

@@ -5,20 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, CalendarDays, MapPin, Users, Building2 } from 'lucide-react';
+import { ArrowLeft, Loader2, CalendarDays, MapPin, Users, Building2, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from '@/hooks/use-translation';
 import { CreateEventFormData, createEventSchema, cleanEventFormData } from '../schemas/event-schemas';
 import { createEvent } from '@/lib/api/event/create-event';
 import { useEventManagementStore } from '../store/event-management-store';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { listDivisions } from '@/lib/api/division/list-divisions';
-import { listUsers } from '@/lib/api/user/list-users';
+import { listUserOptions } from '@/lib/api/user/list-user-options';
 import { MultiSelect, MultiSelectTrigger, MultiSelectValue, MultiSelectContent, MultiSelectEmpty, MultiSelectGroup, MultiSelectItem } from '@/components/ui/multi-select';
 import { ParticipantSelector } from './participant-selector';
 import { EventUnsavedChangesDialog } from './event-unsaved-changes-dialog';
 
 export function CreateEventSheet() {
+  const { toast } = useToast();
   const { closeCreateMode, addEvent } = useEventManagementStore();
   const { t } = useTranslation('event');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +39,7 @@ export function CreateEventSheet() {
       location: '',
       division_ids: [],
       participant_ids: [] as number[],
+      reminder_presets: [] as string[],
     },
     mode: 'onChange',
   });
@@ -62,13 +64,13 @@ export function CreateEventSheet() {
         setLoadingData(true);
         const [divisionsRes, usersRes] = await Promise.all([
           listDivisions(),
-          listUsers(),
+          listUserOptions(),
         ]);
         setDivisions(divisionsRes.divisions || []);
         setUsers(usersRes.users || []);
       } catch (error) {
         console.error('Failed to load data:', error);
-        toast.error(t('failed_to_load_divisions_and_users'));
+        toast.error(error, { title: t('failed_to_load_divisions_and_users') });
       } finally {
         setLoadingData(false);
       }
@@ -90,15 +92,16 @@ export function CreateEventSheet() {
   };
 
   const onSubmit = async (data: any) => {
+    const { id } = toast.loading({ title: 'Creating event...' });
     try {
       setIsSubmitting(true);
       const cleanedData = cleanEventFormData(data);
       const response = await createEvent(cleanedData as CreateEventFormData);
       addEvent(response.event);
-      toast.success(t('create_success'));
+      toast.success({ itemID: id, title: t('create_success') });
       closeCreateMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('create_error'));
+      toast.error(error, { itemID: id, title: t('create_error') });
       console.error('Failed to create event:', error);
     } finally {
       setIsSubmitting(false);
@@ -213,6 +216,43 @@ export function CreateEventSheet() {
                 {form.formState.errors.location && (
                   <p className="text-sm text-destructive">{form.formState.errors.location.message}</p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reminder_presets">
+                  <Bell className="h-4 w-4 inline mr-1" />
+                  Email Reminders
+                </Label>
+                <Controller
+                  name="reminder_presets"
+                  control={form.control}
+                  render={({ field }) => (
+                    <MultiSelect
+                      value={field.value || []}
+                      onValueChange={(values) => field.onChange(values)}
+                    >
+                      <MultiSelectTrigger>
+                        <MultiSelectValue
+                          placeholder="Select reminder presets (optional)"
+                          itemComponent={(props) => (
+                            <Badge variant="secondary" className="mr-1">
+                              {props.value === '1_day' ? '1 day before' : props.value === '7_days' ? '7 days before' : '1 month before'}
+                            </Badge>
+                          )}
+                        />
+                      </MultiSelectTrigger>
+                      <MultiSelectContent>
+                        <MultiSelectEmpty>No presets available</MultiSelectEmpty>
+                        <MultiSelectGroup>
+                          <MultiSelectItem value="1_day">1 day before</MultiSelectItem>
+                          <MultiSelectItem value="7_days">7 days before</MultiSelectItem>
+                          <MultiSelectItem value="1_month">1 month before</MultiSelectItem>
+                        </MultiSelectGroup>
+                      </MultiSelectContent>
+                    </MultiSelect>
+                  )}
+                />
+                <p className="text-xs text-muted-foreground">Participants will receive email reminders at the selected times before the event.</p>
               </div>
 
               <div className="space-y-2">

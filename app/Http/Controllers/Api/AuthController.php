@@ -9,9 +9,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends ApiController
 {
+    private const ACCESS_TOKEN_EXPIRY_MINUTES = 60;
+    private const REFRESH_TOKEN_EXPIRY_DAYS = 7;
+
     public function login(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -24,19 +28,30 @@ class AuthController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        if (!Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return $this->unauthorized('Invalid credentials');
         }
 
-        $user = Auth::user();
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $accessToken = $user->createToken(
+            'access-token',
+            ['*'],
+            now()->addMinutes(self::ACCESS_TOKEN_EXPIRY_MINUTES)
+        );
+
+        $refreshToken = $user->createToken(
+            'refresh-token',
+            ['*'],
+            now()->addDays(self::REFRESH_TOKEN_EXPIRY_DAYS)
+        );
 
         return $this->success([
             'user' => $user,
-            'access_token' => $token,
-            'refresh_token' => $token, // In a real app, you might want separate refresh tokens
+            'access_token' => $accessToken->plainTextToken,
+            'refresh_token' => $refreshToken->plainTextToken,
             'token_type' => 'Bearer',
-            'expires_in' => config('sanctum.expiration', 525600), // minutes
+            'expires_in' => self::ACCESS_TOKEN_EXPIRY_MINUTES,
         ], 'Login successful');
     }
 
@@ -58,14 +73,24 @@ class AuthController extends ApiController
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $accessToken = $user->createToken(
+            'access-token',
+            ['*'],
+            now()->addMinutes(self::ACCESS_TOKEN_EXPIRY_MINUTES)
+        );
+
+        $refreshToken = $user->createToken(
+            'refresh-token',
+            ['*'],
+            now()->addDays(self::REFRESH_TOKEN_EXPIRY_DAYS)
+        );
 
         return $this->success([
             'user' => $user,
-            'access_token' => $token,
-            'refresh_token' => $token,
+            'access_token' => $accessToken->plainTextToken,
+            'refresh_token' => $refreshToken->plainTextToken,
             'token_type' => 'Bearer',
-            'expires_in' => config('sanctum.expiration', 525600),
+            'expires_in' => self::ACCESS_TOKEN_EXPIRY_MINUTES,
         ], 'Registration successful');
     }
 
@@ -73,20 +98,9 @@ class AuthController extends ApiController
     {
         $user = $request->user();
 
-        // Delete current access token if it exists (Sanctum)
-        if ($user && $user->currentAccessToken()) {
-            $user->currentAccessToken()->delete();
-        }
-
-        // Logout from web session (only if session exists)
-        if (Auth::guard('web')->check()) {
-            Auth::guard('web')->logout();
-        }
-
-        // Invalidate session only if it exists (for cookie-based auth)
-        if ($request->hasSession()) {
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        if ($user) {
+            // Delete all tokens for this user (access + refresh)
+            $user->tokens()->delete();
         }
 
         return $this->success(null, 'Logout successful');
@@ -98,27 +112,59 @@ class AuthController extends ApiController
         $user = $request->user();
         $user->load('roles', 'permissions');
 
-        // Temporarily set default guard to 'web' for permission checks
+        // Temporarily set default guard to 'web' for Spatie permission checks
         $originalGuard = config('auth.defaults.guard');
         config(['auth.defaults.guard' => 'web']);
 
         $permissions = [
-            'can_view_divisions' => $user->can('view divisions'),
-            'can_create_divisions' => $user->can('create divisions'),
-            'can_edit_divisions' => $user->can('edit divisions'),
-            'can_delete_divisions' => $user->can('delete divisions'),
+            // User management
             'can_view_users' => $user->can('view users'),
             'can_create_users' => $user->can('create users'),
             'can_edit_users' => $user->can('edit users'),
             'can_delete_users' => $user->can('delete users'),
+            // Role management
             'can_view_roles' => $user->can('view roles'),
             'can_create_roles' => $user->can('create roles'),
             'can_edit_roles' => $user->can('edit roles'),
             'can_delete_roles' => $user->can('delete roles'),
+            // Permission management
             'can_view_permissions' => $user->can('view permissions'),
             'can_create_permissions' => $user->can('create permissions'),
             'can_edit_permissions' => $user->can('edit permissions'),
             'can_delete_permissions' => $user->can('delete permissions'),
+            // Divisions
+            'can_view_own_divisions' => $user->can('view own divisions'),
+            'can_view_all_divisions' => $user->can('view all divisions'),
+            'can_view_divisions' => $user->can('view own divisions') || $user->can('view all divisions'),
+            'can_create_divisions' => $user->can('create divisions'),
+            'can_edit_divisions' => $user->can('edit divisions'),
+            'can_delete_divisions' => $user->can('delete divisions'),
+            // Events
+            'can_view_events' => $user->can('view events'),
+            'can_create_events' => $user->can('create events'),
+            'can_edit_events' => $user->can('edit events'),
+            'can_delete_events' => $user->can('delete events'),
+            // Projects
+            'can_view_projects' => $user->can('view projects'),
+            'can_create_projects' => $user->can('create projects'),
+            'can_edit_projects' => $user->can('edit projects'),
+            'can_delete_projects' => $user->can('delete projects'),
+            // Todo lists
+            'can_view_todo_lists' => $user->can('view todo lists'),
+            'can_create_todo_lists' => $user->can('create todo lists'),
+            'can_edit_todo_lists' => $user->can('edit todo lists'),
+            'can_delete_todo_lists' => $user->can('delete todo lists'),
+            // Notes
+            'can_create_notes' => $user->can('create notes'),
+            'can_edit_notes' => $user->can('edit notes'),
+            'can_delete_notes' => $user->can('delete notes'),
+            // Treasury
+            'can_create_treasury_requests' => $user->can('create treasury requests'),
+            'can_view_own_treasury_requests' => $user->can('view own treasury requests'),
+            'can_view_all_treasury_requests' => $user->can('view all treasury requests'),
+            'can_approve_treasury_requests' => $user->can('approve treasury requests'),
+            'can_process_payments' => $user->can('process payments'),
+            'can_view_treasury_reports' => $user->can('view treasury reports'),
         ];
 
         // Restore original guard
@@ -132,16 +178,17 @@ class AuthController extends ApiController
 
     public function updateProfile(Request $request): JsonResponse
     {
+        $user = $request->user();
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . Auth::id(),
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
         ]);
 
         if ($validator->fails()) {
             return $this->validationError($validator->errors());
         }
 
-        $user = Auth::user();
         $user->update($validator->validated());
 
         return $this->success([
@@ -160,7 +207,7 @@ class AuthController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        $user = Auth::user();
+        $user = $request->user();
 
         if (!Hash::check($request->current_password, $user->password)) {
             return $this->error('Current password is incorrect');
@@ -183,20 +230,40 @@ class AuthController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        // In a real implementation, you would validate the refresh token
-        // For now, we'll just return a new token for the authenticated user
-        if (!Auth::check()) {
+        $token = PersonalAccessToken::findToken($request->input('refresh_token'));
+
+        if (!$token || $token->name !== 'refresh-token') {
             return $this->unauthorized('Invalid refresh token');
         }
 
-        $user = Auth::user();
-        $newToken = $user->createToken('auth-token')->plainTextToken;
+        if ($token->expires_at && $token->expires_at->isPast()) {
+            $token->delete();
+            return $this->unauthorized('Refresh token expired');
+        }
+
+        $user = $token->tokenable;
+
+        // Delete the used refresh token and all expired access tokens for this user
+        $token->delete();
+        $user->tokens()->where('name', 'access-token')->where('expires_at', '<', now())->delete();
+
+        $newAccessToken = $user->createToken(
+            'access-token',
+            ['*'],
+            now()->addMinutes(self::ACCESS_TOKEN_EXPIRY_MINUTES)
+        );
+
+        $newRefreshToken = $user->createToken(
+            'refresh-token',
+            ['*'],
+            now()->addDays(self::REFRESH_TOKEN_EXPIRY_DAYS)
+        );
 
         return $this->success([
-            'access_token' => $newToken,
-            'refresh_token' => $newToken,
+            'access_token' => $newAccessToken->plainTextToken,
+            'refresh_token' => $newRefreshToken->plainTextToken,
             'token_type' => 'Bearer',
-            'expires_in' => config('sanctum.expiration', 525600),
+            'expires_in' => self::ACCESS_TOKEN_EXPIRY_MINUTES,
         ], 'Token refreshed successfully');
     }
 

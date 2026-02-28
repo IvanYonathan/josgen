@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { RoleBadge } from '@/components/user/role-badge';
 import { UserAvatar } from '@/components/user/user-avatar';
 import { useTranslation } from '@/hooks/use-translation';
@@ -45,6 +45,8 @@ interface UserDataTableProps {
     };
     onPageChange: (page: number) => void;
     onPageSizeChange: (pageSize: number) => void;
+    canEdit?: boolean;
+    canDelete?: boolean;
 }
 
 export function UserDataTable({
@@ -57,6 +59,8 @@ export function UserDataTable({
     pagination,
     onPageChange,
     onPageSizeChange,
+    canEdit = true,
+    canDelete = true,
 }: Readonly<UserDataTableProps>) {
     const { t } = useTranslation('user');
     const { toast } = useToast();
@@ -75,17 +79,8 @@ export function UserDataTable({
         try {
             setDeletingId(userToDelete.id);
             await onDelete(userToDelete.id);
-            toast({
-                title: t('success'),
-                description: t('user_deleted'),
-            });
         } catch (error) {
-            const description = error instanceof Error ? error.message : t('delete_error');
-            toast({
-                variant: 'destructive',
-                title: t('error'),
-                description,
-            });
+            toast.error(error, { title: t('toast.deleteError')});
         } finally {
             setDeletingId(null);
             setDeleteDialogOpen(false);
@@ -105,8 +100,10 @@ export function UserDataTable({
                 onDeleteClick: handleDeleteClick,
                 onView,
                 deletingId,
+                canEdit,
+                canDelete,
             }),
-        [t, onEdit, onView, deletingId]
+        [t, onEdit, onView, deletingId, canEdit, canDelete]
     );
 
     const {
@@ -154,31 +151,35 @@ export function UserDataTable({
                     {t('view')}
                 </Button>
             )}
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(user)}
-                className="w-full sm:w-auto">
-                {t('edit')}
-            </Button>
-            <Button
-                variant="destructive"
-                size="sm"
-                disabled={deletingId === user.id}
-                onClick={() => handleDeleteClick(user)}
-                className="w-full sm:w-auto">
-                {deletingId === user.id ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('deleting')}
-                    </>
-                ) : (
-                    <>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        {t('delete')}
-                    </>
-                )}
-            </Button>
+            {canEdit && (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEdit(user)}
+                    className="w-full sm:w-auto">
+                    {t('edit')}
+                </Button>
+            )}
+            {canDelete && (
+                <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={deletingId === user.id}
+                    onClick={() => handleDeleteClick(user)}
+                    className="w-full sm:w-auto">
+                    {deletingId === user.id ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {t('deleting')}
+                        </>
+                    ) : (
+                        <>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            {t('delete')}
+                        </>
+                    )}
+                </Button>
+            )}
         </div>
     );
 

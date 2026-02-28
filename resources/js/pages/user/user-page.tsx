@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
 import { deleteUser } from '@/lib/api/user/delete-user';
 import { getUser } from '@/lib/api/user/get-user';
@@ -18,6 +18,7 @@ import { UserManagementProvider, useUserManagementStore } from './store/user-man
 import { useFeatureFlags } from '@/stores/feature-flags-store';
 import { formatRoleLabel } from '@/lib/utils/role-label';
 import { DEFAULT_ROLE_SLUGS } from '@/constants/default-roles';
+import { useAuth } from '@/contexts/auth-context';
 
 const LIMIT_OPTIONS = [10, 25, 50, 100];
 
@@ -39,6 +40,7 @@ const SORT_OPTIONS: Array<{ value: SortSelection; label: string }> = [
 function UserPage() {
     const { t } = useTranslation('user');
     const { toast } = useToast();
+    const { permissions } = useAuth();
 
     // Feature flags for conditional features
     const { userExportEnabled, userBulkActionsEnabled, userAdvancedFiltersEnabled } = useFeatureFlags();
@@ -197,71 +199,50 @@ function UserPage() {
 
     // Handlers
     const handleUserCreated = async (_user: User) => {
+        const { id } = toast.loading({ title: t('toast.refreshing') });
         try {
             if (pagination.page !== 1) {
                 setPage(1);
-            } else {
-                await fetchUsers();
             }
-            toast({
-                title: 'Success',
-                description: 'User created successfully and list refreshed.',
-            });
+            await fetchUsers();
+            toast.success({ itemID: id, title: t('toast.refreshing') });
         } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: error.message || 'Failed to refresh user list after creation',
-            });
+            toast.error(error, { itemID: id, title: t('toast.refreshError') });
         }
     };
 
     const handleUserUpdated = async (updatedUser: User) => {
+        const { id } = toast.loading({ title: t('toast.refreshing') });
         try {
             await fetchUsers();
             if (detailUser && detailUser.id === updatedUser.id) {
                 setDetailUser(updatedUser);
             }
-            toast({
-                title: 'Success',
-                description: 'User updated successfully and list refreshed.',
-            });
+            toast.success({ itemID: id, title: t('toast.refreshing') });
         } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: error.message || 'Failed to refresh user list after update',
-            });
+            toast.error(error, { itemID: id, title: t('toast.refreshError') });
         }
     };
 
     const handleUserDeleted = async (userId: number): Promise<void> => {
+        const { id } = toast.loading({ title: t('toast.deleting') });
         try {
             await deleteUser({ id: userId });
             await fetchUsers();
-            toast({
-                title: t('success'),
-                description: t('user_deleted'),
-            });
+            toast.success({ itemID: id, title: t('toast.deleteSuccess')});
         } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: t('error'),
-                description: error.message || t('failed_to_delete_user'),
-            });
+            toast.error(error, { itemID: id, title: t('toast.deleteError') });
         }
     };
 
     const handleViewUser = async (user: User) => {
+        const { id } = toast.loading({ title: t('toast.viewingUser') });
         try {
             const response = await getUser({ id: user.id });
             setDetailUser(response.user);
+            toast.success({ itemID: id, title: t('toast.viewUserSuccess') });
         } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: t('error'),
-                description: error.message || t('failed_to_fetch_user_detail'),
-            });
+            toast.error(error, { itemID: id, title: t('toast.viewUserError') });
         }
     };
 
@@ -284,17 +265,11 @@ function UserPage() {
 
     // Feature flag handlers (placeholder implementations)
     const handleExportUsers = () => {
-        toast({
-            title: 'Export Users',
-            description: 'Export feature coming soon!',
-        });
+        toast.warning({ title: 'Export feature coming soon!' });
     };
 
     const handleBulkDelete = () => {
-        toast({
-            title: 'Bulk Delete',
-            description: 'Bulk delete feature coming soon!',
-        });
+        toast.warning({ title: 'Bulk delete feature coming soon!' });
     };
 
     const sortSelection =
@@ -346,10 +321,12 @@ function UserPage() {
                                 </Button>
                             )}
 
-                            <Button onClick={() => setCreateSheetOpen(true)} disabled={loading}>
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                {t('create_user')}
-                            </Button>
+                            {permissions.can_create_users && (
+                                <Button onClick={() => setCreateSheetOpen(true)} disabled={loading}>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    {t('create_user')}
+                                </Button>
+                            )}
                         </div>
                     </div>
 
@@ -435,6 +412,8 @@ function UserPage() {
                                 pagination={pagination}
                                 onPageChange={setPage}
                                 onPageSizeChange={setLimit}
+                                canEdit={permissions.can_edit_users}
+                                canDelete={permissions.can_delete_users}
                             />
                         </>
                     )}

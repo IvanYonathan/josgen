@@ -1,0 +1,169 @@
+{
+    "users": "Pengguna",
+    "create_user": "Buat Pengguna",
+    "edit_user": "Edit Pengguna",
+    "delete_user": "Hapus Pengguna",
+    "avatar": "Avatar",
+    "name": "Nama",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "new_password": "Kata Sandi Baru",
+    "confirm_password": "Konfirmasi Kata Sandi",
+    "role": "Peran",
+    "view" : "Lihat",
+    "division": "Divisi",
+    "phone": "Telepon",
+    "birthday": "Tanggal Lahir",
+    "actions": "Aksi",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "deleting": "Menghapus...",
+    "loading": "Memuat...",
+    "confirm_delete": "Apakah Anda yakin ingin menghapus <bold>{{userName}}</bold>? Tindakan ini tidak dapat dibatalkan.",
+    "user_deleted": "Pengguna berhasil dihapus",
+    "delete_error": "Gagal menghapus pengguna",
+    "create_success": "Pengguna berhasil dibuat",
+    "create_error": "Gagal membuat pengguna",
+    "update_success": "Pengguna berhasil diperbarui",
+    "required_field": "Kolom ini wajib diisi",
+    "invalid_email": "Silakan masukkan alamat email yang valid",
+    "password_min": "Kata sandi minimal 8 karakter",
+    "passwords_dont_match": "Kata sandi tidak cocok",
+    "select_role": "Pilih peran",
+    "select_division": "Pilih divisi",
+    "no_division": "Tanpa divisi",
+    "back_to_user_list": "Kembali ke Daftar Pengguna",
+    "email_verified": "Email Terverifikasi",
+    "success": "Berhasil",
+    "error": "Gagal",
+    "update_error": "Gagal memperbarui pengguna",
+    "failed_to_delete_user": "Gagal menghapus pengguna",
+    "failed_to_fetch_user_detail": "Gagal mengambil detail pengguna",
+    "noUsersFound": "Pengguna tidak ditemukan",
+    "updating_user": "Memperbarui pengguna...",
+
+
+
+
+    "title": "Pengguna",
+    "description": "Lihat dan Kelola Pengguna di sini",
+    "createUser":{
+        "title": "Buat Pengguna Baru",
+        "description": "Isi formulir di bawah ini untuk menambahkan pengguna baru",
+        "form": {
+            "name": {
+                "label": "Nama Lengkap",
+                "placeholder": "Masukkan nama lengkap"
+            },
+            "email": {
+                "label": "Alamat Email",
+                "placeholder": "Masukkan alamat email"
+            },
+            "password": {
+                "label": "Kata Sandi",
+                "placeholder": "Masukkan kata sandi"
+            },
+            "confirm_password": {
+                "label": "Konfirmasi Kata Sandi",
+                "placeholder": "Masukkan ulang kata sandi"
+            },
+            "role": {
+                "label": "Peran Pengguna",
+                "placeholder": "Pilih peran",
+                "member": "Anggota",
+                "division_leader": "Kepala Divisi",
+                "sysadmin": "Administrator Sistem",
+                "treasurer": "Bendahara"
+            },
+            "division": {
+                "label": "Divisi",
+                "placeholder": "Pilih divisi"
+            },
+            "phone": {
+                "label": "Nomor Telepon",
+                "placeholder": "Masukkan nomor telepon"
+            },
+            "birthday": {
+                "label": "Tanggal Lahir",
+                "placeholder": "Pilih tanggal lahir"
+            },
+            "avatar": {
+                "label": "Avatar",
+                "placeholder": "Tidak ada file dipilih"
+            }
+        },
+        "button":{
+            "create": "Buat Pengguna",
+            "cancel": "Batal"
+        }
+    },
+    "editUser":{
+        "title": "Edit Pengguna",
+        "description": "Perbarui informasi pengguna",
+        "form": {
+            "name": {
+                "label": "Nama Lengkap",
+                "placeholder": "Masukkan nama lengkap"
+            },
+            "email": {
+                "label": "Alamat Email",
+                "placeholder": "Masukkan alamat email"
+            },
+            "password": {
+                "label": "Kata Sandi Baru",
+                "placeholder": "Masukkan kata sandi baru (opsional)"
+            },
+            "role": {
+                "label": "Peran Pengguna",
+                "placeholder": "Pilih peran",
+                "member": "Anggota",
+                "division_leader": "Kepala Divisi",
+                "sysadmin": "Administrator Sistem",
+                "treasurer": "Bendahara"
+            },
+            "division": {
+                "label": "Divisi",
+                "placeholder": "Pilih divisi"
+            },
+            "phone": {
+                "label": "Nomor Telepon",
+                "placeholder": "Masukkan nomor telepon"
+            },
+            "birthday": {
+                "label": "Tanggal Lahir",
+                "placeholder": "Pilih tanggal lahir"
+            },
+            "avatar": {
+                "label": "Avatar",
+                "placeholder": "Tidak ada file dipilih"
+            }
+        },
+        "button":{
+            "update": "Perbarui Pengguna",
+            "delete": "Hapus Pengguna",
+            "cancel": "Batal"
+        }
+    },
+    "toast": {
+        "creating": "Membuat pengguna...",
+        "createSuccess": "Pengguna berhasil dibuat",
+        "createError": "Gagal membuat pengguna",
+        "updating": "Memperbarui pengguna...",
+        "updateSuccess": "Pengguna berhasil diperbarui",
+        "updateError": "Gagal memperbarui pengguna",
+        "deleting": "Menghapus pengguna...",
+        "deleteSuccess": "Pengguna berhasil dihapus",
+        "deleteError": "Gagal menghapus pengguna",
+        "refreshing": "Menyegarkan daftar pengguna...",
+        "refreshError": "Gagal menyegarkan daftar pengguna",
+        "viewingUser": "Memuat detail pengguna...",
+        "viewUserSuccess": "Detail pengguna berhasil dimuat",
+        "viewUserError": "Gagal memuat detail pengguna",
+        "exporting": "Mengekspor pengguna...",
+        "exportSuccess": "Pengguna berhasil diekspor",
+        "exportError": "Gagal mengekspor pengguna",
+        "bulkDeleting": "Menghapus pengguna terpilih...",
+        "bulkDeleteSuccess": "Pengguna terpilih berhasil dihapus",
+        "bulkDeleteError": "Gagal menghapus pengguna terpilih"
+    }
+}

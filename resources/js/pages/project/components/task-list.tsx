@@ -10,7 +10,7 @@ import { toggleTaskCompletion } from '@/lib/api/project/toggle-task-completion';
 import { deleteTask } from '@/lib/api/project/delete-task';
 import { updateTask } from '@/lib/api/project/update-task';
 import { updateTaskSchema, type UpdateTaskFormData } from '../schemas/project-schemas';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { DeleteTaskDialog } from './delete-task-dialog';
 import { EditTaskDialog } from './edit-task-dialog';
 import { useTranslation } from '@/hooks/use-translation';
@@ -24,6 +24,7 @@ interface TaskListProps {
 }
 
 export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }: TaskListProps) {
+  const { toast } = useToast();
   const { t } = useTranslation('project');
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<number>>(new Set());
   const [togglingTasks, setTogglingTasks] = useState(false);
@@ -65,18 +66,19 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
 
   const handleBulkToggleCompletion = async () => {
     if (selectedTaskIds.size === 0) {
-      toast.error(t('select_at_least_one_task'));
+      toast.error(new Error(t('select_at_least_one_task')), { title: 'Validation error' });
       return;
     }
 
+    const { id } = toast.loading({ title: t('tasks_toggled_success', { count: selectedTaskIds.size }) });
     try {
       setTogglingTasks(true);
       await toggleTaskCompletion({ task_ids: Array.from(selectedTaskIds) });
-      toast.success(t('tasks_toggled_success', { count: selectedTaskIds.size }));
+      toast.success({ itemID: id, title: t('tasks_toggled_success', { count: selectedTaskIds.size }) });
       setSelectedTaskIds(new Set());
       onTasksChange();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('failed_to_toggle_tasks'));
+      toast.error(error, { itemID: id, title: t('failed_to_toggle_tasks') });
     } finally {
       setTogglingTasks(false);
     }
@@ -89,14 +91,15 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
   const confirmDeleteTask = async () => {
     if (!taskToDelete) return;
 
+    const { id } = toast.loading({ title: 'Deleting task...' });
     try {
       setIsDeleting(true);
       await deleteTask({ id: taskToDelete.id });
-      toast.success(t('task_delete_success'));
+      toast.success({ itemID: id, title: t('task_delete_success') });
       setTaskToDelete(null);
       onTasksChange();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('task_delete_error'));
+      toast.error(error, { itemID: id, title: t('task_delete_error') });
     } finally {
       setIsDeleting(false);
     }
@@ -116,15 +119,16 @@ export function TaskList({ project, tasks, onTasksChange, onAddTask, canManage }
   };
 
   const handleUpdateTask = async (data: UpdateTaskFormData) => {
+    const { id } = toast.loading({ title: 'Updating task...' });
     try {
       setIsSubmitting(true);
       await updateTask(data);
-      toast.success(t('task_update_success'));
+      toast.success({ itemID: id, title: t('task_update_success') });
       setEditingTask(null);
       editForm.reset();
       onTasksChange();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('task_update_error'));
+      toast.error(error, { itemID: id, title: t('task_update_error') });
     } finally {
       setIsSubmitting(false);
     }

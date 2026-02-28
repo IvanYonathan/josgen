@@ -3,7 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Event;
+use App\Notifications\Event\EventCompletedNotification;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Notification;
 
 class UpdateEventStatuses extends Command
 {
@@ -54,6 +56,11 @@ class UpdateEventStatuses extends Command
             $event->save();
             $updatedCount++;
             $this->line("  • Event #{$event->id} '{$event->title}' → completed");
+
+            $event->load('participants:id,name,email');
+            if ($event->participants->isNotEmpty()) {
+                Notification::send($event->participants, new EventCompletedNotification($event));
+            }
         }
 
         if ($updatedCount === 0) {

@@ -5,16 +5,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, CalendarDays, PlusCircle, RefreshCw, Search } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useAuth } from '@/contexts/auth-context';
 import { EventManagementProvider, useEventManagementStore } from './store/event-management-store';
 import { CreateEventSheet } from './components/create-event-sheet';
 import { EditEventSheet } from './components/edit-event-sheet';
 import { listEvents } from '@/lib/api/event/list-events';
 import { Event } from '@/types/event/event';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { EventCard } from './components/event-card';
 
 function EventPageContent() {
+  const { toast } = useToast();
   const { t } = useTranslation('event');
+  const { permissions } = useAuth();
   const {
     events,
     loading,
@@ -72,7 +75,7 @@ function EventPageContent() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('failed_to_load_events');
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(err, { title: t('failed_to_load_events') });
     } finally {
       setLoading(false);
     }
@@ -82,7 +85,7 @@ function EventPageContent() {
     if (event.can_edit) {
       openEditMode(event);
     } else {
-      toast.info(t('view_only'));
+      toast.warning({ title: t('view_only') });
     }
   };
 
@@ -111,10 +114,37 @@ function EventPageContent() {
           </Button>
         </div>
 
-        <Button onClick={openCreateMode}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          {t('create_event')}
-        </Button>
+        {permissions.can_create_events && (
+          <Button onClick={openCreateMode}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            {t('create_event')}
+          </Button>
+        )}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1 sm:flex-[10]">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={t('search_events_placeholder')}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        <Select value={filters.statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+          <SelectTrigger wrapperClassName="w-full sm:w-[150px]">
+            <SelectValue placeholder={t('all_status')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('all_status')}</SelectItem>
+            <SelectItem value="upcoming">{t('upcoming')}</SelectItem>
+            <SelectItem value="ongoing">{t('ongoing')}</SelectItem>
+            <SelectItem value="completed">{t('completed')}</SelectItem>
+            <SelectItem value="cancelled">{t('cancelled')}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -162,10 +192,12 @@ function EventPageContent() {
               ? t('noEventsFoundMatchingFilters')
               : t('noEventsFound')}
           </p>
-          <Button variant="outline" onClick={openCreateMode}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            {t('create_first_event')}
-          </Button>
+          {permissions.can_create_events && (
+            <Button variant="outline" onClick={openCreateMode}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              {t('create_first_event')}
+            </Button>
+          )}
         </div>
       ) : (
         <>

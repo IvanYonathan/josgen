@@ -27,7 +27,7 @@ function createAxiosBaseInstance(options?: Partial<CreateAxiosDefaults>, customi
   const newAxios = axios.create({
     baseURL: API_BASE_URL,
     timeout: API_TIMEOUT,
-    withCredentials: true, // Keep cookies for web session auth
+    withCredentials: false, // Pure token-based auth, no cookies needed
     ...options,
     headers: {
       'Content-Type': 'application/json',

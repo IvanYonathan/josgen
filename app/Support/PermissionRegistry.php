@@ -38,7 +38,8 @@ class PermissionRegistry
         'delete permissions',
 
         // Divisions
-        'view divisions',
+        'view own divisions',
+        'view all divisions',
         'create divisions',
         'edit divisions',
         'delete divisions',
@@ -80,7 +81,36 @@ class PermissionRegistry
      *
      * @var array<string, array<int, string>>
      */
-    private const ROLE_PERMISSION_MAP = [];
+    private const ROLE_PERMISSION_MAP = [
+        'member' => [
+            'create treasury requests',
+            'view own treasury requests',
+            'view own divisions',
+            'view events',
+            'view projects',
+            'view todo lists',
+            'create todo lists',
+            'edit todo lists',
+            'create notes',
+            'edit notes',
+        ],
+        'treasurer' => [
+            'create treasury requests',
+            'view own treasury requests',
+            'view all treasury requests',
+            'approve treasury requests',
+            'process payments',
+            'view treasury reports',
+        ],
+        'division_leader' => [
+            'create treasury requests',
+            'view own treasury requests',
+            'view all treasury requests',
+            'approve treasury requests',
+            'view own divisions',
+            'edit divisions',
+        ],
+    ];
 
     /**
      * Returns the definitive map of permission => roles that should own it by default.

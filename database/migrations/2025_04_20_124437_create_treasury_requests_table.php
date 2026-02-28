@@ -47,6 +47,13 @@ return new class extends Migration
             $table->unsignedBigInteger('processed_by')->nullable();
             $table->foreign('processed_by')->references('id')->on('users')->nullOnDelete();
             
+            // Attachment (single file per request)
+            $table->string('attachment_filename')->nullable();
+            $table->string('attachment_original_name')->nullable();
+            $table->string('attachment_path')->nullable();
+            $table->string('attachment_type')->nullable();
+            $table->integer('attachment_size')->nullable();
+            
             $table->timestamps();
         });
     }

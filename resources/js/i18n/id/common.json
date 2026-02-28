@@ -1,3 +1,8 @@
 {
-    "test": "This is a test"
+  "toast": {
+    "loading": "Memuat...",
+    "success": "Berhasil",
+    "warning": "Peringatan",
+    "error": "Terjadi Kesalahan"
+  }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Division extends Model
 {
@@ -26,27 +27,30 @@ class Division extends Model
     }
 
     /**
-     * Get the members of the division.
+     * Get the members of the division (many-to-many).
      */
-    public function members(): HasMany
+    public function members(): BelongsToMany
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class, 'division_members')
+            ->withTimestamps();
     }
 
     /**
-     * Get the events associated with the division.
+     * Get the events associated with the division (many-to-many).
      */
-    public function events(): HasMany
+    public function events(): BelongsToMany
     {
-        return $this->hasMany(Event::class);
+        return $this->belongsToMany(Event::class, 'event_divisions')
+            ->withTimestamps();
     }
 
     /**
-     * Get the projects associated with the division.
+     * Get the projects associated with the division (many-to-many).
      */
-    public function projects(): HasMany
+    public function projects(): BelongsToMany
     {
-        return $this->hasMany(Project::class);
+        return $this->belongsToMany(Project::class, 'project_divisions')
+            ->withTimestamps();
     }
 
     /**

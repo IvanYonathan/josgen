@@ -21,11 +21,13 @@ class Event extends Model
         'status',
         'organizer_id',
         'division_id', // Kept for backward compatibility, but will use divisions() relationship
+        'reminder_presets',
     ];
 
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+        'reminder_presets' => 'array',
     ];
 
     /**
@@ -68,6 +70,51 @@ class Event extends Model
     public function treasuryRequests(): HasMany
     {
         return $this->hasMany(TreasuryRequest::class);
+    }
+
+    /**
+     * Get the reminders for this event.
+     */
+    public function reminders(): HasMany
+    {
+        return $this->hasMany(EventReminder::class);
+    }
+
+    /**
+     * Sync reminder rows based on the given preset keys.
+     * Deletes existing unsent reminders and creates new ones.
+     */
+    public function syncReminders(array $presets): void
+    {
+        // Delete unsent reminders so we can recreate them
+        $this->reminders()->where('sent', false)->delete();
+
+        if (empty($presets) || !$this->start_date) {
+            return;
+        }
+
+        $offsets = [
+            '1_day'   => fn ($date) => $date->copy()->subDay(),
+            '7_days'  => fn ($date) => $date->copy()->subDays(7),
+            '1_month' => fn ($date) => $date->copy()->subMonth(),
+        ];
+
+        foreach ($presets as $preset) {
+            if (!isset($offsets[$preset])) {
+                continue;
+            }
+
+            $remindAt = $offsets[$preset]($this->start_date);
+
+            // Only create if remind_at is in the future
+            if ($remindAt->isFuture()) {
+                $this->reminders()->create([
+                    'preset'    => $preset,
+                    'remind_at' => $remindAt,
+                    'sent'      => false,
+                ]);
+            }
+        }
     }
 
     /**

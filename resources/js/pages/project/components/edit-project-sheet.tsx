@@ -10,11 +10,11 @@ import { updateProject } from '@/lib/api/project/update-project';
 import { deleteProject } from '@/lib/api/project/delete-project';
 import { createTask } from '@/lib/api/project/create-task';
 import { listDivisions } from '@/lib/api/division/list-divisions';
-import { listUsers } from '@/lib/api/user/list-users';
+import { listUserOptions } from '@/lib/api/user/list-user-options';
 import { updateProjectSchema, createTaskSchema, cleanProjectFormData, type UpdateProjectFormData, type CreateTaskFormData } from '../schemas/project-schemas';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { DivisionListResponse } from '@/types/division/division';
-import { User } from '@/types/user/user';
+import { UserOption } from '@/types/user/user';
 import { Project } from '@/types/project/project';
 import { ProjectDetailsTab } from './project-details-tab';
 import { TaskTab } from './task-tab';
@@ -24,6 +24,7 @@ import { ProjectUnsavedChangesDialog } from './unsaved-changes-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 
 export function EditProjectSheet() {
+  const { toast } = useToast();
   const { closeEditMode, selectedProject, updateProjectInList, removeProject } = useProjectManagementStore();
   const { t } = useTranslation('project');
   const [project, setProject] = useState<Project | null>(selectedProject);
@@ -33,7 +34,7 @@ export function EditProjectSheet() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
   const [divisions, setDivisions] = useState<DivisionListResponse[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserOption[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   const form = useForm<UpdateProjectFormData>({
@@ -68,7 +69,7 @@ export function EditProjectSheet() {
         setLoadingData(true);
         const [divisionsRes, usersRes, projectRes] = await Promise.all([
           listDivisions(),
-          listUsers(),
+          listUserOptions(),
           getProject({ id: selectedProject!.id }),
         ]);
         setDivisions(divisionsRes.divisions || []);
@@ -86,7 +87,7 @@ export function EditProjectSheet() {
           member_ids: projectRes.project.members?.map((m) => m.id) || [],
         });
       } catch (error) {
-        toast.error(t('failed_to_load_project_details'));
+        toast.error(error, { title: t('failed_to_load_project_details') });
       } finally {
         setLoadingData(false);
       }
@@ -115,49 +116,52 @@ export function EditProjectSheet() {
       setProject(response.project);
       updateProjectInList(response.project);
     } catch (error) {
-      toast.error(t('failed_to_refresh_project'));
+      toast.error(error, { title: t('failed_to_refresh_project') });
     }
   };
 
   const onSubmit = async (data: UpdateProjectFormData) => {
+    const { id } = toast.loading({ title: 'Updating project...' });
     try {
       setIsSubmitting(true);
       const cleanedData = cleanProjectFormData(data);
       const response = await updateProject(cleanedData);
       setProject(response.project);
       updateProjectInList(response.project);
-      toast.success(t('update_success'));
+      toast.success({ itemID: id, title: t('update_success') });
       closeEditMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('update_error'));
+      toast.error(error, { itemID: id, title: t('update_error') });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async () => {
+    const { id } = toast.loading({ title: 'Deleting project...' });
     try {
       await deleteProject({ id: project!.id });
       removeProject(project!.id);
-      toast.success(t('delete_success'));
+      toast.success({ itemID: id, title: t('delete_success') });
       closeEditMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('delete_error'));
+      toast.error(error, { itemID: id, title: t('delete_error') });
     }
   };
 
   const handleAddTask = async (data: CreateTaskFormData) => {
+    const { id } = toast.loading({ title: 'Creating task...' });
     try {
       await createTask({
         project_id: project!.id,
         ...data,
       });
-      toast.success(t('task_create_success'));
+      toast.success({ itemID: id, title: t('task_create_success') });
       taskForm.reset();
       setShowAddTaskDialog(false);
       refreshProject();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('task_create_error'));
+      toast.error(error, { itemID: id, title: t('task_create_error') });
     }
   };
 

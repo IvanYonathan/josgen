@@ -16,7 +16,22 @@ Schedule::job(new PrewarmDailyVerseCache)
     ->timezone('UTC')
     ->description('Pre-warm cache for tomorrow\'s daily verse');
 
+// Schedule due-date reminder notifications (runs hourly)
+Schedule::command('notifications:send-due-soon-reminders')
+    ->hourly()
+    ->description('Send due-soon reminders for assigned tasks and to-dos');
+
+// Schedule event starting-soon reminders (runs every 15 minutes)
+Schedule::command('notifications:send-event-starting-soon')
+    ->everyFifteenMinutes()
+    ->description('Send event starting-soon reminders to participants');
+
 // Schedule event status updates (runs every 15 minutes)
 Schedule::command('events:update-statuses')
     ->everyFifteenMinutes()
-    ->description('Update event statuses based on current date (upcoming → ongoing → completed)');
+    ->description('Update event statuses based on current date (upcoming -> ongoing -> completed)');
+
+// Schedule custom event reminder notifications (runs every 15 minutes)
+Schedule::command('notifications:send-event-custom-reminders')
+    ->everyFifteenMinutes()
+    ->description('Send custom event reminder notifications set by organizers');

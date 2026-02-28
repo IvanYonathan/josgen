@@ -6,15 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, CalendarDays, MapPin, Users, Building2, AlertCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, CalendarDays, MapPin, Users, Building2, AlertCircle, Trash2, Bell } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { UpdateEventFormData, updateEventSchema, cleanEventFormData } from '../schemas/event-schemas';
 import { updateEvent } from '@/lib/api/event/update-event';
 import { deleteEvent } from '@/lib/api/event/delete-event';
 import { useEventManagementStore } from '../store/event-management-store';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { listDivisions } from '@/lib/api/division/list-divisions';
-import { listUsers } from '@/lib/api/user/list-users';
+import { listUserOptions } from '@/lib/api/user/list-user-options';
 import { Event } from '@/types/event/event';
 import { MultiSelect, MultiSelectTrigger, MultiSelectValue, MultiSelectContent, MultiSelectEmpty, MultiSelectGroup, MultiSelectItem } from '@/components/ui/multi-select';
 import { ParticipantSelector } from './participant-selector';
@@ -22,6 +22,7 @@ import { DeleteConfirmationDialog } from './delete-confirmation-dialog';
 import { EventUnsavedChangesDialog } from './event-unsaved-changes-dialog';
 
 export function EditEventSheet() {
+  const { toast } = useToast();
   const { closeEditMode, selectedEvent, updateEventInList, removeEvent: removeEventFromList } = useEventManagementStore();
   const { t } = useTranslation('event');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,6 +50,7 @@ export function EditEventSheet() {
       location: selectedEvent.location || '',
       division_ids: selectedEvent.divisions?.map(d => d.id) || [],
       participant_ids: selectedEvent.participants?.map(p => p.id) || [],
+      reminder_presets: selectedEvent.reminder_presets || [],
     },
     mode: 'onChange',
   });
@@ -73,13 +75,13 @@ export function EditEventSheet() {
         setLoadingData(true);
         const [divisionsRes, usersRes] = await Promise.all([
           listDivisions(),
-          listUsers(),
+          listUserOptions(),
         ]);
         setDivisions(divisionsRes.divisions || []);
         setUsers(usersRes.users || []);
       } catch (error) {
         console.error('Failed to load data:', error);
-        toast.error(t('failed_to_load_divisions_and_users'));
+        toast.error(error, { title: t('failed_to_load_divisions_and_users') });
       } finally {
         setLoadingData(false);
       }
@@ -101,15 +103,16 @@ export function EditEventSheet() {
   };
 
   const onSubmit = async (data: any) => {
+    const { id } = toast.loading({ title: 'Updating event...' });
     try {
       setIsSubmitting(true);
       const cleanedData = cleanEventFormData(data);
       const response = await updateEvent(cleanedData as UpdateEventFormData);
       updateEventInList(response.event);
-      toast.success(t('update_success'));
+      toast.success({ itemID: id, title: t('update_success') });
       closeEditMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('update_error'));
+      toast.error(error, { itemID: id, title: t('update_error') });
       console.error('Failed to update event:', error);
     } finally {
       setIsSubmitting(false);
@@ -117,15 +120,16 @@ export function EditEventSheet() {
   };
 
   const handleDelete = async () => {
+    const { id } = toast.loading({ title: 'Deleting event...' });
     try {
       setIsDeleting(true);
       await deleteEvent({ id: selectedEvent.id });
       removeEventFromList(selectedEvent.id);
-      toast.success(t('delete_success'));
+      toast.success({ itemID: id, title: t('delete_success') });
       setShowDeleteDialog(false);
       closeEditMode();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('delete_error'));
+      toast.error(error, { itemID: id, title: t('delete_error') });
       console.error('Failed to delete event:', error);
     } finally {
       setIsDeleting(false);
@@ -292,6 +296,43 @@ export function EditEventSheet() {
                 {form.formState.errors.location && (
                   <p className="text-sm text-destructive">{form.formState.errors.location.message}</p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reminder_presets">
+                  <Bell className="h-4 w-4 inline mr-1" />
+                  Email Reminders
+                </Label>
+                <Controller
+                  name="reminder_presets"
+                  control={form.control}
+                  render={({ field }) => (
+                    <MultiSelect
+                      value={field.value || []}
+                      onValueChange={(values) => field.onChange(values)}
+                    >
+                      <MultiSelectTrigger>
+                        <MultiSelectValue
+                          placeholder="Select reminder presets (optional)"
+                          itemComponent={(props) => (
+                            <Badge variant="secondary" className="mr-1">
+                              {props.value === '1_day' ? '1 day before' : props.value === '7_days' ? '7 days before' : '1 month before'}
+                            </Badge>
+                          )}
+                        />
+                      </MultiSelectTrigger>
+                      <MultiSelectContent>
+                        <MultiSelectEmpty>No presets available</MultiSelectEmpty>
+                        <MultiSelectGroup>
+                          <MultiSelectItem value="1_day">1 day before</MultiSelectItem>
+                          <MultiSelectItem value="7_days">7 days before</MultiSelectItem>
+                          <MultiSelectItem value="1_month">1 month before</MultiSelectItem>
+                        </MultiSelectGroup>
+                      </MultiSelectContent>
+                    </MultiSelect>
+                  )}
+                />
+                <p className="text-xs text-muted-foreground">Participants will receive email reminders at the selected times before the event.</p>
               </div>
 
               <div className="space-y-2">

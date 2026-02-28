@@ -4,6 +4,7 @@ import {
   Route,
   RouterProvider,
 } from 'react-router-dom';
+import { Toaster } from '@/components/ui/sonner';
 import { ApplicationLayout } from '@/layouts/application-layout';
 import { DashboardLayout } from '@/layouts/dashboard-layout';
 import DivisionPage from './division/division-page';
@@ -15,6 +16,10 @@ import { PersonalTodoListPage } from './todo-list/personal/personal-todo-list-pa
 import { DivisionTodoListPage } from './todo-list/division/division-todo-list-page';
 import { ProjectPage } from './project/project-page';
 import { TreasuryPage } from './treasury/treasury-page';
+import { CreateRequestPage } from './treasury/request/create-request-page';
+import { EditRequestPage } from './treasury/request/edit-request-page';
+import { CreateRecordPage } from './treasury/record/create-record-page';
+import { EditRecordPage } from './treasury/record/edit-record-page';
 import { NotePage } from './note/note-page';
 import { NotFoundPage } from './not-found-page';
 import { ErrorPage } from './error-page';
@@ -59,6 +64,10 @@ function App() {
             <Route path="/event" element={<EventPage />} />
             <Route path="/project" element={<ProjectPage />} />
             <Route path="/treasury" element={<TreasuryPage />} />
+            <Route path="/treasury/request/new" element={<CreateRequestPage />} />
+            <Route path="/treasury/request/:id/edit" element={<EditRequestPage />} />
+            <Route path="/treasury/record/new" element={<CreateRecordPage />} />
+            <Route path="/treasury/record/:id/edit" element={<EditRecordPage />} />
             <Route path="/note" element={<NotePage />} />
 
             {/* Todo List Routes */}
@@ -78,7 +87,13 @@ function App() {
     )
   );
 
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <Toaster />
+    </>
+  );
 }
 
 export default App;
+

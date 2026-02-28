@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Mail\NewUserCredentialsMail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UserController extends ApiController
@@ -160,7 +163,10 @@ class UserController extends ApiController
         }
 
         unset($data['avatar']);
-        $data['password'] = Hash::make($data['password']);
+
+        // Use the admin-supplied password as plain text.
+        // The User model's 'hashed' cast handles hashing on create().
+        $plainPassword = $data['password'];
 
         $roleName = $data['role'];
 
@@ -171,6 +177,9 @@ class UserController extends ApiController
         $newUser->assignRole($role);
         $newUser->load('roles', 'division');
         $this->appendPrimaryRole($newUser);
+
+        // Send credentials email to the new user
+        Mail::to($newUser)->queue(new NewUserCredentialsMail($newUser, $plainPassword));
 
         return $this->success([
             'user' => $newUser,
@@ -305,6 +314,17 @@ class UserController extends ApiController
         return $this->success([
             'user' => $user,
         ], 'Profile updated successfully');
+    }
+
+    public function options(Request $request): JsonResponse
+    {
+        $users = User::select('id', 'name', 'email', 'ava', 'division_id')
+            ->orderBy('name')
+            ->get();
+
+        return $this->success([
+            'users' => $users,
+        ], 'User options retrieved successfully');
     }
 
     /**
