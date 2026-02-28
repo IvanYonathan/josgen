@@ -121,7 +121,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     // TODO: Uncomment when controllers are created
-    /*
 
     // TodoList endpoints
     Route::prefix('todo-list')->group(function () {
