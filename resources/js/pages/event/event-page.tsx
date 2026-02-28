@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, CalendarDays, PlusCircle, RefreshCw, Search } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useAuth } from '@/contexts/auth-context';
 import { EventManagementProvider, useEventManagementStore } from './store/event-management-store';
 import { CreateEventSheet } from './components/create-event-sheet';
 import { EditEventSheet } from './components/edit-event-sheet';
@@ -16,6 +17,7 @@ import { EventCard } from './components/event-card';
 function EventPageContent() {
   const { toast } = useToast();
   const { t } = useTranslation('event');
+  const { permissions } = useAuth();
   const {
     events,
     loading,
@@ -112,10 +114,12 @@ function EventPageContent() {
           </Button>
         </div>
 
-        <Button onClick={openCreateMode}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          {t('create_event')}
-        </Button>
+        {permissions.can_create_events && (
+          <Button onClick={openCreateMode}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            {t('create_event')}
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -163,10 +167,12 @@ function EventPageContent() {
               ? t('noEventsFoundMatchingFilters')
               : t('noEventsFound')}
           </p>
-          <Button variant="outline" onClick={openCreateMode}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            {t('create_first_event')}
-          </Button>
+          {permissions.can_create_events && (
+            <Button variant="outline" onClick={openCreateMode}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              {t('create_first_event')}
+            </Button>
+          )}
         </div>
       ) : (
         <>

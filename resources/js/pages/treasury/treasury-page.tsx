@@ -16,19 +16,14 @@ import { RejectDialog } from './components/reject-dialog';
 import { RequestDetailDialog } from './components/request-detail-dialog';
 import { DeleteRequestDialog } from './components/delete-request-dialog';
 
-// Check if user has admin/treasurer permissions
-const hasAdminAccess = (role?: string): boolean => {
-  if (!role) return false;
-  const adminRoles = ['sysadmin', 'admin', 'treasurer', 'division_leader'];
-  return adminRoles.includes(role.toLowerCase());
-};
-
 export function TreasuryPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
-  const userRole = user.role;
-  const canAccessAdmin = hasAdminAccess(userRole);
+  const { user, permissions } = useAuth();
+  const canAccessAdmin = permissions.can_view_all_treasury_requests || permissions.can_approve_treasury_requests || permissions.can_view_treasury_reports;
+  const canCreateRequest = permissions.can_create_treasury_requests;
+  const canApprove = permissions.can_approve_treasury_requests;
+  const canViewReports = permissions.can_view_treasury_reports;
 
   // Tab state
   const [activeTab, setActiveTab] = useState('my-requests');
@@ -197,16 +192,20 @@ export function TreasuryPage() {
               >
                 {hideAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
-              <Button onClick={() => navigate('/treasury/record/new')}>
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add Report
-              </Button>
+              {canViewReports && (
+                <Button onClick={() => navigate('/treasury/record/new')}>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add Report
+                </Button>
+              )}
             </>
           ) : (
-            <Button onClick={() => navigate('/treasury/request/new')}>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              New Request
-            </Button>
+            canCreateRequest && (
+              <Button onClick={() => navigate('/treasury/request/new')}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                New Request
+              </Button>
+            )
           )}
         </div>
       </div>
@@ -214,10 +213,10 @@ export function TreasuryPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="my-requests">My Requests</TabsTrigger>
-          {canAccessAdmin && (
+          {canViewReports && (
             <TabsTrigger value="financial-overview">Financial Overview</TabsTrigger>
           )}
-          {canAccessAdmin && (
+          {canApprove && (
             <TabsTrigger value="pending-approvals" className="relative">
               Pending Approvals
               {pendingCount > 0 && (
@@ -241,7 +240,7 @@ export function TreasuryPage() {
           />
         </TabsContent>
 
-        {canAccessAdmin && (
+        {canViewReports && (
           <TabsContent value="financial-overview">
             <FinancialOverviewTab
               stats={stats}
@@ -255,7 +254,7 @@ export function TreasuryPage() {
           </TabsContent>
         )}
 
-        {canAccessAdmin && (
+        {canApprove && (
           <TabsContent value="pending-approvals">
             <PendingApprovalsTab
               requests={requests}

@@ -112,27 +112,57 @@ class AuthController extends ApiController
         $user = $request->user();
         $user->load('roles', 'permissions');
 
-        // Temporarily set default guard to 'web' for permission checks
+        // Temporarily set default guard to 'web' for Spatie permission checks
         $originalGuard = config('auth.defaults.guard');
         config(['auth.defaults.guard' => 'web']);
 
         $permissions = [
-            'can_view_divisions' => $user->can('view divisions'),
-            'can_create_divisions' => $user->can('create divisions'),
-            'can_edit_divisions' => $user->can('edit divisions'),
-            'can_delete_divisions' => $user->can('delete divisions'),
+            // User management
             'can_view_users' => $user->can('view users'),
             'can_create_users' => $user->can('create users'),
             'can_edit_users' => $user->can('edit users'),
             'can_delete_users' => $user->can('delete users'),
+            // Role management
             'can_view_roles' => $user->can('view roles'),
             'can_create_roles' => $user->can('create roles'),
             'can_edit_roles' => $user->can('edit roles'),
             'can_delete_roles' => $user->can('delete roles'),
+            // Permission management
             'can_view_permissions' => $user->can('view permissions'),
             'can_create_permissions' => $user->can('create permissions'),
             'can_edit_permissions' => $user->can('edit permissions'),
             'can_delete_permissions' => $user->can('delete permissions'),
+            // Divisions
+            'can_view_divisions' => $user->can('view divisions'),
+            'can_create_divisions' => $user->can('create divisions'),
+            'can_edit_divisions' => $user->can('edit divisions'),
+            'can_delete_divisions' => $user->can('delete divisions'),
+            // Events
+            'can_view_events' => $user->can('view events'),
+            'can_create_events' => $user->can('create events'),
+            'can_edit_events' => $user->can('edit events'),
+            'can_delete_events' => $user->can('delete events'),
+            // Projects
+            'can_view_projects' => $user->can('view projects'),
+            'can_create_projects' => $user->can('create projects'),
+            'can_edit_projects' => $user->can('edit projects'),
+            'can_delete_projects' => $user->can('delete projects'),
+            // Todo lists
+            'can_view_todo_lists' => $user->can('view todo lists'),
+            'can_create_todo_lists' => $user->can('create todo lists'),
+            'can_edit_todo_lists' => $user->can('edit todo lists'),
+            'can_delete_todo_lists' => $user->can('delete todo lists'),
+            // Notes
+            'can_create_notes' => $user->can('create notes'),
+            'can_edit_notes' => $user->can('edit notes'),
+            'can_delete_notes' => $user->can('delete notes'),
+            // Treasury
+            'can_create_treasury_requests' => $user->can('create treasury requests'),
+            'can_view_own_treasury_requests' => $user->can('view own treasury requests'),
+            'can_view_all_treasury_requests' => $user->can('view all treasury requests'),
+            'can_approve_treasury_requests' => $user->can('approve treasury requests'),
+            'can_process_payments' => $user->can('process payments'),
+            'can_view_treasury_reports' => $user->can('view treasury reports'),
         ];
 
         // Restore original guard

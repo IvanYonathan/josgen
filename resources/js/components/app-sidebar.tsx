@@ -1,13 +1,19 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link, useLocation } from 'react-router-dom'; // React Router instead of Inertia
-import { BookOpen, Folder, LayoutGrid, Users, CalendarDays, Briefcase, DollarSign, StickyNote, ListTodo, ChevronDown, ChevronRight, UserCog, ShieldCheck } from 'lucide-react';
+import { UserPermissions } from '@/types/user/user';
+import { useAuth } from '@/contexts/auth-context';
+import { Link, useLocation } from 'react-router-dom';
+import { LayoutGrid, Users, CalendarDays, Briefcase, DollarSign, StickyNote, ListTodo, ChevronDown, ChevronRight, UserCog, ShieldCheck } from 'lucide-react';
 import AppLogo from './app-logo';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-const mainNavItems: NavItem[] = [
+interface SidebarNavItem extends NavItem {
+    permissionKey?: keyof UserPermissions;
+    children?: SidebarNavItem[];
+}
+
+const mainNavItems: SidebarNavItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
@@ -17,41 +23,49 @@ const mainNavItems: NavItem[] = [
         title: 'User Management',
         href: '/users',
         icon: UserCog,
+        permissionKey: 'can_view_users',
     },
     {
         title: 'Role Management',
         href: '/roles',
         icon: ShieldCheck,
+        permissionKey: 'can_view_roles',
     },
     {
         title: 'Divisions',
         href: '/divisions',
         icon: Users,
+        permissionKey: 'can_view_divisions',
     },
     {
         title: 'Events',
         href: '/event',
         icon: CalendarDays,
+        permissionKey: 'can_view_events',
     },
     {
         title: 'Projects',
         href: '/project',
         icon: Briefcase,
+        permissionKey: 'can_view_projects',
     },
     {
         title: 'Treasury',
         href: '/treasury',
         icon: DollarSign,
+        permissionKey: 'can_view_own_treasury_requests',
     },
     {
         title: 'Notes',
         href: '/note',
         icon: StickyNote,
+        permissionKey: 'can_create_notes',
     },
     {
         title: 'To-Do Lists',
-        href: '/toDoList/personal', // Default to personal
+        href: '/toDoList/personal',
         icon: ListTodo,
+        permissionKey: 'can_view_todo_lists',
         children: [
             {
                 title: 'Personal',
@@ -65,21 +79,9 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-// const footerNavItems: NavItem[] = [
-//     {
-//         title: 'Repository',
-//         href: 'https://github.com/laravel/react-starter-kit',
-//         icon: Folder,
-//     },
-//     {
-//         title: 'Documentation',
-//         href: 'https://laravel.com/docs/starter-kits',
-//         icon: BookOpen,
-//     },
-// ];
-
 export function AppSidebar() {
     const location = useLocation();
+    const { permissions } = useAuth();
     const [openMenus, setOpenMenus] = useState<string[]>([]);
 
     const toggleMenu = (title: string) => {
@@ -88,7 +90,14 @@ export function AppSidebar() {
         );
     };
 
-    const renderNavItems = (items: NavItem[]) => {
+    const visibleNavItems = useMemo(() => {
+        return mainNavItems.filter((item) => {
+            if (!item.permissionKey) return true;
+            return permissions[item.permissionKey];
+        });
+    }, [permissions]);
+
+    const renderNavItems = (items: SidebarNavItem[]) => {
         return items.map((item) => (
             <SidebarMenuItem key={item.title} className="flex flex-col">
                 <div className="flex items-center justify-between">
@@ -137,13 +146,13 @@ export function AppSidebar() {
             <SidebarContent>
                 <div className="px-2 py-0">
                     <SidebarMenu>
-                        {renderNavItems(mainNavItems)}
+                        {renderNavItems(visibleNavItems)}
                     </SidebarMenu>
                 </div>
             </SidebarContent>
 
             <SidebarFooter>
-               
+
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

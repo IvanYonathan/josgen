@@ -4,6 +4,7 @@ import { Loader2, ListTodo, PlusCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth-context';
 import { TodoListManagementProvider, useTodoListManagementStore } from '../store/todo-list-management-store';
 import { listTodoLists } from '@/lib/api/todo-list/list-todo-lists';
 import { toggleTodoItem } from '@/lib/api/todo-list/items/toggle-todo-item';
@@ -20,6 +21,7 @@ type ViewMode = 'list' | 'create' | 'edit';
 function PersonalTodoListPageContent() {
   const { t } = useTranslation('todolist');
   const { toast } = useToast();
+  const { permissions } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedTodoList, setSelectedTodoList] = useState<TodoList | null>(null);
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
@@ -194,10 +196,12 @@ function PersonalTodoListPageContent() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button onClick={() => setViewMode('create')}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Create List
-          </Button>
+          {permissions.can_create_todo_lists && (
+            <Button onClick={() => setViewMode('create')}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Create List
+            </Button>
+          )}
         </div>
       </div>
 
@@ -217,10 +221,12 @@ function PersonalTodoListPageContent() {
         <div className="text-center py-8">
           <ListTodo className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground mb-4">No todo lists found</p>
-          <Button variant="outline" onClick={() => setViewMode('create')}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Create your first list
-          </Button>
+          {permissions.can_create_todo_lists && (
+            <Button variant="outline" onClick={() => setViewMode('create')}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Create your first list
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

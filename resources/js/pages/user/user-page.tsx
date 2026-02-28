@@ -18,6 +18,7 @@ import { UserManagementProvider, useUserManagementStore } from './store/user-man
 import { useFeatureFlags } from '@/stores/feature-flags-store';
 import { formatRoleLabel } from '@/lib/utils/role-label';
 import { DEFAULT_ROLE_SLUGS } from '@/constants/default-roles';
+import { useAuth } from '@/contexts/auth-context';
 
 const LIMIT_OPTIONS = [10, 25, 50, 100];
 
@@ -39,6 +40,7 @@ const SORT_OPTIONS: Array<{ value: SortSelection; label: string }> = [
 function UserPage() {
     const { t } = useTranslation('user');
     const { toast } = useToast();
+    const { permissions } = useAuth();
 
     // Feature flags for conditional features
     const { userExportEnabled, userBulkActionsEnabled, userAdvancedFiltersEnabled } = useFeatureFlags();
@@ -318,10 +320,12 @@ function UserPage() {
                                 </Button>
                             )}
 
-                            <Button onClick={() => setCreateSheetOpen(true)} disabled={loading}>
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                {t('create_user')}
-                            </Button>
+                            {permissions.can_create_users && (
+                                <Button onClick={() => setCreateSheetOpen(true)} disabled={loading}>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    {t('create_user')}
+                                </Button>
+                            )}
                         </div>
                     </div>
 
@@ -407,6 +411,8 @@ function UserPage() {
                                 pagination={pagination}
                                 onPageChange={setPage}
                                 onPageSizeChange={setLimit}
+                                canEdit={permissions.can_edit_users}
+                                canDelete={permissions.can_delete_users}
                             />
                         </>
                     )}

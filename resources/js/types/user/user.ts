@@ -26,22 +26,52 @@ export interface User {
 }
 
 export interface UserPermissions {
-    can_view_divisions: boolean;
-    can_create_divisions: boolean;
-    can_edit_divisions: boolean;
-    can_delete_divisions: boolean;
+    // User management
     can_view_users: boolean;
     can_create_users: boolean;
     can_edit_users: boolean;
     can_delete_users: boolean;
+    // Role management
     can_view_roles: boolean;
     can_create_roles: boolean;
     can_edit_roles: boolean;
     can_delete_roles: boolean;
+    // Permission management
     can_view_permissions: boolean;
     can_create_permissions: boolean;
     can_edit_permissions: boolean;
     can_delete_permissions: boolean;
+    // Divisions
+    can_view_divisions: boolean;
+    can_create_divisions: boolean;
+    can_edit_divisions: boolean;
+    can_delete_divisions: boolean;
+    // Events
+    can_view_events: boolean;
+    can_create_events: boolean;
+    can_edit_events: boolean;
+    can_delete_events: boolean;
+    // Projects
+    can_view_projects: boolean;
+    can_create_projects: boolean;
+    can_edit_projects: boolean;
+    can_delete_projects: boolean;
+    // Todo lists
+    can_view_todo_lists: boolean;
+    can_create_todo_lists: boolean;
+    can_edit_todo_lists: boolean;
+    can_delete_todo_lists: boolean;
+    // Notes
+    can_create_notes: boolean;
+    can_edit_notes: boolean;
+    can_delete_notes: boolean;
+    // Treasury
+    can_create_treasury_requests: boolean;
+    can_view_own_treasury_requests: boolean;
+    can_view_all_treasury_requests: boolean;
+    can_approve_treasury_requests: boolean;
+    can_process_payments: boolean;
+    can_view_treasury_reports: boolean;
 }
 
 export interface GetUserRequest {
