@@ -31,8 +31,8 @@ Route::prefix('daily-verse')->group(function () {
     Route::get('/upcoming', [DailyVerseController::class, 'upcoming']);
 });
 
-// Protected endpoints (require authentication)
-Route::middleware(['auth:web,sanctum'])->group(function () {
+// Protected endpoints (require authentication via Sanctum token)
+Route::middleware(['auth:sanctum'])->group(function () {
 
     // Auth (authenticated)
     Route::prefix('auth')->group(function () {

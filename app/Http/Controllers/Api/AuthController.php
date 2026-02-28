@@ -9,9 +9,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends ApiController
 {
+    private const ACCESS_TOKEN_EXPIRY_MINUTES = 60;
+    private const REFRESH_TOKEN_EXPIRY_DAYS = 7;
+
     public function login(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -24,19 +28,30 @@ class AuthController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        if (!Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return $this->unauthorized('Invalid credentials');
         }
 
-        $user = Auth::user();
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $accessToken = $user->createToken(
+            'access-token',
+            ['*'],
+            now()->addMinutes(self::ACCESS_TOKEN_EXPIRY_MINUTES)
+        );
+
+        $refreshToken = $user->createToken(
+            'refresh-token',
+            ['*'],
+            now()->addDays(self::REFRESH_TOKEN_EXPIRY_DAYS)
+        );
 
         return $this->success([
             'user' => $user,
-            'access_token' => $token,
-            'refresh_token' => $token, // In a real app, you might want separate refresh tokens
+            'access_token' => $accessToken->plainTextToken,
+            'refresh_token' => $refreshToken->plainTextToken,
             'token_type' => 'Bearer',
-            'expires_in' => config('sanctum.expiration', 525600), // minutes
+            'expires_in' => self::ACCESS_TOKEN_EXPIRY_MINUTES,
         ], 'Login successful');
     }
 
@@ -58,14 +73,24 @@ class AuthController extends ApiController
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $accessToken = $user->createToken(
+            'access-token',
+            ['*'],
+            now()->addMinutes(self::ACCESS_TOKEN_EXPIRY_MINUTES)
+        );
+
+        $refreshToken = $user->createToken(
+            'refresh-token',
+            ['*'],
+            now()->addDays(self::REFRESH_TOKEN_EXPIRY_DAYS)
+        );
 
         return $this->success([
             'user' => $user,
-            'access_token' => $token,
-            'refresh_token' => $token,
+            'access_token' => $accessToken->plainTextToken,
+            'refresh_token' => $refreshToken->plainTextToken,
             'token_type' => 'Bearer',
-            'expires_in' => config('sanctum.expiration', 525600),
+            'expires_in' => self::ACCESS_TOKEN_EXPIRY_MINUTES,
         ], 'Registration successful');
     }
 
@@ -73,20 +98,9 @@ class AuthController extends ApiController
     {
         $user = $request->user();
 
-        // Delete current access token if it exists (Sanctum)
-        if ($user && $user->currentAccessToken()) {
-            $user->currentAccessToken()->delete();
-        }
-
-        // Logout from web session (only if session exists)
-        if (Auth::guard('web')->check()) {
-            Auth::guard('web')->logout();
-        }
-
-        // Invalidate session only if it exists (for cookie-based auth)
-        if ($request->hasSession()) {
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        if ($user) {
+            // Delete all tokens for this user (access + refresh)
+            $user->tokens()->delete();
         }
 
         return $this->success(null, 'Logout successful');
@@ -132,16 +146,17 @@ class AuthController extends ApiController
 
     public function updateProfile(Request $request): JsonResponse
     {
+        $user = $request->user();
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . Auth::id(),
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
         ]);
 
         if ($validator->fails()) {
             return $this->validationError($validator->errors());
         }
 
-        $user = Auth::user();
         $user->update($validator->validated());
 
         return $this->success([
@@ -160,7 +175,7 @@ class AuthController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        $user = Auth::user();
+        $user = $request->user();
 
         if (!Hash::check($request->current_password, $user->password)) {
             return $this->error('Current password is incorrect');
@@ -183,20 +198,40 @@ class AuthController extends ApiController
             return $this->validationError($validator->errors());
         }
 
-        // In a real implementation, you would validate the refresh token
-        // For now, we'll just return a new token for the authenticated user
-        if (!Auth::check()) {
+        $token = PersonalAccessToken::findToken($request->input('refresh_token'));
+
+        if (!$token || $token->name !== 'refresh-token') {
             return $this->unauthorized('Invalid refresh token');
         }
 
-        $user = Auth::user();
-        $newToken = $user->createToken('auth-token')->plainTextToken;
+        if ($token->expires_at && $token->expires_at->isPast()) {
+            $token->delete();
+            return $this->unauthorized('Refresh token expired');
+        }
+
+        $user = $token->tokenable;
+
+        // Delete the used refresh token and all expired access tokens for this user
+        $token->delete();
+        $user->tokens()->where('name', 'access-token')->where('expires_at', '<', now())->delete();
+
+        $newAccessToken = $user->createToken(
+            'access-token',
+            ['*'],
+            now()->addMinutes(self::ACCESS_TOKEN_EXPIRY_MINUTES)
+        );
+
+        $newRefreshToken = $user->createToken(
+            'refresh-token',
+            ['*'],
+            now()->addDays(self::REFRESH_TOKEN_EXPIRY_DAYS)
+        );
 
         return $this->success([
-            'access_token' => $newToken,
-            'refresh_token' => $newToken,
+            'access_token' => $newAccessToken->plainTextToken,
+            'refresh_token' => $newRefreshToken->plainTextToken,
             'token_type' => 'Bearer',
-            'expires_in' => config('sanctum.expiration', 525600),
+            'expires_in' => self::ACCESS_TOKEN_EXPIRY_MINUTES,
         ], 'Token refreshed successfully');
     }
 
