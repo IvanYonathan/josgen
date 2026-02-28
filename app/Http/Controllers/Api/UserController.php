@@ -316,6 +316,17 @@ class UserController extends ApiController
         ], 'Profile updated successfully');
     }
 
+    public function options(Request $request): JsonResponse
+    {
+        $users = User::select('id', 'name', 'email', 'ava', 'division_id')
+            ->orderBy('name')
+            ->get();
+
+        return $this->success([
+            'users' => $users,
+        ], 'User options retrieved successfully');
+    }
+
     /**
      * Normalize the exposed role attribute so clients always receive the primary role slug.
      */

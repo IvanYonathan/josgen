@@ -10,11 +10,11 @@ import { updateProject } from '@/lib/api/project/update-project';
 import { deleteProject } from '@/lib/api/project/delete-project';
 import { createTask } from '@/lib/api/project/create-task';
 import { listDivisions } from '@/lib/api/division/list-divisions';
-import { listUsers } from '@/lib/api/user/list-users';
+import { listUserOptions } from '@/lib/api/user/list-user-options';
 import { updateProjectSchema, createTaskSchema, cleanProjectFormData, type UpdateProjectFormData, type CreateTaskFormData } from '../schemas/project-schemas';
 import { useToast } from '@/hooks/use-toast';
 import { DivisionListResponse } from '@/types/division/division';
-import { User } from '@/types/user/user';
+import { UserOption } from '@/types/user/user';
 import { Project } from '@/types/project/project';
 import { ProjectDetailsTab } from './project-details-tab';
 import { TaskTab } from './task-tab';
@@ -34,7 +34,7 @@ export function EditProjectSheet() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
   const [divisions, setDivisions] = useState<DivisionListResponse[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserOption[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   const form = useForm<UpdateProjectFormData>({
@@ -69,7 +69,7 @@ export function EditProjectSheet() {
         setLoadingData(true);
         const [divisionsRes, usersRes, projectRes] = await Promise.all([
           listDivisions(),
-          listUsers(),
+          listUserOptions(),
           getProject({ id: selectedProject!.id }),
         ]);
         setDivisions(divisionsRes.divisions || []);

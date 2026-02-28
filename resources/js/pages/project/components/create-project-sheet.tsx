@@ -11,11 +11,11 @@ import { Loader2, ArrowLeft, Save, Briefcase } from 'lucide-react';
 import { useProjectManagementStore } from '../store/project-management-store';
 import { createProject } from '@/lib/api/project/create-project';
 import { listDivisions } from '@/lib/api/division/list-divisions';
-import { listUsers } from '@/lib/api/user/list-users';
+import { listUserOptions } from '@/lib/api/user/list-user-options';
 import { createProjectSchema, cleanProjectFormData, type CreateProjectFormData } from '../schemas/project-schemas';
 import { useToast } from '@/hooks/use-toast';
 import { DivisionListResponse } from '@/types/division/division';
-import { User } from '@/types/user/user';
+import { UserOption } from '@/types/user/user';
 import { ProjectUnsavedChangesDialog } from './unsaved-changes-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -27,7 +27,7 @@ export function CreateProjectSheet() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [divisions, setDivisions] = useState<DivisionListResponse[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserOption[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   const form = useForm({
@@ -49,7 +49,7 @@ export function CreateProjectSheet() {
         setLoadingData(true);
         const [divisionsRes, usersRes] = await Promise.all([
           listDivisions(),
-          listUsers(),
+          listUserOptions(),
         ]);
         setDivisions(divisionsRes.divisions || []);
         setUsers(usersRes.users || []);

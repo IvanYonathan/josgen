@@ -28,7 +28,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { useToast } from '@/hooks/use-toast';
 import { Division, DivisionListResponse, UpdateDivisionRequest } from '@/types/division/division';
 import { DivisionMembersResponse } from '@/types/division/members/division-members';
-import { User } from '@/types/user/user';
+import { User, UserOption } from '@/types/user/user';
 import { CreateDivisionSheet } from './components/create-division-sheet';
 import { BulkMemberSelectionDialog } from './components/bulk-member-selection-dialog';
 import { listDivisions } from '@/lib/api/division/list-divisions';
@@ -38,7 +38,7 @@ import { updateDivision } from '@/lib/api/division/update-division';
 import { deleteDivision } from '@/lib/api/division/delete-division';
 import { listDivisionMembers } from '@/lib/api/division/members/list-division-members';
 import { removeDivisionMember } from '@/lib/api/division/members/remove-division-members';
-import { listUsers } from '@/lib/api/user/list-users';
+import { listUserOptions } from '@/lib/api/user/list-user-options';
 import { listEvents } from '@/lib/api/event/list-events';
 import { listProjects } from '@/lib/api/project/list-projects';
 import { listTodoLists } from '@/lib/api/todo-list/list-todo-lists';
@@ -61,7 +61,7 @@ export default function DivisionPage() {
 
     // Division list state
     const [divisions, setDivisions] = useState<DivisionListResponse[]>([]);
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<UserOption[]>([]);
     const [canCreate, setCanCreate] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export default function DivisionPage() {
     // Division detail state
     const [selectedDivision, setSelectedDivision] = useState<Division | null>(null);
     const [divisionMembers, setDivisionMembers] = useState<DivisionMembersResponse | null>(null);
-    const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+    const [availableUsers, setAvailableUsers] = useState<UserOption[]>([]);
     const [detailLoading, setDetailLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -107,17 +107,16 @@ export default function DivisionPage() {
             setLoading(true);
             setError(null);
 
-            // Load divisions and user permissions in parallel
-            const [divisionsResponse, userResponse] = await Promise.all([
+            // Load divisions, user permissions, and user options in parallel
+            const [divisionsResponse, userResponse, userOptionsResponse] = await Promise.all([
                 listDivisions(),
-                me()
+                me(),
+                listUserOptions()
             ]);
 
             setDivisions(divisionsResponse.divisions);
             setCanCreate(userResponse.permissions.can_create_divisions);
-
-            // TODO: Load users list via API when needed for CreateDivisionSheet
-            setUsers([]);
+            setUsers(userOptionsResponse.users);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to load data');
             setCanCreate(false);
@@ -158,7 +157,7 @@ export default function DivisionPage() {
             const [divisionResponse, membersResponse, usersResponse] = await Promise.all([
                 getDivision({ id: divisionId }),
                 listDivisionMembers({ division_id: divisionId }),
-                listUsers({limit: 100})
+                listUserOptions()
             ]);
 
             setSelectedDivision(divisionResponse.division);

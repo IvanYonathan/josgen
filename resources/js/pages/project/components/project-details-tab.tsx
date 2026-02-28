@@ -8,7 +8,7 @@ import { MultiSelect, MultiSelectTrigger, MultiSelectValue, MultiSelectContent, 
 import { Loader2, Save } from 'lucide-react';
 import { UpdateProjectFormData } from '../schemas/project-schemas';
 import { DivisionListResponse } from '@/types/division/division';
-import { User } from '@/types/user/user';
+import { UserOption } from '@/types/user/user';
 import { Project } from '@/types/project/project';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -28,7 +28,7 @@ const DivisionValueItem: React.FC<DivisionValueItemProps> = ({ value, divisions 
 
 interface MemberValueItemProps {
   value: string;
-  users: User[];
+  users: UserOption[];
 }
 
 const MemberValueItem: React.FC<MemberValueItemProps> = ({ value, users }) => {
@@ -48,7 +48,7 @@ interface ProjectDetailsTabProps {
   onCancel: () => void;
   isSubmitting: boolean;
   divisions: DivisionListResponse[];
-  users: User[];
+  users: UserOption[];
 }
 
 export function ProjectDetailsTab({

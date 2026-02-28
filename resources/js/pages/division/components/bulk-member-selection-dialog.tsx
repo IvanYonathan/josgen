@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Loader2, Plus, Search, Users } from 'lucide-react';
-import { User } from '@/types/user/user';
+import { User, UserOption } from '@/types/user/user';
 import { addDivisionMembersBulk } from '@/lib/api/division/members/add-division-members-bulk';
 import { useTranslation } from '@/hooks/use-translation';
 import { useToast } from '@/hooks/use-toast';
@@ -14,8 +14,8 @@ interface BulkMemberSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   divisionId: number;
-  availableUsers: User[];
-  currentMembers: User[];
+  availableUsers: UserOption[];
+  currentMembers: Array<{ id: number }>;
   onMembersAdded: () => void;
 }
 
@@ -179,7 +179,6 @@ export function BulkMemberSelectionDialog({
                       </TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
-                      <TableHead>Joined</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -194,9 +193,6 @@ export function BulkMemberSelectionDialog({
                         </TableCell>
                         <TableCell className="font-medium">{user.name}</TableCell>
                         <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          {new Date(user.created_at).toLocaleDateString()}
-                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

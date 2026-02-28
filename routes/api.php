@@ -55,6 +55,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::prefix('user')->group(function () {
         Route::post('list', [UserController::class, 'list']);
+        Route::post('options', [UserController::class, 'options']);
         Route::post('get', [UserController::class, 'get']);
         Route::post('create', [UserController::class, 'create']);
         Route::post('update', [UserController::class, 'update']);

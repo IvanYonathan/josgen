@@ -171,22 +171,23 @@ export function RoleDetailView({
           </div>
 
           <div className="space-y-4">
+            {canDeleteRole && !role.is_protected && (
             <Card>
               <CardHeader>
                 <CardTitle>{t('table.actions')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  disabled={!canDeleteRole || role.is_protected}
-                  onClick={() => onDelete(role)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {t('buttons.delete')}
-                </Button>
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => onDelete(role)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {t('buttons.delete')}
+                  </Button>
               </CardContent>
             </Card>
+            )}
           </div>
         </div>
       ) : (

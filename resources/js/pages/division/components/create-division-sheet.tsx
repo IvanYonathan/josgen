@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createDivision } from '@/lib/api/division/create-division';
 import { addDivisionMember } from '@/lib/api/division/members/add-division-members';
 import { CreateDivisionRequest, Division } from '@/types/division/division';
-import { User } from '@/types/user/user';
+import { UserOption } from '@/types/user/user';
 import { useTranslation } from '@/hooks/use-translation';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -17,7 +17,7 @@ interface CreateDivisionSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDivisionCreated: (division: Division) => void;
-  availableUsers: User[];
+  availableUsers: UserOption[];
 }
 
 export function CreateDivisionSheet({
@@ -34,7 +34,7 @@ export function CreateDivisionSheet({
     description: '',
     leader_id: undefined,
   });
-  const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<UserOption[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {

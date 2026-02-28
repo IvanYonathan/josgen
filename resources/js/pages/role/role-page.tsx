@@ -223,10 +223,12 @@ export default function RolePage() {
                 {refreshing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
                 {t('buttons.refresh')}
               </Button>
-              <Button onClick={() => setCreateSheetOpen(true)} disabled={!canCreateRole}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                {t('buttons.create')}
-              </Button>
+              {canCreateRole && (
+                <Button onClick={() => setCreateSheetOpen(true)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  {t('buttons.create')}
+                </Button>
+              )}
             </div>
           </div>
 

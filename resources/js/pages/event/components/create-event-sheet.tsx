@@ -13,7 +13,7 @@ import { createEvent } from '@/lib/api/event/create-event';
 import { useEventManagementStore } from '../store/event-management-store';
 import { useToast } from '@/hooks/use-toast';
 import { listDivisions } from '@/lib/api/division/list-divisions';
-import { listUsers } from '@/lib/api/user/list-users';
+import { listUserOptions } from '@/lib/api/user/list-user-options';
 import { MultiSelect, MultiSelectTrigger, MultiSelectValue, MultiSelectContent, MultiSelectEmpty, MultiSelectGroup, MultiSelectItem } from '@/components/ui/multi-select';
 import { ParticipantSelector } from './participant-selector';
 import { EventUnsavedChangesDialog } from './event-unsaved-changes-dialog';
@@ -64,7 +64,7 @@ export function CreateEventSheet() {
         setLoadingData(true);
         const [divisionsRes, usersRes] = await Promise.all([
           listDivisions(),
-          listUsers(),
+          listUserOptions(),
         ]);
         setDivisions(divisionsRes.divisions || []);
         setUsers(usersRes.users || []);

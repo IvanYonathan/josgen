@@ -117,3 +117,15 @@ export interface UserListResponse {
     users: User[];
     total?: number;
 }
+
+export interface UserOption {
+    id: number;
+    name: string;
+    email: string;
+    ava?: string | null;
+    division_id?: number | null;
+}
+
+export interface UserOptionsResponse {
+    users: UserOption[];
+}
