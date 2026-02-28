@@ -24,6 +24,18 @@ use Illuminate\Validation\Rule;
 
 class TreasuryController extends ApiController
 {
+    /**
+     * Query users by Spatie role using the web guard.
+     */
+    private function usersByRole(string|array $roles): \Illuminate\Database\Eloquent\Collection
+    {
+        $originalGuard = config('auth.defaults.guard');
+        config(['auth.defaults.guard' => 'web']);
+        $users = User::role($roles)->get();
+        config(['auth.defaults.guard' => $originalGuard]);
+        return $users;
+    }
+
     private function treasuryHandlers(TreasuryRequest $treasuryRequest, ?int $excludeUserId = null)
     {
         $treasuryRequest->loadMissing(['division.leader:id,name']);
@@ -36,8 +48,8 @@ class TreasuryController extends ApiController
         }
 
         $recipients = $recipients
-            ->merge(User::role('sysadmin')->get())
-            ->merge(User::role('treasurer')->get())
+            ->merge($this->usersByRole('sysadmin'))
+            ->merge($this->usersByRole('treasurer'))
             ->unique('id')
             ->filter(fn ($u) => $u && ($excludeUserId === null || $u->id !== $excludeUserId))
             ->values();
@@ -456,8 +468,8 @@ class TreasuryController extends ApiController
         }
 
         $recipients = $recipients
-            ->merge(User::role('sysadmin')->get())
-            ->merge(User::role('treasurer')->get())
+            ->merge($this->usersByRole('sysadmin'))
+            ->merge($this->usersByRole('treasurer'))
             ->unique('id')
             ->filter(fn ($u) => $u && $u->id !== $user->id)
             ->values();
@@ -536,7 +548,7 @@ class TreasuryController extends ApiController
 
         // If leader approved and treasurer approval is next, notify treasurers
         if ($treasuryRequest->getApprovalStage() === 'pending_treasurer') {
-            $treasurers = User::role(['treasurer'])->get();
+            $treasurers = $this->usersByRole('treasurer');
             foreach ($treasurers as $treasurer) {
                 if ($treasurer->id === $user->id) {
                     continue;
