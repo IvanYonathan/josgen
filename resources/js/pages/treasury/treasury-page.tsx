@@ -1,22 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
-import { usePage } from '@inertiajs/react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/auth-context';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, PlusCircle, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { TreasuryRequest, TreasuryStats } from '@/types/treasury/treasury';
 import { listTreasury, getTreasuryStats, deleteTreasury, approveTreasury } from '@/lib/api/treasury';
-import type { SharedData } from '@/types';
 import { AxiosJosgen, ApiResponse } from '@/lib/axios/axios-josgen';
 
-// Import components - direct imports (no barrel file)
 import { MyRequestsTab } from './components/my-requests-tab';
 import { PendingApprovalsTab } from './components/pending-approvals-tab';
 import { FinancialOverviewTab } from './components/financial-overview-tab';
-import { CreateRequestDialog } from './components/create-request-dialog';
-import { AddRecordDialog } from './components/add-record-dialog';
 import { RejectDialog } from './components/reject-dialog';
 import { RequestDetailDialog } from './components/request-detail-dialog';
+import { DeleteRequestDialog } from './components/delete-request-dialog';
 
 // Check if user has admin/treasurer permissions
 const hasAdminAccess = (role?: string): boolean => {
@@ -26,9 +24,10 @@ const hasAdminAccess = (role?: string): boolean => {
 };
 
 export function TreasuryPage() {
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const { auth } = usePage<SharedData>().props;
-  const userRole = auth?.user?.role;
+  const { user } = useAuth();
+  const userRole = user.role;
   const canAccessAdmin = hasAdminAccess(userRole);
 
   // Tab state
@@ -45,17 +44,13 @@ export function TreasuryPage() {
   // Hide amounts toggle (only for Financial Overview)
   const [hideAmounts, setHideAmounts] = useState(false);
 
-  // Categories from API
-  const [incomeCategories, setIncomeCategories] = useState<Record<string, string>>({});
-  const [expenseCategories, setExpenseCategories] = useState<Record<string, string>>({});
-
   // Dialog states
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [addRecordDialogOpen, setAddRecordDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<TreasuryRequest | null>(null);
-  const [editRequest, setEditRequest] = useState<TreasuryRequest | null>(null);
+  const [deleteRequest, setDeleteRequest] = useState<TreasuryRequest | null>(null);
 
   // Load requests
   const loadRequests = useCallback(async () => {
@@ -94,31 +89,12 @@ export function TreasuryPage() {
     }
   }, [canAccessAdmin]);
 
-  // Load categories
-  const loadCategories = useCallback(async () => {
-    if (!canAccessAdmin) return;
-
-    try {
-      const response = await AxiosJosgen.post<ApiResponse<{
-        income_categories: Record<string, string>;
-        expense_categories: Record<string, string>
-      }>>('/treasury/records/categories');
-      if (response.data.status) {
-        setIncomeCategories(response.data.data.income_categories);
-        setExpenseCategories(response.data.data.expense_categories);
-      }
-    } catch (err) {
-      console.error('Failed to load categories:', err);
-    }
-  }, [canAccessAdmin]);
-
   useEffect(() => {
     loadRequests();
     if (canAccessAdmin) {
       loadStats();
-      loadCategories();
     }
-  }, [loadRequests, loadStats, loadCategories, canAccessAdmin]);
+  }, [loadRequests, loadStats, canAccessAdmin]);
 
   // Handlers
   const handleApprove = async (request: TreasuryRequest) => {
@@ -133,16 +109,26 @@ export function TreasuryPage() {
     }
   };
 
-  const handleDelete = async (request: TreasuryRequest) => {
-    if (!confirm('Are you sure you want to delete this request?')) return;
+  const openDeleteDialog = (request: TreasuryRequest) => {
+    setDeleteRequest(request);
+    setDeleteDialogOpen(true);
+  };
 
+  const handleDeleteConfirm = async () => {
+    if (!deleteRequest) return;
+
+    setDeleteLoading(true);
     const { id } = toast.loading({ title: 'Deleting request...' });
     try {
-      await deleteTreasury(request.id);
+      await deleteTreasury(deleteRequest.id);
       toast.success({ itemID: id, title: 'Request deleted successfully' });
+      setDeleteDialogOpen(false);
+      setDeleteRequest(null);
       loadRequests();
     } catch (err) {
       toast.error(err, { itemID: id, title: 'Failed to delete request' });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -185,7 +171,6 @@ export function TreasuryPage() {
 
   return (
     <div className="p-6">
-      {/* Header with title and refresh */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold">Treasury</h1>
@@ -201,7 +186,6 @@ export function TreasuryPage() {
           </Button>
         </div>
 
-        {/* Right side buttons - different per tab */}
         <div className="flex items-center gap-2">
           {activeTab === 'financial-overview' ? (
             <>
@@ -213,16 +197,13 @@ export function TreasuryPage() {
               >
                 {hideAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
-              <Button onClick={() => setAddRecordDialogOpen(true)}>
+              <Button onClick={() => navigate('/treasury/record/new')}>
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add Report
               </Button>
             </>
           ) : (
-            <Button onClick={() => {
-              setEditRequest(null);
-              setCreateDialogOpen(true);
-            }}>
+            <Button onClick={() => navigate('/treasury/request/new')}>
               <PlusCircle className="h-4 w-4 mr-2" />
               New Request
             </Button>
@@ -230,7 +211,6 @@ export function TreasuryPage() {
         </div>
       </div>
 
-      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="my-requests">My Requests</TabsTrigger>
@@ -249,37 +229,18 @@ export function TreasuryPage() {
           )}
         </TabsList>
 
-        {/* My Requests Tab */}
         <TabsContent value="my-requests">
           <MyRequestsTab
             requests={requests}
             loading={loading}
-            onEdit={async (req) => {
-              // Fetch full request data (including attachments) for editing
-              try {
-                const response = await AxiosJosgen.post<ApiResponse<{ request: TreasuryRequest }>>('/treasury/get', { id: req.id });
-                if (response.data.status) {
-                  setEditRequest(response.data.data.request);
-                } else {
-                  setEditRequest(req);
-                }
-              } catch (err) {
-                console.error('Failed to fetch request details for edit:', err);
-                setEditRequest(req);
-              }
-              setCreateDialogOpen(true);
-            }}
-            onDelete={handleDelete}
+            onEdit={(req) => navigate(`/treasury/request/${req.id}/edit`)}
+            onDelete={openDeleteDialog}
             onView={openDetailDialog}
             onResubmit={handleResubmit}
-            onCreateNew={() => {
-              setEditRequest(null);
-              setCreateDialogOpen(true);
-            }}
+            onCreateNew={() => navigate('/treasury/request/new')}
           />
         </TabsContent>
 
-        {/* Financial Overview Tab */}
         {canAccessAdmin && (
           <TabsContent value="financial-overview">
             <FinancialOverviewTab
@@ -289,18 +250,17 @@ export function TreasuryPage() {
               hideAmounts={hideAmounts}
               onToggleHideAmounts={() => setHideAmounts(!hideAmounts)}
               onLoadStats={loadStats}
-              onAddReport={() => setAddRecordDialogOpen(true)}
+              onAddReport={() => navigate('/treasury/record/new')}
             />
           </TabsContent>
         )}
 
-        {/* Pending Approvals Tab */}
         {canAccessAdmin && (
           <TabsContent value="pending-approvals">
             <PendingApprovalsTab
               requests={requests}
               loading={loading}
-              currentUserId={auth?.user?.id}
+              currentUserId={user.id}
               onApprove={handleApprove}
               onReject={openRejectDialog}
               onView={openDetailDialog}
@@ -308,25 +268,6 @@ export function TreasuryPage() {
           </TabsContent>
         )}
       </Tabs>
-
-      {/* Dialogs */}
-      <CreateRequestDialog
-        open={createDialogOpen}
-        onOpenChange={(open) => {
-          setCreateDialogOpen(open);
-          if (!open) setEditRequest(null); // Clear edit state when closing
-        }}
-        onSuccess={handleRefresh}
-        editRequest={editRequest}
-      />
-
-      <AddRecordDialog
-        open={addRecordDialogOpen}
-        onOpenChange={setAddRecordDialogOpen}
-        onSuccess={() => loadStats()}
-        incomeCategories={incomeCategories}
-        expenseCategories={expenseCategories}
-      />
 
       <RejectDialog
         open={rejectDialogOpen}
@@ -340,6 +281,14 @@ export function TreasuryPage() {
         onOpenChange={setDetailDialogOpen}
         request={selectedRequest}
         hideAmounts={hideAmounts}
+      />
+
+      <DeleteRequestDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        request={deleteRequest}
+        isLoading={deleteLoading}
       />
     </div>
   );

@@ -134,18 +134,6 @@ export const useRoleColumns = (actions: RoleTableActions): ColumnDef<Role>[] => 
                 <Pencil className="mr-2 h-4 w-4" />
                 {t('buttons.edit')}
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                disabled={!canDeleteRole || role.is_protected}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onDelete(role);
-                }}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                {t('buttons.delete')}
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

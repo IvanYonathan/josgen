@@ -10,6 +10,7 @@ export interface CreateEventRequest {
   location?: string;
   division_ids: number[]; // Multi-division support
   participant_ids?: number[];
+  reminder_presets?: string[];
 }
 
 

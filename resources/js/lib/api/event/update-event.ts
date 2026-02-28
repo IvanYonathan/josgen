@@ -10,6 +10,7 @@ export interface UpdateEventRequest {
   end_date?: string;
   location?: string;
   division_ids?: number[];
+  reminder_presets?: string[];
 }
 
 export interface UpdateEventResponse {

@@ -31,8 +31,8 @@ export default function LoginPage() {
                 remember: formData.remember,
             });
 
-            // Redirect to dashboard on success
-            navigate('/dashboard');
+            // Full page reload to establish fresh Inertia shared data
+            globalThis.location.href = '/dashboard';
         } catch (error) {
             setErrors({
                 general: error instanceof Error ? error.message : 'Failed to login'

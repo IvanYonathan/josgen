@@ -1,10 +1,15 @@
 import { Task } from '@/types/todo-list/task';
-import { ChevronDown, Edit3 } from 'lucide-react';
+import { ChevronDown, Calendar, Clock } from 'lucide-react';
 import { FC, useState } from 'react';
 
 type SectionKey = 'today' | 'nextWeek' | 'upcoming';
 
-export function TaskManager({ tasks }: Readonly<{ tasks: Task[] }>) {
+interface TaskManagerProps {
+    tasks: Task[];
+    onToggleTask?: (taskId: number) => Promise<void>;
+}
+
+export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>) {
     const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({ today: true, nextWeek: true, upcoming: true });
 
     const toggleSection = (section: SectionKey) => setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -25,29 +30,46 @@ export function TaskManager({ tasks }: Readonly<{ tasks: Task[] }>) {
     };
 
     const currentTasks = categorizeTasks(tasks);
-    const getPriorityIcon = (priority: 'high' | 'medium' | 'low') => {
-        switch (priority) {
-            case 'high':
-                return <div className="mr-2 h-2 w-2 flex-shrink-0 rounded-full bg-gradient-to-r from-red-400 to-red-600 shadow-sm"></div>;
-            case 'medium':
-                return <div className="mr-2 h-2 w-2 flex-shrink-0 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-sm"></div>;
-            case 'low':
-                return <div className="mr-2 h-2 w-2 flex-shrink-0 rounded-full bg-gradient-to-r from-gray-400 to-gray-600 shadow-sm"></div>;
-            default:
-                return <div className="mr-2 h-2 w-2 flex-shrink-0 rounded-full bg-gradient-to-r from-gray-300 to-gray-500 shadow-sm"></div>;
+
+    // Get priority badge styling
+    const getPriorityBadge = (priority: 'high' | 'medium' | 'low') => {
+        const styles = {
+            high: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50',
+            medium: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/50',
+            low: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700/30 dark:text-gray-400 dark:border-gray-600/50',
+        };
+        return styles[priority];
+    };
+
+    // Format date
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString + 'T00:00:00');
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Check if it's today
+        if (date.toDateString() === today.toDateString()) {
+            return 'Today';
         }
+        // Check if it's tomorrow
+        if (date.toDateString() === tomorrow.toDateString()) {
+            return 'Tomorrow';
+        }
+        // Otherwise show the date
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
     const TaskSection: FC<{ title: string; tasks: Task[]; sectionKey: SectionKey; gradient: string }> = ({ title, tasks, sectionKey, gradient }) => (
-        <div className="overflow-hidden rounded-xl border border-white/20 bg-white/60 backdrop-blur-sm dark:border-gray-700/20 dark:bg-gray-800/60">
+        <div className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-700/50 dark:bg-gray-800/50">
             <button
                 onClick={() => toggleSection(sectionKey)}
-                className="flex w-full items-center justify-between p-4 transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80"
+                className="flex w-full items-center justify-between p-4 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700/50"
             >
-                <div className="flex items-center">
-                    <div className={`h-3 w-3 rounded-full bg-gradient-to-r ${gradient} mr-3`}></div>
+                <div className="flex items-center gap-3">
+                    <div className={`h-3 w-3 rounded-full bg-gradient-to-r ${gradient} shadow-sm`}></div>
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200">{title}</h3>
-                    <span className="ml-2 rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                    <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                         {tasks.length}
                     </span>
                 </div>
@@ -56,38 +78,51 @@ export function TaskManager({ tasks }: Readonly<{ tasks: Task[] }>) {
                 </div>
             </button>
             {expandedSections[sectionKey] && (
-                <div className="space-y-3 px-4 pb-4">
+                <div className="space-y-2 px-4 pb-4">
                     {tasks.slice(0, 3).map((task) => (
                         <div key={task.id} className="group">
-                            <div className="flex items-start rounded-lg bg-white/50 p-3 transition-all duration-200 hover:bg-white/80 hover:shadow-md dark:bg-gray-700/50 dark:hover:bg-gray-700/80">
+                            <div className="flex items-start gap-3 rounded-lg border border-gray-200/60 bg-gradient-to-br from-white to-gray-50/50 p-4 transition-all duration-200 hover:border-blue-200 hover:shadow-md dark:border-gray-700/60 dark:from-gray-800/80 dark:to-gray-800/40 dark:hover:border-blue-700/50">
                                 <input
                                     type="checkbox"
                                     checked={task.completed}
-                                    className="mt-1 mr-3 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
-                                    onChange={() => {}}
+                                    className="mt-0.5 h-5 w-5 rounded border-gray-300 text-blue-600 transition-all focus:ring-2 focus:ring-blue-500 dark:border-gray-600"
+                                    onChange={() => onToggleTask?.(task.id)}
                                 />
-                                <div className="min-w-0 flex-1">
-                                    <div className="mb-1 flex items-center">
-                                        {getPriorityIcon(task.priority)}
-                                        <span className="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                                            {task.priority} priority
+                                <div className="min-w-0 flex-1 space-y-2">
+                                    {/* Priority Badge */}
+                                    <div className="flex items-center gap-2">
+                                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide ${getPriorityBadge(task.priority)}`}>
+                                            {task.priority} Priority
                                         </span>
                                     </div>
-                                    <p className="line-clamp-2 text-sm leading-relaxed text-gray-700 dark:text-gray-300">{task.text}</p>
-                                </div>
-                                <div className="opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                                    <button className="p-1 text-gray-400 transition-colors hover:text-indigo-500">
-                                        <Edit3 className="h-3 w-3" />
-                                    </button>
+
+                                    {/* Task Title */}
+                                    <p className={`text-sm font-medium leading-relaxed ${task.completed ? 'text-gray-500 line-through dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>
+                                        {task.text}
+                                    </p>
+
+                                    <p className="line-clamp-2 text-sm text-gray-500 dark:text-gray-400">{task.description}</p>
+
+                                    {/* Due Date */}
+                                    <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                        <Calendar className="h-3.5 w-3.5" />
+                                        <span>Due {formatDate(task.date)}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    ))}{' '}
+                    ))}
                     {tasks.length > 3 && (
                         <div className="pt-2 text-center">
-                            <span className="rounded-full bg-gray-100/80 px-3 py-1 text-xs text-gray-500 dark:bg-gray-700/80 dark:text-gray-400">
+                            <button className="rounded-full bg-gray-100 px-4 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600">
                                 +{tasks.length - 3} more tasks
-                            </span>
+                            </button>
+                        </div>
+                    )}
+                    {tasks.length === 0 && (
+                        <div className="py-8 text-center">
+                            <Clock className="mx-auto h-8 w-8 text-gray-300 dark:text-gray-600" />
+                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No tasks in this category</p>
                         </div>
                     )}
                 </div>
@@ -97,9 +132,9 @@ export function TaskManager({ tasks }: Readonly<{ tasks: Task[] }>) {
 
     return (
         <div className="space-y-4">
-            <TaskSection title="🔥 Today" tasks={currentTasks.today} sectionKey="today" gradient="from-red-500 to-pink-500" />
-            <TaskSection title="📅 This Week" tasks={currentTasks.nextWeek} sectionKey="nextWeek" gradient="from-yellow-500 to-orange-500" />
-            <TaskSection title="🗓️ Upcoming" tasks={currentTasks.upcoming} sectionKey="upcoming" gradient="from-gray-500 to-gray-600" />
+            <TaskSection title="Today" tasks={currentTasks.today} sectionKey="today" gradient="from-red-500 to-pink-500" />
+            <TaskSection title="This Week" tasks={currentTasks.nextWeek} sectionKey="nextWeek" gradient="from-yellow-500 to-orange-500" />
+            <TaskSection title="Upcoming" tasks={currentTasks.upcoming} sectionKey="upcoming" gradient="from-gray-500 to-gray-600" />
         </div>
     );
 }

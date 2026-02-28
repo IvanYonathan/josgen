@@ -55,7 +55,6 @@ export function RequestDetailDialog({
                 </DialogHeader>
 
                 <div className="space-y-6">
-                    {/* Description */}
                     {request.description && (
                         <div>
                             <h4 className="text-sm font-medium text-muted-foreground mb-2">Description</h4>
@@ -65,7 +64,6 @@ export function RequestDetailDialog({
 
                     <Separator />
 
-                    {/* Details */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-3">
                             <div className="flex items-center gap-2 text-sm">
@@ -97,7 +95,6 @@ export function RequestDetailDialog({
                         </div>
                     </div>
 
-                    {/* Items */}
                     {request.items && request.items.length > 0 && (
                         <>
                             <Separator />
@@ -120,7 +117,6 @@ export function RequestDetailDialog({
                         </>
                     )}
 
-                    {/* Proof / Evidence / Attachment */}
                     {request.attachment_path && (
                         <>
                             <Separator />
@@ -131,19 +127,18 @@ export function RequestDetailDialog({
                                 <div className="border rounded-lg overflow-hidden">
                                     {(request.attachment_type?.startsWith('image/') ||
                                         /\.(jpg|jpeg|png|gif|webp)$/i.test(request.attachment_filename || '')) && (
-                                        <div className="bg-gray-100 p-2">
-                                            <img
-                                                src={`/storage/${request.attachment_path}`}
-                                                alt={request.attachment_original_name || request.attachment_filename || 'Attachment'}
-                                                className="max-h-48 w-auto mx-auto rounded object-contain"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).style.display = 'none';
-                                                }}
-                                            />
-                                        </div>
-                                    )}
+                                            <div className="bg-gray-100 p-2">
+                                                <img
+                                                    src={`/storage/${request.attachment_path}`}
+                                                    alt={request.attachment_original_name || request.attachment_filename || 'Attachment'}
+                                                    className="max-h-48 w-auto mx-auto rounded object-contain"
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).style.display = 'none';
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
 
-                                    {/* File Info */}
                                     <div className="flex justify-between items-center p-3 bg-muted">
                                         <div className="flex items-center gap-2 min-w-0">
                                             <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -183,7 +178,6 @@ export function RequestDetailDialog({
                         </>
                     )}
 
-                    {/* Approval History */}
                     {request.approvals && request.approvals.length > 0 && (
                         <>
                             <Separator />
@@ -223,7 +217,6 @@ export function RequestDetailDialog({
                         </>
                     )}
 
-                    {/* Pending approval info */}
                     {request.approval_stage && !request.approvals?.length && request.status !== 'draft' && (
                         <>
                             <Separator />

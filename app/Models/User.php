@@ -73,6 +73,15 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all divisions the user is a member of (many-to-many).
+     */
+    public function divisions(): BelongsToMany
+    {
+        return $this->belongsToMany(Division::class, 'division_members')
+            ->withTimestamps();
+    }
+
+    /**
      * Get the events organized by the user.
      */
     public function organizedEvents(): HasMany

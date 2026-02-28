@@ -1,115 +1,73 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, ListTodo, PlusCircle, RefreshCw, Calendar, User } from 'lucide-react';
+import { Loader2, ListTodo, PlusCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useToast } from '@/hooks/use-toast';
+import { TodoListManagementProvider, useTodoListManagementStore } from '../store/todo-list-management-store';
+import { listTodoLists } from '@/lib/api/todo-list/list-todo-lists';
+import { toggleTodoItem } from '@/lib/api/todo-list/items/toggle-todo-item';
+import { PersonalTodoListCard } from '../components/personal-todolist-card';
+import { CreateTodoListForm } from '../components/create-todolist-form';
+import { EditTodoListForm } from '../components/edit-todolist-form';
+import { AddTodoListTaskDialog } from '../components/add-todolist-task-dialog';
+import { EditTodoListTaskDialog } from '../components/edit-todolist-task-dialog';
+import { DeleteTodoListTaskDialog } from '../components/delete-todolist-task-dialog';
+import { TodoItem, TodoList } from '@/types/todo-list/todo-list';
 
-// Placeholder types - replace with actual API types
-interface TodoItem {
-  id: number;
-  title: string;
-  description?: string;
-  completed: boolean;
-  due_date?: string;
-  priority: 'low' | 'medium' | 'high';
-  created_at: string;
-}
+type ViewMode = 'list' | 'create' | 'edit';
 
-interface TodoList {
-  id: number;
-  title: string;
-  description?: string;
-  items: TodoItem[];
-  total_items: number;
-  completed_items: number;
-}
-
-interface TodoListsResponse {
-  todo_lists: TodoList[];
-  total: number;
-}
-
-export function PersonalTodoListPage() {
+function PersonalTodoListPageContent() {
   const { t } = useTranslation('todolist');
-  const [todoLists, setTodoLists] = useState<TodoList[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [selectedTodoList, setSelectedTodoList] = useState<TodoList | null>(null);
+  const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
+  const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
+  const [deleteTaskDialogOpen, setDeleteTaskDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<TodoItem | null>(null);
+  const [currentTaskList, setCurrentTaskList] = useState<TodoList | null>(null);
 
-  // Load todo lists from API
+  const {
+    todoLists,
+    loading,
+    error,
+    searchInput,
+    filters,
+    pagination,
+    selectedItemIds,
+    setTodoLists,
+    setLoading,
+    setError,
+    setSearchTerm,
+    setPagination,
+    toggleItemSelection,
+    updateItemsInList,
+  } = useTodoListManagementStore();
+
+  const debouncedSearch = useDebounce(searchInput, 300);
+
   const loadTodoLists = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // TODO: Replace with actual API call when todo list API is implemented
-      // const response = await listPersonalTodoLists();
-      // setTodoLists(response.todo_lists);
+      const response = await listTodoLists({
+        type: 'personal',
+        page: pagination.page,
+        limit: pagination.limit,
+        filters: filters.searchTerm ? { search: filters.searchTerm } : undefined,
+      });
 
-      // Mock data for now
-      const mockTodoLists: TodoList[] = [
-        {
-          id: 1,
-          title: 'Daily Tasks',
-          description: 'My daily routine and tasks',
-          total_items: 5,
-          completed_items: 2,
-          items: [
-            {
-              id: 1,
-              title: 'Review morning emails',
-              completed: true,
-              priority: 'medium',
-              created_at: '2024-05-01'
-            },
-            {
-              id: 2,
-              title: 'Prepare presentation slides',
-              description: 'For tomorrow\'s client meeting',
-              completed: false,
-              priority: 'high',
-              due_date: '2024-05-15',
-              created_at: '2024-05-01'
-            },
-            {
-              id: 3,
-              title: 'Call dentist for appointment',
-              completed: false,
-              priority: 'low',
-              created_at: '2024-05-01'
-            }
-          ]
-        },
-        {
-          id: 2,
-          title: 'Project Goals',
-          description: 'Long-term project objectives',
-          total_items: 3,
-          completed_items: 1,
-          items: [
-            {
-              id: 4,
-              title: 'Complete API documentation',
-              completed: true,
-              priority: 'high',
-              created_at: '2024-04-28'
-            },
-            {
-              id: 5,
-              title: 'Implement user authentication',
-              completed: false,
-              priority: 'high',
-              due_date: '2024-05-20',
-              created_at: '2024-04-28'
-            }
-          ]
-        }
-      ];
-
-      setTodoLists(mockTodoLists);
+      setTodoLists(response.todo_lists);
+      setPagination({
+        total: response.pagination?.total || 0,
+        hasNextPage: response.pagination?.has_next_page || false,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load todo lists');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to load todo lists';
+      setError(errorMsg);
+      toast.error({ title: errorMsg });
     } finally {
       setLoading(false);
     }
@@ -117,7 +75,13 @@ export function PersonalTodoListPage() {
 
   useEffect(() => {
     loadTodoLists();
-  }, []);
+  }, [debouncedSearch, pagination.page, pagination.limit]);
+
+  useEffect(() => {
+    if (debouncedSearch !== filters.searchTerm) {
+      setSearchTerm(debouncedSearch);
+    }
+  }, [debouncedSearch]);
 
   const getPriorityColor = (priority: TodoItem['priority']) => {
     switch (priority) {
@@ -128,26 +92,89 @@ export function PersonalTodoListPage() {
     }
   };
 
-  const handleToggleTodo = async (listId: number, itemId: number) => {
-    // TODO: Implement API call to toggle todo item
-    setTodoLists(prev => prev.map(list => {
-      if (list.id === listId) {
-        const updatedItems = list.items.map(item => {
-          if (item.id === itemId) {
-            return { ...item, completed: !item.completed };
-          }
-          return item;
-        });
-        const completedCount = updatedItems.filter(item => item.completed).length;
-        return {
-          ...list,
-          items: updatedItems,
-          completed_items: completedCount
-        };
-      }
-      return list;
-    }));
+  const handleItemSelectionToggle = (itemId: number) => {
+    toggleItemSelection(itemId);
   };
+
+  const handleMarkCompletion = async (listId: number) => {
+    const list = todoLists.find((l: TodoList) => l.id === listId);
+    if (!list) return;
+
+    const selectedItems = (list.items || []).filter((item: TodoItem) => selectedItemIds.has(item.id));
+
+    if (selectedItems.length === 0) return;
+
+    const completedItems = selectedItems.filter((item: TodoItem) => item.completed);
+    const incompleteItems = selectedItems.filter((item: TodoItem) => !item.completed);
+
+    try {
+      const allUpdatedItems: TodoItem[] = [];
+      if (completedItems.length > 0) {
+        const result = await toggleTodoItem({
+          ids: completedItems.map((item: TodoItem) => item.id),
+          completed: false,
+        });
+        const items = Array.isArray(result) ? result : [result];
+        allUpdatedItems.push(...items);
+      }
+      if (incompleteItems.length > 0) {
+        const result = await toggleTodoItem({
+          ids: incompleteItems.map((item: TodoItem) => item.id),
+          completed: true,
+        });
+        const items = Array.isArray(result) ? result : [result];
+        allUpdatedItems.push(...items);
+      }
+
+      updateItemsInList(listId, allUpdatedItems);
+
+      selectedItems.forEach((item: TodoItem) => toggleItemSelection(item.id));
+
+      toast.success({ title: `${allUpdatedItems.length} task(s) toggled` });
+    } catch (err) {
+      toast.error({ title: err instanceof Error ? err.message : 'Failed to toggle tasks' });
+    }
+  };
+
+  const handleBackToList = () => {
+    setViewMode('list');
+    setSelectedTodoList(null);
+    loadTodoLists();
+  };
+
+  const handleEditList = (list: TodoList) => {
+    setSelectedTodoList(list);
+    setViewMode('edit');
+  };
+
+  const handleAddTask = (list: TodoList) => {
+    setCurrentTaskList(list);
+    setAddTaskDialogOpen(true);
+  };
+
+  const handleEditTask = (task: TodoItem) => {
+    setSelectedTask(task);
+    const list = todoLists.find((l: TodoList) => l.items?.some((i: TodoItem) => i.id === task.id));
+    setCurrentTaskList(list || null);
+    setEditTaskDialogOpen(true);
+  };
+
+  const handleDeleteTask = (task: TodoItem) => {
+    setSelectedTask(task);
+    setDeleteTaskDialogOpen(true);
+  };
+
+  const handleTaskOperationSuccess = () => {
+    loadTodoLists();
+  };
+
+  if (viewMode === 'create') {
+    return <CreateTodoListForm type="personal" onBack={handleBackToList} />;
+  }
+
+  if (viewMode === 'edit') {
+    return <EditTodoListForm todoList={selectedTodoList} onBack={handleBackToList} />;
+  }
 
   return (
     <div className="p-6">
@@ -166,10 +193,12 @@ export function PersonalTodoListPage() {
           </Button>
         </div>
 
-        <Button>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Create List
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setViewMode('create')}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Create List
+          </Button>
+        </div>
       </div>
 
       {/* Error Display */}
@@ -188,7 +217,7 @@ export function PersonalTodoListPage() {
         <div className="text-center py-8">
           <ListTodo className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground mb-4">No todo lists found</p>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setViewMode('create')}>
             <PlusCircle className="h-4 w-4 mr-2" />
             Create your first list
           </Button>
@@ -196,88 +225,52 @@ export function PersonalTodoListPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {todoLists.map(list => (
-            <Card key={list.id} className="overflow-hidden">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="line-clamp-1">{list.title}</CardTitle>
-                    {list.description && (
-                      <CardDescription className="mt-1 line-clamp-2">
-                        {list.description}
-                      </CardDescription>
-                    )}
-                  </div>
-                  <Badge variant="outline">
-                    {list.completed_items}/{list.total_items}
-                  </Badge>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-3">
-                {list.items.slice(0, 5).map(item => (
-                  <div key={item.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50">
-                    <Checkbox
-                      checked={item.completed}
-                      onCheckedChange={() => handleToggleTodo(list.id, item.id)}
-                      className="mt-0.5"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className={`text-sm font-medium line-clamp-1 ${item.completed ? 'line-through text-muted-foreground' : ''}`}>
-                          {item.title}
-                        </p>
-                        <Badge size="sm" className={getPriorityColor(item.priority)}>
-                          {item.priority}
-                        </Badge>
-                      </div>
-                      {item.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
-                          {item.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          <span>Personal</span>
-                        </div>
-                        {item.due_date && (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            <span>{new Date(item.due_date).toLocaleDateString()}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {list.items.length > 5 && (
-                  <div className="text-center pt-2">
-                    <Button variant="ghost" size="sm">
-                      View {list.items.length - 5} more items
-                    </Button>
-                  </div>
-                )}
-
-                {list.items.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    No items in this list
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <PersonalTodoListCard
+              key={list.id}
+              list={list}
+              selectedItemIds={selectedItemIds}
+              onItemSelectionToggle={handleItemSelectionToggle}
+              onMarkCompletion={handleMarkCompletion}
+              getPriorityColor={getPriorityColor}
+              onEditList={handleEditList}
+              onAddTask={handleAddTask}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+            />
           ))}
         </div>
       )}
 
-      {/* TODO: Add pagination when API supports it */}
-      {todoLists.length > 0 && (
+      {todoLists.length > 0 && pagination.total !== null && (
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            Showing {todoLists.length} lists
+            Showing {todoLists.length} of {pagination.total} lists
           </p>
         </div>
       )}
+
+      <AddTodoListTaskDialog
+        open={addTaskDialogOpen}
+        onOpenChange={setAddTaskDialogOpen}
+        todoList={currentTaskList}
+        onSuccess={handleTaskOperationSuccess}
+      />
+      <EditTodoListTaskDialog
+        open={editTaskDialogOpen}
+        onOpenChange={setEditTaskDialogOpen}
+        task={selectedTask}
+        todoList={currentTaskList}
+        onSuccess={handleTaskOperationSuccess}
+      />
+      <DeleteTodoListTaskDialog
+        open={deleteTaskDialogOpen}
+        onOpenChange={setDeleteTaskDialogOpen}
+        task={selectedTask}
+        onSuccess={handleTaskOperationSuccess}
+      />
     </div>
   );
 }
+
+// Wrap with provider
+export const PersonalTodoListPage = TodoListManagementProvider(PersonalTodoListPageContent);

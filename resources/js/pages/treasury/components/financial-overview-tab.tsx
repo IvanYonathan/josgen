@@ -91,7 +91,6 @@ export function FinancialOverviewTab({
 
     return (
         <div className="space-y-6">
-            {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="border-l-4 border-l-green-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -142,7 +141,6 @@ export function FinancialOverviewTab({
                 </Card>
             </div>
 
-            {/* Monthly Cash Flow - Full Width */}
             <Card>
                 <CardHeader>
                     <CardTitle>Monthly Cash Flow</CardTitle>
@@ -158,7 +156,6 @@ export function FinancialOverviewTab({
                 </CardContent>
             </Card>
 
-            {/* Pie Charts - Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
@@ -191,7 +188,6 @@ export function FinancialOverviewTab({
                 </Card>
             </div>
 
-            {/* Recent Transactions */}
             <Card>
                 <CardHeader>
                     <CardTitle>Recent Transactions</CardTitle>

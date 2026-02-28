@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, CalendarDays, MapPin, Users, Building2, AlertCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, CalendarDays, MapPin, Users, Building2, AlertCircle, Trash2, Bell } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { UpdateEventFormData, updateEventSchema, cleanEventFormData } from '../schemas/event-schemas';
 import { updateEvent } from '@/lib/api/event/update-event';
@@ -50,6 +50,7 @@ export function EditEventSheet() {
       location: selectedEvent.location || '',
       division_ids: selectedEvent.divisions?.map(d => d.id) || [],
       participant_ids: selectedEvent.participants?.map(p => p.id) || [],
+      reminder_presets: selectedEvent.reminder_presets || [],
     },
     mode: 'onChange',
   });
@@ -295,6 +296,43 @@ export function EditEventSheet() {
                 {form.formState.errors.location && (
                   <p className="text-sm text-destructive">{form.formState.errors.location.message}</p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reminder_presets">
+                  <Bell className="h-4 w-4 inline mr-1" />
+                  Email Reminders
+                </Label>
+                <Controller
+                  name="reminder_presets"
+                  control={form.control}
+                  render={({ field }) => (
+                    <MultiSelect
+                      value={field.value || []}
+                      onValueChange={(values) => field.onChange(values)}
+                    >
+                      <MultiSelectTrigger>
+                        <MultiSelectValue
+                          placeholder="Select reminder presets (optional)"
+                          itemComponent={(props) => (
+                            <Badge variant="secondary" className="mr-1">
+                              {props.value === '1_day' ? '1 day before' : props.value === '7_days' ? '7 days before' : '1 month before'}
+                            </Badge>
+                          )}
+                        />
+                      </MultiSelectTrigger>
+                      <MultiSelectContent>
+                        <MultiSelectEmpty>No presets available</MultiSelectEmpty>
+                        <MultiSelectGroup>
+                          <MultiSelectItem value="1_day">1 day before</MultiSelectItem>
+                          <MultiSelectItem value="7_days">7 days before</MultiSelectItem>
+                          <MultiSelectItem value="1_month">1 month before</MultiSelectItem>
+                        </MultiSelectGroup>
+                      </MultiSelectContent>
+                    </MultiSelect>
+                  )}
+                />
+                <p className="text-xs text-muted-foreground">Participants will receive email reminders at the selected times before the event.</p>
               </div>
 
               <div className="space-y-2">

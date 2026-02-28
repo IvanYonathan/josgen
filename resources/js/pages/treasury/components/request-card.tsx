@@ -2,7 +2,6 @@ import { TreasuryRequest } from '@/types/treasury/treasury';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
     User,
     Building,
@@ -17,7 +16,6 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@/utils/date';
 
-// Helpers
 export const getStatusBadgeClass = (status: TreasuryRequest['status']) => {
     switch (status) {
         case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -73,10 +71,10 @@ export function RequestCard({
     hideAmounts = false
 }: Readonly<RequestCardProps>) {
     const canEdit = request.status === 'draft' || request.status === 'submitted' || request.status === 'rejected';
-    const canDelete = request.status === 'draft';
+    const canDelete = request.status === 'draft' || request.status === 'submitted' || request.status === 'approved';
     const canResubmit = request.status === 'rejected';
 
-    const rejectionNotes = request.approvals?.find(a => a.decision === 'rejected')?.notes;
+    const rejectionNotes = request.approval_notes || request.approvals?.find(a => a.decision === 'rejected')?.notes;
 
     return (
         <Card className="overflow-hidden hover:shadow-md transition-shadow">
@@ -103,12 +101,12 @@ export function RequestCard({
 
             <CardContent className="space-y-3">
                 {request.status === 'rejected' && rejectionNotes && (
-                    <Alert variant="destructive" className="bg-red-50 border-red-200">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
+                    <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-red-700">
                             <strong>Rejection Reason:</strong> {rejectionNotes}
-                        </AlertDescription>
-                    </Alert>
+                        </p>
+                    </div>
                 )}
 
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -130,7 +128,7 @@ export function RequestCard({
                     </div>
                 </div>
 
-                    {request.approval_stage && request.status !== 'draft' && request.status !== 'rejected' && (
+                {request.approval_stage && request.status !== 'draft' && request.status !== 'rejected' && (
                     <div className="pt-2 border-t">
                         <p className="text-xs font-medium text-muted-foreground mb-1">Approval Status:</p>
                         {request.approvals && request.approvals.length > 0 ? (

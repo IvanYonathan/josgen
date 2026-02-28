@@ -1,75 +1,56 @@
-import { TodoItem, TodoList } from "..";
+
 import { PaginatedResponse } from "../api/response";
+import { Division } from "../division/division";
+import { User } from "../user/user";
 
-export interface ListTodoListsRequest {
-  type?: 'personal' | 'division';
-  division_id?: number;
-  page?: number;
-  per_page?: number;
-}
-
-export interface GetTodoListRequest {
+export interface TodoList {
   id: number;
-}
-
-export interface CreateTodoListRequest {
   title: string;
   type: 'personal' | 'division';
-  division_id?: number;
+  user_id: number;
+  user?: User;
+  division_id: number | null;
+  division?: Division;
+  created_at: string;
+  updated_at: string;
+  items?: TodoItem[];
+  total_items?: number;
+  completed_items?: number;
 }
 
-export interface UpdateTodoListRequest {
+export interface TodoItem {
   id: number;
   title: string;
-}
-
-export interface DeleteTodoListRequest {
-  id: number;
-}
-
-export interface TodoListItemsRequest {
+  description: string | null;
+  completed: boolean;
+  due_date: string | null;
+  priority: string;
   todo_list_id: number;
+  assigned_to: number | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface AddTodoItemRequest {
-  todo_list_id: number;
-  title: string;
-  description?: string;
-  due_date?: string;
-  priority: 'low' | 'medium' | 'high';
-  assigned_to?: number;
-}
-
-export interface UpdateTodoItemRequest {
-  id: number;
-  title: string;
-  description?: string;
-  due_date?: string;
-  priority: 'low' | 'medium' | 'high';
-  assigned_to?: number;
-}
-
-export interface DeleteTodoItemRequest {
-  id: number;
-}
-
-export interface ToggleTodoItemRequest {
-  id: number;
-}
-
-export interface TodoListListResponse {
-  todo_lists: TodoList[];
-  pagination?: PaginatedResponse;
+export interface TodoListPagination {
+  page: number;
+  limit: number;
+  total: number;
+  has_next_page: boolean;
 }
 
 export interface TodoListResponse {
   todo_list: TodoList;
 }
 
+export interface TodoListListResponse {
+  todo_lists: TodoList[];
+  pagination?: TodoListPagination;
+}
+
 export interface TodoItemsResponse {
-  items: TodoItem[];
+  todo_items: TodoItem[];
 }
 
 export interface TodoItemResponse {
-  item: TodoItem;
+  todo_item: TodoItem;
 }

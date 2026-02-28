@@ -1,132 +1,73 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, ListTodo, PlusCircle, RefreshCw, Calendar, Users } from 'lucide-react';
+import { Loader2, ListTodo, PlusCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useToast } from '@/hooks/use-toast';
+import { TodoListManagementProvider, useTodoListManagementStore } from '../store/todo-list-management-store';
+import { listTodoLists } from '@/lib/api/todo-list/list-todo-lists';
+import { toggleTodoItem } from '@/lib/api/todo-list/items/toggle-todo-item';
+import { DivisionTodoListCard } from '../components/division-todolist-card';
+import { CreateTodoListForm } from '../components/create-todolist-form';
+import { EditTodoListForm } from '../components/edit-todolist-form';
+import { AddTodoListTaskDialog } from '../components/add-todolist-task-dialog';
+import { EditTodoListTaskDialog } from '../components/edit-todolist-task-dialog';
+import { DeleteTodoListTaskDialog } from '../components/delete-todolist-task-dialog';
+import { TodoItem, TodoList } from '@/types/todo-list/todo-list';
 
-// Placeholder types - replace with actual API types
-interface TodoItem {
-  id: number;
-  title: string;
-  description?: string;
-  completed: boolean;
-  due_date?: string;
-  priority: 'low' | 'medium' | 'high';
-  assigned_to?: string;
-  created_at: string;
-}
+type ViewMode = 'list' | 'create' | 'edit';
 
-interface TodoList {
-  id: number;
-  title: string;
-  description?: string;
-  division_name: string;
-  items: TodoItem[];
-  total_items: number;
-  completed_items: number;
-}
-
-interface DivisionTodoListsResponse {
-  todo_lists: TodoList[];
-  total: number;
-}
-
-export function DivisionTodoListPage() {
+function DivisionTodoListPageContent() {
   const { t } = useTranslation('todolist');
-  const [todoLists, setTodoLists] = useState<TodoList[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [selectedTodoList, setSelectedTodoList] = useState<TodoList | null>(null);
+  const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
+  const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
+  const [deleteTaskDialogOpen, setDeleteTaskDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<TodoItem | null>(null);
+  const [currentTaskList, setCurrentTaskList] = useState<TodoList | null>(null);
 
-  // Load division todo lists from API
+  const {
+    todoLists,
+    loading,
+    error,
+    searchInput,
+    filters,
+    pagination,
+    selectedItemIds,
+    setTodoLists,
+    setLoading,
+    setError,
+    setSearchTerm,
+    setPagination,
+    toggleItemSelection,
+    updateItemsInList,
+  } = useTodoListManagementStore();
+
+  const debouncedSearch = useDebounce(searchInput, 300);
+
   const loadTodoLists = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // TODO: Replace with actual API call when todo list API is implemented
-      // const response = await listDivisionTodoLists();
-      // setTodoLists(response.todo_lists);
+      const response = await listTodoLists({
+        type: 'division',
+        page: pagination.page,
+        limit: pagination.limit,
+        filters: filters.searchTerm ? { search: filters.searchTerm } : undefined,
+      });
 
-      // Mock data for now
-      const mockTodoLists: TodoList[] = [
-        {
-          id: 1,
-          title: 'Q2 Marketing Goals',
-          description: 'Marketing division quarterly objectives',
-          division_name: 'Marketing',
-          total_items: 4,
-          completed_items: 1,
-          items: [
-            {
-              id: 1,
-              title: 'Launch social media campaign',
-              description: 'Coordinate with design team for campaign assets',
-              completed: true,
-              priority: 'high',
-              assigned_to: 'Sarah Johnson',
-              created_at: '2024-04-01'
-            },
-            {
-              id: 2,
-              title: 'Prepare Q2 budget report',
-              completed: false,
-              priority: 'medium',
-              due_date: '2024-05-20',
-              assigned_to: 'Mike Chen',
-              created_at: '2024-04-15'
-            },
-            {
-              id: 3,
-              title: 'Update brand guidelines',
-              completed: false,
-              priority: 'low',
-              assigned_to: 'Emily Davis',
-              created_at: '2024-04-20'
-            }
-          ]
-        },
-        {
-          id: 2,
-          title: 'Development Sprint Tasks',
-          description: 'Current sprint objectives for the development team',
-          division_name: 'Engineering',
-          total_items: 3,
-          completed_items: 2,
-          items: [
-            {
-              id: 4,
-              title: 'Implement user authentication',
-              completed: true,
-              priority: 'high',
-              assigned_to: 'Alex Rodriguez',
-              created_at: '2024-05-01'
-            },
-            {
-              id: 5,
-              title: 'Fix login page responsive issues',
-              completed: true,
-              priority: 'medium',
-              assigned_to: 'Jessica Wong',
-              created_at: '2024-05-02'
-            },
-            {
-              id: 6,
-              title: 'Write API documentation',
-              completed: false,
-              priority: 'low',
-              due_date: '2024-05-25',
-              assigned_to: 'David Kim',
-              created_at: '2024-05-05'
-            }
-          ]
-        }
-      ];
-
-      setTodoLists(mockTodoLists);
+      setTodoLists(response.todo_lists);
+      setPagination({
+        total: response.pagination?.total || 0,
+        hasNextPage: response.pagination?.has_next_page || false,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load division todo lists');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to load division todo lists';
+      setError(errorMsg);
+      toast.error({ title: errorMsg });
     } finally {
       setLoading(false);
     }
@@ -134,9 +75,15 @@ export function DivisionTodoListPage() {
 
   useEffect(() => {
     loadTodoLists();
-  }, []);
+  }, [debouncedSearch, pagination.page, pagination.limit]);
 
-  const getPriorityColor = (priority: TodoItem['priority']) => {
+  useEffect(() => {
+    if (debouncedSearch !== filters.searchTerm) {
+      setSearchTerm(debouncedSearch);
+    }
+  }, [debouncedSearch]);
+
+  const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'bg-red-100 text-red-800';
       case 'medium': return 'bg-yellow-100 text-yellow-800';
@@ -145,26 +92,90 @@ export function DivisionTodoListPage() {
     }
   };
 
-  const handleToggleTodo = async (listId: number, itemId: number) => {
-    // TODO: Implement API call to toggle todo item
-    setTodoLists(prev => prev.map(list => {
-      if (list.id === listId) {
-        const updatedItems = list.items.map(item => {
-          if (item.id === itemId) {
-            return { ...item, completed: !item.completed };
-          }
-          return item;
-        });
-        const completedCount = updatedItems.filter(item => item.completed).length;
-        return {
-          ...list,
-          items: updatedItems,
-          completed_items: completedCount
-        };
-      }
-      return list;
-    }));
+  const handleItemSelectionToggle = (itemId: number) => {
+    toggleItemSelection(itemId);
   };
+
+  const handleMarkCompletion = async (listId: number) => {
+    const list = todoLists.find((l: TodoList) => l.id === listId);
+    if (!list) return;
+
+    const selectedItems = (list.items || []).filter((item: TodoItem) => selectedItemIds.has(item.id));
+
+    if (selectedItems.length === 0) return;
+
+    const completedItems = selectedItems.filter((item: TodoItem) => item.completed);
+    const incompleteItems = selectedItems.filter((item: TodoItem) => !item.completed);
+
+    try {
+      const allUpdatedItems: TodoItem[] = [];
+      if (completedItems.length > 0) {
+        const result = await toggleTodoItem({
+          ids: completedItems.map((item: TodoItem) => item.id),
+          completed: false,
+        });
+        const items = Array.isArray(result) ? result : [result];
+        allUpdatedItems.push(...items);
+      }
+
+      if (incompleteItems.length > 0) {
+        const result = await toggleTodoItem({
+          ids: incompleteItems.map((item: TodoItem) => item.id),
+          completed: true,
+        });
+        const items = Array.isArray(result) ? result : [result];
+        allUpdatedItems.push(...items);
+      }
+
+      updateItemsInList(listId, allUpdatedItems);
+
+      selectedItems.forEach((item: TodoItem) => toggleItemSelection(item.id));
+
+      toast.success({ title: `${allUpdatedItems.length} task(s) toggled` });
+    } catch (err) {
+      toast.error({ title: err instanceof Error ? err.message : 'Failed to toggle tasks' });
+    }
+  };
+
+  const handleBackToList = () => {
+    setViewMode('list');
+    setSelectedTodoList(null);
+    loadTodoLists();
+  };
+
+  const handleEditList = (list: TodoList) => {
+    setSelectedTodoList(list);
+    setViewMode('edit');
+  };
+
+  const handleAddTask = (list: TodoList) => {
+    setCurrentTaskList(list);
+    setAddTaskDialogOpen(true);
+  };
+
+  const handleEditTask = (task: TodoItem) => {
+    setSelectedTask(task);
+    const list = todoLists.find((l: TodoList) => l.items?.some((i: TodoItem) => i.id === task.id));
+    setCurrentTaskList(list || null);
+    setEditTaskDialogOpen(true);
+  };
+
+  const handleDeleteTask = (task: TodoItem) => {
+    setSelectedTask(task);
+    setDeleteTaskDialogOpen(true);
+  };
+
+  const handleTaskOperationSuccess = () => {
+    loadTodoLists();
+  };
+
+  if (viewMode === 'create') {
+    return <CreateTodoListForm type="division" onBack={handleBackToList} />;
+  }
+
+  if (viewMode === 'edit') {
+    return <EditTodoListForm todoList={selectedTodoList} onBack={handleBackToList} />;
+  }
 
   return (
     <div className="p-6">
@@ -183,10 +194,12 @@ export function DivisionTodoListPage() {
           </Button>
         </div>
 
-        <Button>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Create List
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setViewMode('create')}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Create List
+          </Button>
+        </div>
       </div>
 
       {/* Error Display */}
@@ -205,7 +218,7 @@ export function DivisionTodoListPage() {
         <div className="text-center py-8">
           <ListTodo className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground mb-4">No division todo lists found</p>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setViewMode('create')}>
             <PlusCircle className="h-4 w-4 mr-2" />
             Create your first list
           </Button>
@@ -213,94 +226,52 @@ export function DivisionTodoListPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {todoLists.map(list => (
-            <Card key={list.id} className="overflow-hidden">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="line-clamp-1">{list.title}</CardTitle>
-                    {list.description && (
-                      <CardDescription className="mt-1 line-clamp-2">
-                        {list.description}
-                      </CardDescription>
-                    )}
-                    <div className="flex items-center gap-1 mt-2">
-                      <Users className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{list.division_name} Division</span>
-                    </div>
-                  </div>
-                  <Badge variant="outline">
-                    {list.completed_items}/{list.total_items}
-                  </Badge>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-3">
-                {list.items.slice(0, 5).map(item => (
-                  <div key={item.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50">
-                    <Checkbox
-                      checked={item.completed}
-                      onCheckedChange={() => handleToggleTodo(list.id, item.id)}
-                      className="mt-0.5"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className={`text-sm font-medium line-clamp-1 ${item.completed ? 'line-through text-muted-foreground' : ''}`}>
-                          {item.title}
-                        </p>
-                        <Badge size="sm" className={getPriorityColor(item.priority)}>
-                          {item.priority}
-                        </Badge>
-                      </div>
-                      {item.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
-                          {item.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        {item.assigned_to && (
-                          <div className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            <span>{item.assigned_to}</span>
-                          </div>
-                        )}
-                        {item.due_date && (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            <span>{new Date(item.due_date).toLocaleDateString()}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {list.items.length > 5 && (
-                  <div className="text-center pt-2">
-                    <Button variant="ghost" size="sm">
-                      View {list.items.length - 5} more items
-                    </Button>
-                  </div>
-                )}
-
-                {list.items.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    No items in this list
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <DivisionTodoListCard
+              key={list.id}
+              list={list}
+              selectedItemIds={selectedItemIds}
+              onItemSelectionToggle={handleItemSelectionToggle}
+              onMarkCompletion={handleMarkCompletion}
+              getPriorityColor={getPriorityColor}
+              onEditList={handleEditList}
+              onAddTask={handleAddTask}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+            />
           ))}
         </div>
       )}
 
-      {/* TODO: Add pagination when API supports it */}
-      {todoLists.length > 0 && (
+      {/* Pagination */}
+      {todoLists.length > 0 && pagination.total !== null && (
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            Showing {todoLists.length} lists
+            Showing {todoLists.length} of {pagination.total} lists
           </p>
         </div>
       )}
+
+      <AddTodoListTaskDialog
+        open={addTaskDialogOpen}
+        onOpenChange={setAddTaskDialogOpen}
+        todoList={currentTaskList}
+        onSuccess={handleTaskOperationSuccess}
+      />
+      <EditTodoListTaskDialog
+        open={editTaskDialogOpen}
+        onOpenChange={setEditTaskDialogOpen}
+        task={selectedTask}
+        todoList={currentTaskList}
+        onSuccess={handleTaskOperationSuccess}
+      />
+      <DeleteTodoListTaskDialog
+        open={deleteTaskDialogOpen}
+        onOpenChange={setDeleteTaskDialogOpen}
+        task={selectedTask}
+        onSuccess={handleTaskOperationSuccess}
+      />
     </div>
   );
 }
+
+export const DivisionTodoListPage = TodoListManagementProvider(DivisionTodoListPageContent);

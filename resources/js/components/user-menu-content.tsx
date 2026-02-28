@@ -2,7 +2,7 @@ import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSep
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { User } from '@/types/user/user';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { LogOut, Settings } from 'lucide-react';
 import { AuthService } from '@/lib/auth/auth-service';
 
@@ -12,18 +12,15 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
-    const navigate = useNavigate();
 
     const handleLogout = async () => {
         cleanup();
         try {
             await AuthService.logout();
-            navigate('/login', { replace: true });
         } catch (error) {
             console.error('Logout failed:', error);
-            // Still navigate to login even if API call fails
-            navigate('/login', { replace: true });
         }
+        window.location.href = '/login';
     };
 
     return (

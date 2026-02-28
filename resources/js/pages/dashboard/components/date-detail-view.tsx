@@ -45,12 +45,6 @@ export function DateDetailView({ selectedDate, tasks, onClose }: Readonly<DateDe
                     tasks.map((task) => (
                         <div key={task.id} className="rounded-md bg-gray-100 p-2 dark:bg-gray-700">
                             <div className="flex items-start">
-                                <input
-                                    type="checkbox"
-                                    checked={task.completed}
-                                    className="mt-1 mr-3 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    onChange={() => {}}
-                                />
                                 <div className="flex-1">
                                     <div className="mb-1 flex items-center">
                                         <div className={`h-2 w-2 rounded-full ${getPriorityColor(task.priority)} mr-2`}></div>
