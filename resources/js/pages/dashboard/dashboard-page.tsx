@@ -106,17 +106,6 @@ export default function Dashboard() {
 
     useEffect(() => {
         loadTodoLists();
-
-        // Reload data when user returns to this tab/window
-        const handleFocus = () => {
-            loadTodoLists();
-        };
-
-        window.addEventListener('focus', handleFocus);
-
-        return () => {
-            window.removeEventListener('focus', handleFocus);
-        };
     }, []);
 
     // Handle task toggle (check/uncheck) with optimistic updates
