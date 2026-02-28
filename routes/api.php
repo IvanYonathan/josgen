@@ -120,6 +120,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('tasks/toggle-completion', [ProjectController::class, 'toggleTaskCompletion']);
     });
 
+    // TODO: Uncomment when controllers are created
+    /*
+
     // TodoList endpoints
     Route::prefix('todo-list')->group(function () {
         Route::post('list', [TodoListController::class, 'list']);
