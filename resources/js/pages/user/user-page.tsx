@@ -203,9 +203,9 @@ function UserPage() {
         try {
             if (pagination.page !== 1) {
                 setPage(1);
-            } else {
-                await fetchUsers();
             }
+            await fetchUsers();
+            toast.success({ itemID: id, title: t('toast.refreshing') });
         } catch (error: any) {
             toast.error(error, { itemID: id, title: t('toast.refreshError') });
         }
@@ -218,6 +218,7 @@ function UserPage() {
             if (detailUser && detailUser.id === updatedUser.id) {
                 setDetailUser(updatedUser);
             }
+            toast.success({ itemID: id, title: t('toast.refreshing') });
         } catch (error: any) {
             toast.error(error, { itemID: id, title: t('toast.refreshError') });
         }
