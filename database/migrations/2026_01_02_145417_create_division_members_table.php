@@ -20,12 +20,13 @@ return new class extends Migration
         });
 
         // Migrate existing data from users.division_id to division_members
-        DB::statement('
+        $now = now()->toDateTimeString();
+        DB::statement("
             INSERT INTO division_members (division_id, user_id, created_at, updated_at)
-            SELECT division_id, id, NOW(), NOW()
+            SELECT division_id, id, ?, ?
             FROM users
             WHERE division_id IS NOT NULL
-        ');
+        ", [$now, $now]);
     }
 
     public function down(): void

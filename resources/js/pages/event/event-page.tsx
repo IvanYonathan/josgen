@@ -147,31 +147,6 @@ function EventPageContent() {
         </Select>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1 sm:flex-[10]">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={t('search_events_placeholder')}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        <Select value={filters.statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
-          <SelectTrigger wrapperClassName="w-full sm:w-[150px]">
-            <SelectValue placeholder={t('all_status')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('all_status')}</SelectItem>
-            <SelectItem value="upcoming">{t('upcoming')}</SelectItem>
-            <SelectItem value="ongoing">{t('ongoing')}</SelectItem>
-            <SelectItem value="completed">{t('completed')}</SelectItem>
-            <SelectItem value="cancelled">{t('cancelled')}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       {/* Error Display */}
       {error && (
         <div className="mb-6 p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded dark:bg-red-900/20 dark:text-red-200 dark:border-red-800">
