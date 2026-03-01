@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             DivisionsSeeder::class,
             InitialAdminSeeder::class,
-            // TestDataSeeder::class,
+            TestDataSeeder::class,
         ]);
     }
 }

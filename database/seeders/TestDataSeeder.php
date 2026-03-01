@@ -29,24 +29,33 @@ class TestDataSeeder extends Seeder
         $member = $this->ensureUserWithRole('member@josgen.org', 'Regular Member', 'member');
         
         // Create divisions
-        $worship = Division::create([
-            'name' => 'Worship Team',
-            'description' => 'Music and worship coordination team',
-            'leader_id' => $leader->id,
-        ]);
-        
-        $outreach = Division::create([
-            'name' => 'Outreach',
-            'description' => 'Community outreach and evangelism',
-            'leader_id' => $admin->id,
-        ]);
+        $worship = Division::firstOrCreate(
+            ['name' => 'Worship Team'],
+            [
+                'description' => 'Music and worship coordination team',
+                'leader_id' => $leader->id,
+            ]
+        );
+        $worship->leader_id = $leader->id;
+        $worship->save();
+
+        $outreach = Division::firstOrCreate(
+            ['name' => 'Outreach'],
+            [
+                'description' => 'Community outreach and evangelism',
+                'leader_id' => $admin->id,
+            ]
+        );
         
         // Connect users to divisions
         $leader->division_id = $worship->id;
         $leader->save();
-        
+
         $member->division_id = $worship->id;
         $member->save();
+
+        // Add to division_members pivot table
+        $worship->members()->syncWithoutDetaching([$leader->id, $member->id]);
         
         // Create events
         $event1 = Event::create([
@@ -72,7 +81,6 @@ class TestDataSeeder extends Seeder
         
         // Add event participants
         $event1->participants()->attach([$admin->id, $leader->id, $member->id], [
-            'attendance_status' => 'confirmed',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -133,15 +141,12 @@ class TestDataSeeder extends Seeder
             'title' => 'Service Notes',
             'content' => 'Remember to include the new song in next Sunday\'s worship set.',
             'user_id' => $leader->id,
-            'division_id' => $worship->id,
-            'is_private' => false,
         ]);
-        
+
         Note::create([
             'title' => 'Personal Reminder',
             'content' => 'Call the sound guy about microphone issues.',
             'user_id' => $member->id,
-            'is_private' => true,
         ]);
         
         // Create treasury requests
