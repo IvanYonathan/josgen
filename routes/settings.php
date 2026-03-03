@@ -19,7 +19,10 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('settings/appearance');
     })->name('appearance');
 
-    Route::get('settings/google-calendar', function () {
-        return Inertia::render('settings/google-calendar');
-    })->name('google-calendar');
 });
+
+// Outside auth middleware — Google OAuth redirects here directly (no session)
+// Render the SPA entry point so React Router handles the route
+Route::get('settings/google-calendar', function () {
+    return Inertia::render('app');
+})->name('google-calendar');

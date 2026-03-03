@@ -375,9 +375,12 @@ class TodoListController extends ApiController
             $todoItem->assignedTo->notify(new TodoItemAssignedNotification($todoItem, $todoList, $user));
         }
 
-        // Sync to Google Calendar if assigned and has due date
-        if ($todoItem->assigned_to && $todoItem->due_date) {
-            $this->syncCalendarForUsers($todoItem, 'upsert', [$todoItem->assigned_to]);
+        // Sync to Google Calendar if has due date
+        if ($todoItem->due_date) {
+            $syncUserId = $this->getTodoItemSyncUserId($todoItem);
+            if ($syncUserId) {
+                $this->syncCalendarForUsers($todoItem, 'upsert', [$syncUserId]);
+            }
         }
 
         return $this->success(['todo_item' => $todoItem], 'Todo item added successfully');
@@ -482,8 +485,11 @@ class TodoListController extends ApiController
         if ($todoItem->wasChanged('assigned_to') && $previousAssignedTo && $previousAssignedTo !== $todoItem->assigned_to) {
             $this->removeCalendarForUsers($todoItem, [$previousAssignedTo]);
         }
-        if ($todoItem->assigned_to && $todoItem->due_date) {
-            $this->syncCalendarForUsers($todoItem, 'upsert', [$todoItem->assigned_to]);
+        if ($todoItem->due_date) {
+            $syncUserId = $this->getTodoItemSyncUserId($todoItem);
+            if ($syncUserId) {
+                $this->syncCalendarForUsers($todoItem, 'upsert', [$syncUserId]);
+            }
         }
 
         return $this->success(['todo_item' => $todoItem], 'Todo item updated successfully');
@@ -525,8 +531,9 @@ class TodoListController extends ApiController
         }
 
         // Remove from Google Calendar before deletion
-        if ($todoItem->assigned_to) {
-            $this->removeCalendarForUsers($todoItem, [$todoItem->assigned_to]);
+        $syncUserId = $this->getTodoItemSyncUserId($todoItem);
+        if ($syncUserId) {
+            $this->removeCalendarForUsers($todoItem, [$syncUserId]);
         }
 
         $todoItem->delete();
@@ -621,8 +628,11 @@ class TodoListController extends ApiController
             }
 
             // Sync toggle to Google Calendar
-            if ($item->assigned_to && $item->due_date) {
-                $this->syncCalendarForUsers($item, 'upsert', [$item->assigned_to]);
+            if ($item->due_date) {
+                $syncUserId = $this->getTodoItemSyncUserId($item);
+                if ($syncUserId) {
+                    $this->syncCalendarForUsers($item, 'upsert', [$syncUserId]);
+                }
             }
 
             $updatedItems[] = $item;

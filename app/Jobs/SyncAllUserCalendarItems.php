@@ -80,17 +80,33 @@ class SyncAllUserCalendarItems implements ShouldQueue
 
     private function syncTodoItems(User $user): void
     {
-        $user->assignedTodoItems()
-            ->whereNotNull('due_date')
-            ->pluck('id')
-            ->each(function ($itemId) use ($user) {
-                SyncCalendarItem::dispatch(
-                    $user->id,
-                    TodoItem::class,
-                    $itemId,
-                    'upsert'
-                );
-            });
+        $todoItemIds = collect();
+
+        // Items explicitly assigned to the user
+        $todoItemIds = $todoItemIds->merge(
+            $user->assignedTodoItems()
+                ->whereNotNull('due_date')
+                ->pluck('id')
+        );
+
+        // Items in user's own lists where assigned_to is null (personal items)
+        $todoItemIds = $todoItemIds->merge(
+            TodoItem::whereHas('todoList', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+                ->whereNull('assigned_to')
+                ->whereNotNull('due_date')
+                ->pluck('id')
+        );
+
+        $todoItemIds->unique()->each(function ($itemId) use ($user) {
+            SyncCalendarItem::dispatch(
+                $user->id,
+                TodoItem::class,
+                $itemId,
+                'upsert'
+            );
+        });
     }
 
     private function syncProjectTasks(User $user): void
