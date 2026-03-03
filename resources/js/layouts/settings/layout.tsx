@@ -23,6 +23,10 @@ const sidebarNavItems: SettingsNavItem[] = [
         title: 'Appearance',
         href: '/settings/appearance',
     },
+    {
+        title: 'Google Calendar',
+        href: '/settings/google-calendar',
+    },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {

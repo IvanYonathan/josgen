@@ -11,6 +11,7 @@ use App\Notifications\Project\ProjectStatusChangedNotification;
 use App\Notifications\Project\ProjectTaskAssignedNotification;
 use App\Notifications\Project\ProjectTaskCompletedNotification;
 use App\Notifications\Project\ProjectTaskUnassignedNotification;
+use App\Traits\SyncsGoogleCalendar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,7 @@ use Illuminate\Validation\Rule;
 
 class ProjectController extends ApiController
 {
+    use SyncsGoogleCalendar;
     /**
      * Get a paginated list of projects visible to the authenticated user.
      */
@@ -247,6 +249,13 @@ class ProjectController extends ApiController
         $project->can_edit = $project->canBeEditedBy($user);
         $project->can_modify_members = $project->canModifyMembers();
 
+        // Sync to Google Calendar for all members + manager
+        $calendarUserIds = array_unique(array_merge(
+            $project->members->pluck('id')->toArray(),
+            [$user->id]
+        ));
+        $this->syncCalendarForUsers($project, 'upsert', $calendarUserIds);
+
         return $this->success(['project' => $project], 'Project created successfully');
     }
 
@@ -344,6 +353,13 @@ class ProjectController extends ApiController
             }
         }
 
+        // Sync to Google Calendar for all related users
+        $calendarUserIds = array_unique(array_merge(
+            $project->members->pluck('id')->toArray(),
+            [$project->manager_id]
+        ));
+        $this->syncCalendarForUsers($project, 'upsert', $calendarUserIds);
+
         return $this->success(['project' => $project], 'Project updated successfully');
     }
 
@@ -365,7 +381,7 @@ class ProjectController extends ApiController
         }
 
         $user = Auth::user();
-        $project = Project::find($request->id);
+        $project = Project::with('members')->find($request->id);
 
         if (!$project) {
             return $this->notFound('Project not found');
@@ -375,6 +391,13 @@ class ProjectController extends ApiController
         if ($project->manager_id !== $user->id) {
             return $this->forbidden('Only the project manager can delete this project');
         }
+
+        // Remove from Google Calendar for all related users before deletion
+        $calendarUserIds = array_unique(array_merge(
+            $project->members->pluck('id')->toArray(),
+            [$project->manager_id]
+        ));
+        $this->removeCalendarForUsers($project, $calendarUserIds);
 
         $project->delete();
 
@@ -451,6 +474,9 @@ class ProjectController extends ApiController
             $member->notify(new ProjectMemberAddedNotification($project, $user));
         }
 
+        // Sync to Google Calendar for new members
+        $this->syncCalendarForUsers($project, 'upsert', $newMemberIds);
+
         // Reload
         $project->load(['manager:id,name', 'divisions:id,name', 'members:id,name']);
         $project->can_edit = $project->canBeEditedBy($user);
@@ -497,6 +523,9 @@ class ProjectController extends ApiController
 
         $existingIds = $project->members->pluck('id')->toArray();
         $removedIds = array_values(array_intersect($existingIds, $request->user_ids));
+
+        // Remove from Google Calendar for removed members
+        $this->removeCalendarForUsers($project, $removedIds);
 
         // Detach members
         $project->members()->detach($removedIds);
@@ -569,6 +598,11 @@ class ProjectController extends ApiController
 
         if ($task->assigned_to && $task->assignedUser) {
             $task->assignedUser->notify(new ProjectTaskAssignedNotification($task, $project, $user));
+        }
+
+        // Sync task to Google Calendar if assigned
+        if ($task->assigned_to) {
+            $this->syncCalendarForUsers($task, 'upsert', [$task->assigned_to]);
         }
 
         // Recalculate progress
@@ -649,6 +683,14 @@ class ProjectController extends ApiController
             }
         }
 
+        // Sync task to Google Calendar
+        if ($task->wasChanged('assigned_to') && $previousAssignedTo && $previousAssignedTo !== $task->assigned_to) {
+            $this->removeCalendarForUsers($task, [$previousAssignedTo]);
+        }
+        if ($task->assigned_to) {
+            $this->syncCalendarForUsers($task, 'upsert', [$task->assigned_to]);
+        }
+
         // Recalculate progress
         $project->calculateProgress();
 
@@ -680,6 +722,11 @@ class ProjectController extends ApiController
         // Only manager can delete tasks
         if ($project->manager_id !== $user->id) {
             return $this->forbidden('Only the project manager can delete tasks');
+        }
+
+        // Remove task from Google Calendar before deletion
+        if ($task->assigned_to) {
+            $this->removeCalendarForUsers($task, [$task->assigned_to]);
         }
 
         $task->delete();

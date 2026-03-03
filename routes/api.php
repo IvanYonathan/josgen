@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\TodoListController;
 use App\Http\Controllers\Api\TreasuryController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\GoogleCalendarController;
 use Illuminate\Support\Facades\Route;
 
 // Auth endpoints (no auth required)
@@ -23,6 +24,9 @@ Route::prefix('auth')->group(function () {
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
 });
+
+// Google Calendar OAuth callback (no auth - Google redirects here)
+Route::get('google-calendar/callback', [GoogleCalendarController::class, 'callback']);
 
 // Daily Verse endpoints (public - no auth required)
 Route::prefix('daily-verse')->group(function () {
@@ -181,5 +185,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('unread-count', [NotificationController::class, 'unreadCount']);
         Route::post('mark-read', [NotificationController::class, 'markRead']);
         Route::post('mark-all-read', [NotificationController::class, 'markAllRead']);
+    });
+
+    // Google Calendar endpoints
+    Route::prefix('google-calendar')->group(function () {
+        Route::post('connect', [GoogleCalendarController::class, 'connect']);
+        Route::post('disconnect', [GoogleCalendarController::class, 'disconnect']);
+        Route::post('status', [GoogleCalendarController::class, 'status']);
     });
 });

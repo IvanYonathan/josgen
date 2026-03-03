@@ -28,6 +28,7 @@ import RegisterPage from './auth/register-page';
 import AppearancePage from './settings/appearance';
 import ProfilePage from './settings/profile';
 import PasswordPage from './settings/password';
+import GoogleCalendarPage from './settings/google-calendar';
 import { useEffect } from 'react';
 
 function App() {
@@ -78,6 +79,7 @@ function App() {
             <Route path="/settings/appearance" element={<AppearancePage />} />
             <Route path="/settings/profile" element={<ProfilePage />} />
             <Route path="/settings/password" element={<PasswordPage />} />
+            <Route path="/settings/google-calendar" element={<GoogleCalendarPage />} />
           </Route>
         </Route>
 

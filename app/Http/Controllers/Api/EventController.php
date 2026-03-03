@@ -9,6 +9,7 @@ use App\Notifications\Event\EventCreatedNotification;
 use App\Notifications\Event\EventCancelledNotification;
 use App\Notifications\Event\EventParticipantAddedNotification;
 use App\Notifications\Event\EventUpdatedNotification;
+use App\Traits\SyncsGoogleCalendar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,7 @@ use Illuminate\Validation\Rule;
 
 class EventController extends ApiController
 {
+    use SyncsGoogleCalendar;
     /**
      * Get a paginated list of events visible to the authenticated user.
      */
@@ -266,6 +268,10 @@ class EventController extends ApiController
                 NotificationFacade::send($users, new EventCreatedNotification($event, $user));
             });
 
+        // Sync to Google Calendar for all participants + organizer
+        $calendarUserIds = array_unique(array_merge($participantIds, [$user->id]));
+        $this->syncCalendarForUsers($event, 'upsert', $calendarUserIds);
+
         return $this->success(['event' => $event], 'Event created successfully');
     }
 
@@ -383,6 +389,13 @@ class EventController extends ApiController
             }
         }
 
+        // Sync to Google Calendar for all related users
+        $calendarUserIds = array_unique(array_merge(
+            $event->participants->pluck('id')->toArray(),
+            [$event->organizer_id]
+        ));
+        $this->syncCalendarForUsers($event, 'upsert', $calendarUserIds);
+
         return $this->success(['event' => $event], 'Event updated successfully');
     }
 
@@ -415,6 +428,13 @@ class EventController extends ApiController
         if ($event->organizer_id !== $user->id) {
             return $this->forbidden('Only the event organizer can delete this event');
         }
+
+        // Remove from Google Calendar for all related users before deletion
+        $calendarUserIds = array_unique(array_merge(
+            $event->participants->pluck('id')->toArray(),
+            [$event->organizer_id]
+        ));
+        $this->removeCalendarForUsers($event, $calendarUserIds);
 
         foreach ($event->participants as $participant) {
             if ($participant->id === $user->id) {
@@ -471,6 +491,13 @@ class EventController extends ApiController
         $event->can_edit = $event->canBeEditedBy($user);
         $event->can_modify_participants = $event->canModifyParticipants();
         $event->participants_count = $event->participants->count();
+
+        // Sync cancelled status to Google Calendar
+        $calendarUserIds = array_unique(array_merge(
+            $event->participants->pluck('id')->toArray(),
+            [$event->organizer_id]
+        ));
+        $this->syncCalendarForUsers($event, 'upsert', $calendarUserIds);
 
         return $this->success(['event' => $event], 'Event cancelled successfully');
     }
@@ -557,6 +584,9 @@ class EventController extends ApiController
             $participant->notify(new EventParticipantAddedNotification($event, $user));
         }
 
+        // Sync to Google Calendar for new participants
+        $this->syncCalendarForUsers($event, 'upsert', $newParticipantIds);
+
         return $this->success(
             ['event' => $event],
             count($newParticipantIds) . ' participant(s) added successfully'
@@ -599,6 +629,13 @@ class EventController extends ApiController
         if (!$event->canModifyParticipants()) {
             return $this->error('Participants can only be modified when event status is "upcoming"', null, 400);
         }
+
+        // Remove from Google Calendar for removed participants
+        $removedIds = array_values(array_intersect(
+            $event->participants->pluck('id')->toArray(),
+            $request->user_ids
+        ));
+        $this->removeCalendarForUsers($event, $removedIds);
 
         // Detach participants
         $event->participants()->detach($request->user_ids);
