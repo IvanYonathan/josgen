@@ -1,1 +1,1 @@
-web: php artisan migrate --force && php artisan db:seed --force && php artisan queue:work --sleep=3 --tries=3 --max-time=3600 & docker-php-entrypoint --config /Caddyfile --adapter caddyfile 2>&1
+web: php artisan migrate --force && php artisan db:seed --force && php artisan storage:link && php artisan queue:work --sleep=3 --tries=3 --max-time=3600 & docker-php-entrypoint --config /Caddyfile --adapter caddyfile 2>&1
