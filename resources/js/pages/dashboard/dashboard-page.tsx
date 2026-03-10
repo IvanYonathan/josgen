@@ -164,11 +164,13 @@ export default function Dashboard() {
     // Stats calculation
     const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const tasksForToday = tasksToDisplay.filter((t) => new Date(t.date + 'T00:00:00').getTime() === startOfToday.getTime());
-    const startOfTomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-    const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7);
+    // This week = Sunday through Saturday of the current calendar week
+    const dayOfWeek = today.getDay(); // 0=Sun
+    const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek);
+    const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() + (6 - dayOfWeek));
     const tasksForThisWeek = tasksToDisplay.filter((t) => {
         const d = new Date(t.date + 'T00:00:00');
-        return d >= startOfTomorrow && d <= endOfWeek;
+        return d >= startOfWeek && d <= endOfWeek && d.getTime() !== startOfToday.getTime();
     });
     const tasksForUpcoming = tasksToDisplay.filter((t) => new Date(t.date + 'T00:00:00') > endOfWeek);
 

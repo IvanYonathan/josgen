@@ -19,13 +19,15 @@ export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>)
     const categorizeTasks = (tasksToCategorize: Task[]) => {
         const now = new Date();
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const startOfTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-        const endOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7);
+        // This week = Sunday through Saturday of the current calendar week
+        const dow = now.getDay(); // 0=Sun
+        const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
+        const endOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (6 - dow));
         return {
             today: tasksToCategorize.filter((t) => new Date(t.date + 'T00:00:00').getTime() === startOfToday.getTime()),
             nextWeek: tasksToCategorize.filter((t) => {
                 const d = new Date(t.date + 'T00:00:00');
-                return d >= startOfTomorrow && d <= endOfWeek;
+                return d >= startOfWeek && d <= endOfWeek && d.getTime() !== startOfToday.getTime();
             }),
             upcoming: tasksToCategorize.filter((t) => new Date(t.date + 'T00:00:00') > endOfWeek),
         };
