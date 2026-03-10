@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             DivisionsSeeder::class,
             InitialAdminSeeder::class,
+            DailyVerseSeeder::class,
             // TestDataSeeder::class, // Enable only for local/testing
         ]);
     }
