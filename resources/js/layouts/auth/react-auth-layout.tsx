@@ -8,16 +8,23 @@ interface AuthLayoutProps {
     description?: string;
 }
 
-const AUTH_IMAGES = [
-    '/image/auth-image/bg-image1.JPG',
-    '/image/auth-image/bg-image2.JPG',
-    '/image/auth-image/bg-image3.JPG',
-    '/image/auth-image/bg-image4.JPG',
-    '/image/auth-image/bg-image5.JPG',
-    '/image/auth-image/bg-image6.JPG',
-    '/image/auth-image/bg-image7.JPG',
-    '/image/auth-image/bg-image8.JPG',
+const STORAGE_BASE = import.meta.env.VITE_STORAGE_BASE_URL as string | undefined;
+
+const AUTH_IMAGE_PATHS = [
+    'image/auth-image/bg-image1.JPG',
+    'image/auth-image/bg-image2.JPG',
+    'image/auth-image/bg-image3.JPG',
+    'image/auth-image/bg-image4.JPG',
+    'image/auth-image/bg-image5.JPG',
+    'image/auth-image/bg-image6.JPG',
+    'image/auth-image/bg-image7.JPG',
+    'image/auth-image/bg-image8.JPG',
 ];
+
+// Use R2 CDN URL in production, local path in dev
+const AUTH_IMAGES = AUTH_IMAGE_PATHS.map(path =>
+    STORAGE_BASE ? `${STORAGE_BASE}/${path}` : `/${path}`
+);
 
 export default function ReactAuthLayout({ children, title, description }: PropsWithChildren<AuthLayoutProps>) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
