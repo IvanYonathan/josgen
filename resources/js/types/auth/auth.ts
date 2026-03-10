@@ -14,13 +14,6 @@ export interface LoginRequest {
   remember?: boolean;
 }
 
-export interface RegisterRequest {
-  name: string;
-  email: string;
-  password: string;
-  password_confirmation: string;
-}
-
 export interface ChangePasswordRequest {
   current_password: string;
   password: string;

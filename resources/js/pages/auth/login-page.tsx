@@ -106,13 +106,6 @@ export default function LoginPage() {
                         Log in
                     </Button>
                 </div>
-
-                <div className="text-muted-foreground text-center text-sm">
-                    Don't have an account?{' '}
-                    <Link to="/register" className="text-primary hover:underline" tabIndex={5}>
-                        Sign up
-                    </Link>
-                </div>
             </form>
         </ReactAuthLayout>
     );

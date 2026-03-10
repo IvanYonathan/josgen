@@ -10,7 +10,6 @@ import { ApiResponse } from "@/types/api/response";
  */
 const skippedEndpoints: string[] = [
   '/auth/login',
-  '/auth/register',
   '/auth/refresh',
   '/auth/forgot-password',
   '/auth/reset-password',

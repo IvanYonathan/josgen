@@ -1,10 +1,9 @@
 import { TokenManager } from "./token-manager";
 import { login as apiLogin } from "../api/auth/login";
 import { logout as apiLogout } from "../api/auth/logout";
-import { register as apiRegister } from "../api/auth/register";
 import { me as apiMe } from "../api/auth/me";
 import { User } from "@/types/user/user";
-import { LoginRequest, RegisterRequest } from "@/types/auth/auth";
+import { LoginRequest } from "@/types/auth/auth";
 
 
 /**
@@ -35,28 +34,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Register user and store tokens
-   */
-  static async register(userData: RegisterRequest): Promise<User> {
-    try {
-      const response = await apiRegister(userData);
-
-      // Store tokens
-      TokenManager.setTokens({
-        access_token: response.access_token,
-        refresh_token: response.refresh_token,
-        token_type: response.token_type,
-        expires_in: response.expires_in,
-      });
-
-      return response.user;
-    } catch (error) {
-      // Clear any existing tokens on register failure
-      TokenManager.clearTokens();
-      throw error;
-    }
-  }
 
   /**
    * Logout user and clear tokens

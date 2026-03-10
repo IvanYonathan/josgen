@@ -1,7 +1,6 @@
 import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/react';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
 import './i18n/config';
@@ -10,14 +9,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
-    resolve: (name) => {
-        // For the 'app' page, load our SPA (with lazy-loaded routes inside)
-        if (name === 'app') {
-            return import('./pages/app');
-        }
-        // Lazy glob — pages are loaded on demand, not bundled into the entry chunk
-        return resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx', { eager: false }));
-    },
+    resolve: () => import('./pages/app'),
     setup({ el, App, props }) {
         const root = createRoot(el);
 
