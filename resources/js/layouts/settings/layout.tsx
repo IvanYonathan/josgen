@@ -7,13 +7,13 @@ import { type PropsWithChildren } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
+    const { t } = useTranslation('settings');
     // When server-side rendering, we only render the layout on the client...
     if (typeof window === 'undefined') {
         return null;
     }
 
     const currentPath = window.location.pathname;
-    const { t } = useTranslation('settings');
 
     const sidebarNavItems = [
         { title: t('layout.nav.profile'),       href: '/settings/profile' },
