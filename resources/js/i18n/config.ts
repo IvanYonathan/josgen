@@ -32,7 +32,7 @@ function buildTranslations(files: Record<string, any>) {
   return resources;
 }
 
-const savedLanguage = APPLICATION_LANGUAGE;
+const savedLanguage = localStorage.getItem('app_language') || APPLICATION_LANGUAGE;
 
 i18next.use(initReactI18next).init({
   lng: savedLanguage,

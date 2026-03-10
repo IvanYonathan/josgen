@@ -26,7 +26,7 @@ export interface TodoItem {
   due_date: string | null;
   priority: string;
   todo_list_id: number;
-  assigned_to: number | null;
+  assigned_to: { id: number; name: string } | null;
   created_at: string;
   updated_at: string;
 }

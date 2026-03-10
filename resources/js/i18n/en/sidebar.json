@@ -1,0 +1,13 @@
+{
+    "dashboard": "Dashboard",
+    "userManagement": "User Management",
+    "roleManagement": "Role Management",
+    "divisions": "Divisions",
+    "events": "Events",
+    "projects": "Projects",
+    "treasury": "Treasury",
+    "notes": "Notes",
+    "todoLists": "To-Do Lists",
+    "personal": "Personal",
+    "division": "Division"
+}

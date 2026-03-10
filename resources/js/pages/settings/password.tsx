@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { changePassword } from '@/lib/api/auth/change-password';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function Password() {
+    const { t } = useTranslation('settings');
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
@@ -65,64 +67,57 @@ export default function Password() {
     return (
         <SettingsLayout>
             <div className="space-y-6">
-                <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
+                <HeadingSmall title={t('password.title')} description={t('password.description')} />
 
-                    <form onSubmit={updatePassword} className="space-y-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="current_password">Current password</Label>
+                <form onSubmit={updatePassword} className="space-y-6">
+                    <div className="grid gap-2">
+                        <Label htmlFor="current_password">{t('password.currentPassword.label')}</Label>
+                        <Input
+                            id="current_password"
+                            ref={currentPasswordInput}
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            type="password"
+                            className="mt-1 block w-full"
+                            autoComplete="current-password"
+                            placeholder={t('password.currentPassword.placeholder')}
+                        />
+                        <InputError message={errors.current_password} />
+                    </div>
 
-                            <Input
-                                id="current_password"
-                                ref={currentPasswordInput}
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                type="password"
-                                className="mt-1 block w-full"
-                                autoComplete="current-password"
-                                placeholder="Current password"
-                            />
+                    <div className="grid gap-2">
+                        <Label htmlFor="password">{t('password.newPassword.label')}</Label>
+                        <Input
+                            id="password"
+                            ref={passwordInput}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            type="password"
+                            className="mt-1 block w-full"
+                            autoComplete="new-password"
+                            placeholder={t('password.newPassword.placeholder')}
+                        />
+                        <InputError message={errors.password} />
+                    </div>
 
-                            <InputError message={errors.current_password} />
-                        </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="password_confirmation">{t('password.confirmPassword.label')}</Label>
+                        <Input
+                            id="password_confirmation"
+                            value={passwordConfirmation}
+                            onChange={(e) => setPasswordConfirmation(e.target.value)}
+                            type="password"
+                            className="mt-1 block w-full"
+                            autoComplete="new-password"
+                            placeholder={t('password.confirmPassword.placeholder')}
+                        />
+                        <InputError message={errors.password_confirmation} />
+                    </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">New password</Label>
-
-                            <Input
-                                id="password"
-                                ref={passwordInput}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                type="password"
-                                className="mt-1 block w-full"
-                                autoComplete="new-password"
-                                placeholder="New password"
-                            />
-
-                            <InputError message={errors.password} />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">Confirm password</Label>
-
-                            <Input
-                                id="password_confirmation"
-                                value={passwordConfirmation}
-                                onChange={(e) => setPasswordConfirmation(e.target.value)}
-                                type="password"
-                                className="mt-1 block w-full"
-                                autoComplete="new-password"
-                                placeholder="Confirm password"
-                            />
-
-                            <InputError message={errors.password_confirmation} />
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <Button disabled={processing}>Save password</Button>
-
+                    <div className="flex items-center gap-4">
+                        <Button disabled={processing}>{t('password.save')}</Button>
                         {recentlySuccessful && (
-                            <p className="text-sm text-neutral-600">Saved</p>
+                            <p className="text-sm text-neutral-600">{t('password.saved')}</p>
                         )}
                     </div>
                 </form>

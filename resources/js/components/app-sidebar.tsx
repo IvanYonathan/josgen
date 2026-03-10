@@ -7,82 +7,84 @@ import { Link, useLocation } from 'react-router-dom';
 import { LayoutGrid, Users, CalendarDays, Briefcase, DollarSign, StickyNote, ListTodo, ChevronDown, ChevronRight, UserCog, ShieldCheck } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useMemo, useState } from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface SidebarNavItem extends NavItem {
     permissionKey?: keyof UserPermissions;
     children?: SidebarNavItem[];
 }
 
-const mainNavItems: SidebarNavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'User Management',
-        href: '/users',
-        icon: UserCog,
-        permissionKey: 'can_view_users',
-    },
-    {
-        title: 'Role Management',
-        href: '/roles',
-        icon: ShieldCheck,
-        permissionKey: 'can_view_roles',
-    },
-    {
-        title: 'Divisions',
-        href: '/divisions',
-        icon: Users,
-        permissionKey: 'can_view_divisions',
-    },
-    {
-        title: 'Events',
-        href: '/event',
-        icon: CalendarDays,
-        permissionKey: 'can_view_events',
-    },
-    {
-        title: 'Projects',
-        href: '/project',
-        icon: Briefcase,
-        permissionKey: 'can_view_projects',
-    },
-    {
-        title: 'Treasury',
-        href: '/treasury',
-        icon: DollarSign,
-        permissionKey: 'can_view_own_treasury_requests',
-    },
-    {
-        title: 'Notes',
-        href: '/note',
-        icon: StickyNote,
-        permissionKey: 'can_create_notes',
-    },
-    {
-        title: 'To-Do Lists',
-        href: '/toDoList/personal',
-        icon: ListTodo,
-        permissionKey: 'can_view_todo_lists',
-        children: [
-            {
-                title: 'Personal',
-                href: '/toDoList/personal',
-            },
-            {
-                title: 'Division',
-                href: '/toDoList/division',
-            },
-        ],
-    },
-];
-
 export function AppSidebar() {
     const location = useLocation();
     const { permissions } = useAuth();
+    const { t } = useTranslation('sidebar');
     const [openMenus, setOpenMenus] = useState<string[]>([]);
+
+    const mainNavItems: SidebarNavItem[] = [
+        {
+            title: t('dashboard'),
+            href: '/dashboard',
+            icon: LayoutGrid,
+        },
+        {
+            title: t('userManagement'),
+            href: '/users',
+            icon: UserCog,
+            permissionKey: 'can_view_users',
+        },
+        {
+            title: t('roleManagement'),
+            href: '/roles',
+            icon: ShieldCheck,
+            permissionKey: 'can_view_roles',
+        },
+        {
+            title: t('divisions'),
+            href: '/divisions',
+            icon: Users,
+            permissionKey: 'can_view_divisions',
+        },
+        {
+            title: t('events'),
+            href: '/event',
+            icon: CalendarDays,
+            permissionKey: 'can_view_events',
+        },
+        {
+            title: t('projects'),
+            href: '/project',
+            icon: Briefcase,
+            permissionKey: 'can_view_projects',
+        },
+        {
+            title: t('treasury'),
+            href: '/treasury',
+            icon: DollarSign,
+            permissionKey: 'can_view_own_treasury_requests',
+        },
+        {
+            title: t('notes'),
+            href: '/note',
+            icon: StickyNote,
+            permissionKey: 'can_create_notes',
+        },
+        {
+            title: t('todoLists'),
+            href: '/toDoList/personal',
+            icon: ListTodo,
+            permissionKey: 'can_view_todo_lists',
+            children: [
+                {
+                    title: t('personal'),
+                    href: '/toDoList/personal',
+                },
+                {
+                    title: t('division'),
+                    href: '/toDoList/division',
+                },
+            ],
+        },
+    ];
 
     const toggleMenu = (title: string) => {
         setOpenMenus((prev) =>
@@ -95,7 +97,8 @@ export function AppSidebar() {
             if (!item.permissionKey) return true;
             return permissions[item.permissionKey];
         });
-    }, [permissions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [permissions, t]);
 
     const renderNavItems = (items: SidebarNavItem[]) => {
         return items.map((item) => (

@@ -1,0 +1,13 @@
+{
+    "dashboard": "Dasbor",
+    "userManagement": "Manajemen Pengguna",
+    "roleManagement": "Manajemen Peran",
+    "divisions": "Divisi",
+    "events": "Acara",
+    "projects": "Proyek",
+    "treasury": "Keuangan",
+    "notes": "Catatan",
+    "todoLists": "Daftar Tugas",
+    "personal": "Pribadi",
+    "division": "Divisi"
+}

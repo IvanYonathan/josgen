@@ -1,0 +1,99 @@
+{
+    "layout": {
+        "title": "Pengaturan",
+        "description": "Kelola profil dan pengaturan akun Anda",
+        "nav": {
+            "profile": "Profil",
+            "password": "Kata Sandi",
+            "appearance": "Tampilan",
+            "googleCalendar": "Google Calendar",
+            "language": "Ganti Bahasa"
+        }
+    },
+    "profile": {
+        "title": "Informasi Profil",
+        "description": "Perbarui nama dan alamat email Anda",
+        "name": {
+            "label": "Nama",
+            "placeholder": "Nama lengkap"
+        },
+        "email": {
+            "label": "Alamat email",
+            "placeholder": "Alamat email"
+        },
+        "save": "Simpan",
+        "saved": "Tersimpan"
+    },
+    "deleteAccount": {
+        "title": "Hapus akun",
+        "description": "Hapus akun Anda beserta semua datanya",
+        "warningTitle": "Peringatan",
+        "warningDescription": "Harap lanjutkan dengan hati-hati, tindakan ini tidak dapat dibatalkan.",
+        "button": "Hapus akun",
+        "dialog": {
+            "title": "Apakah Anda yakin ingin menghapus akun Anda?",
+            "description": "Setelah akun Anda dihapus, semua data dan sumber dayanya akan dihapus secara permanen. Masukkan kata sandi Anda untuk mengonfirmasi.",
+            "passwordPlaceholder": "Kata sandi",
+            "cancel": "Batal",
+            "confirm": "Hapus akun"
+        }
+    },
+    "password": {
+        "title": "Perbarui kata sandi",
+        "description": "Pastikan akun Anda menggunakan kata sandi yang panjang dan acak untuk keamanan",
+        "currentPassword": {
+            "label": "Kata sandi saat ini",
+            "placeholder": "Kata sandi saat ini"
+        },
+        "newPassword": {
+            "label": "Kata sandi baru",
+            "placeholder": "Kata sandi baru"
+        },
+        "confirmPassword": {
+            "label": "Konfirmasi kata sandi",
+            "placeholder": "Konfirmasi kata sandi"
+        },
+        "save": "Simpan kata sandi",
+        "saved": "Tersimpan"
+    },
+    "appearance": {
+        "title": "Pengaturan Tampilan",
+        "description": "Perbarui pengaturan tampilan akun Anda",
+        "light": "Terang",
+        "dark": "Gelap",
+        "system": "Sistem"
+    },
+    "googleCalendar": {
+        "title": "Google Calendar",
+        "description": "Sinkronkan acara, proyek, tugas, dan daftar tugas Anda ke Google Calendar",
+        "loading": "Memuat...",
+        "connected": "Terhubung",
+        "syncedItems": "Item tersinkron",
+        "connectedSince": "Terhubung sejak",
+        "connectedInfo": "Acara, proyek, tugas, dan daftar tugas Anda dengan tanggal otomatis tersinkron ke Google Calendar.",
+        "disconnect": "Putuskan",
+        "disconnectDialog": {
+            "title": "Putuskan Google Calendar?",
+            "description": "Ini akan menghapus semua acara yang dibuat JosGen dari Google Calendar Anda dan mencabut akses. Anda dapat menghubungkan kembali kapan saja.",
+            "cancel": "Batal",
+            "confirm": "Putuskan"
+        },
+        "notConnectedInfo": "Hubungkan akun Google Anda untuk menyinkronkan acara, proyek, tugas, dan daftar tugas Anda ke Google Calendar secara otomatis. Hanya akses kalender yang diminta.",
+        "connect": "Hubungkan Google Calendar",
+        "connecting": "Menghubungkan..."
+    },
+    "language": {
+        "title": "Ganti Bahasa",
+        "description": "Pilih bahasa tampilan untuk aplikasi",
+        "languages": {
+            "en": {
+                "label": "Inggris",
+                "description": "Bahasa default"
+            },
+            "id": {
+                "label": "Indonesia",
+                "description": "Bahasa Indonesia"
+            }
+        }
+    }
+}

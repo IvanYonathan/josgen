@@ -113,7 +113,7 @@ export function DivisionTodoListCard({
                 {item.assigned_to && (
                   <div className="flex items-center gap-1">
                     <Users className="h-3 w-3" />
-                    <span>Assigned to User #{item.assigned_to}</span>
+                    <span>{item.assigned_to.name}</span>
                   </div>
                 )}
                 {item.due_date && (

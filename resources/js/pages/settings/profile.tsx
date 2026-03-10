@@ -9,8 +9,10 @@ import SettingsLayout from '@/layouts/settings/layout';
 import { updateProfile } from '@/lib/api/auth/update-profile';
 import { me } from '@/lib/api/auth/me';
 import { User } from '@/types/user/user';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function Profile() {
+    const { t } = useTranslation('settings');
     const [user, setUser] = useState<User | null>(null);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -56,48 +58,43 @@ export default function Profile() {
     return (
         <SettingsLayout>
             <div className="space-y-6">
-                <HeadingSmall title="Profile information" description="Update your name and email address" />
+                <HeadingSmall title={t('profile.title')} description={t('profile.description')} />
 
-                    <form onSubmit={submit} className="space-y-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
+                <form onSubmit={submit} className="space-y-6">
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">{t('profile.name.label')}</Label>
+                        <Input
+                            id="name"
+                            className="mt-1 block w-full"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            autoComplete="name"
+                            placeholder={t('profile.name.placeholder')}
+                        />
+                        <InputError className="mt-2" message={errors.name} />
+                    </div>
 
-                            <Input
-                                id="name"
-                                className="mt-1 block w-full"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                                autoComplete="name"
-                                placeholder="Full name"
-                            />
+                    <div className="grid gap-2">
+                        <Label htmlFor="email">{t('profile.email.label')}</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            className="mt-1 block w-full"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            autoComplete="username"
+                            placeholder={t('profile.email.placeholder')}
+                        />
+                        <InputError className="mt-2" message={errors.email} />
+                    </div>
 
-                            <InputError className="mt-2" message={errors.name} />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email address</Label>
-
-                            <Input
-                                id="email"
-                                type="email"
-                                className="mt-1 block w-full"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                autoComplete="username"
-                                placeholder="Email address"
-                            />
-
-                            <InputError className="mt-2" message={errors.email} />
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <Button disabled={processing}>Save</Button>
-
-                            {recentlySuccessful && (
-                                <p className="text-sm text-neutral-600">Saved</p>
-                            )}
+                    <div className="flex items-center gap-4">
+                        <Button disabled={processing}>{t('profile.save')}</Button>
+                        {recentlySuccessful && (
+                            <p className="text-sm text-neutral-600">{t('profile.saved')}</p>
+                        )}
                     </div>
                 </form>
             </div>

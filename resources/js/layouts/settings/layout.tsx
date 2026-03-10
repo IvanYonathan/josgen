@@ -4,30 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { type PropsWithChildren } from 'react';
-
-interface SettingsNavItem {
-    title: string;
-    href: string;
-}
-
-const sidebarNavItems: SettingsNavItem[] = [
-    {
-        title: 'Profile',
-        href: '/settings/profile',
-    },
-    {
-        title: 'Password',
-        href: '/settings/password',
-    },
-    {
-        title: 'Appearance',
-        href: '/settings/appearance',
-    },
-    {
-        title: 'Google Calendar',
-        href: '/settings/google-calendar',
-    },
-];
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     // When server-side rendering, we only render the layout on the client...
@@ -36,10 +13,19 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     const currentPath = window.location.pathname;
+    const { t } = useTranslation('settings');
+
+    const sidebarNavItems = [
+        { title: t('layout.nav.profile'),       href: '/settings/profile' },
+        { title: t('layout.nav.password'),      href: '/settings/password' },
+        { title: t('layout.nav.appearance'),    href: '/settings/appearance' },
+        { title: t('layout.nav.googleCalendar'),href: '/settings/google-calendar' },
+        { title: t('layout.nav.language'),      href: '/settings/language' },
+    ];
 
     return (
         <div className="px-4 py-6">
-            <Heading title="Settings" description="Manage your profile and account settings" />
+            <Heading title={t('layout.title')} description={t('layout.description')} />
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">

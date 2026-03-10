@@ -11,8 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Save, Loader2 } from 'lucide-react';
 
 import { updateTodoItem } from '@/lib/api/todo-list/items/update-todo-item';
+import { listDivisionMembers } from '@/lib/api/division/members/list-division-members';
 import { useToast } from '@/hooks/use-toast';
 import { TodoItem, TodoList } from '@/types/todo-list/todo-list';
+import { User } from '@/types/user/user';
 
 const editTaskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -35,6 +37,7 @@ interface EditTodoListTaskDialogProps {
 export function EditTodoListTaskDialog({ open, onOpenChange, task, todoList, onSuccess }: Readonly<EditTodoListTaskDialogProps>) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [members, setMembers] = useState<User[]>([]);
 
   const form = useForm<EditTaskFormData>({
     resolver: zodResolver(editTaskSchema),
@@ -48,16 +51,27 @@ export function EditTodoListTaskDialog({ open, onOpenChange, task, todoList, onS
   });
 
   useEffect(() => {
-    if (task) {
+    if (!open || !task) return;
+
+    const resetForm = (loadedMembers: User[]) => {
       form.reset({
         title: task.title,
         description: task.description || '',
         priority: task.priority as 'low' | 'medium' | 'high',
-        due_date: task.due_date || '',
-        assigned_to: task.assigned_to || undefined,
+        due_date: task.due_date ? task.due_date.split('T')[0] : '',
+        assigned_to: task.assigned_to?.id || undefined,
       });
+      setMembers(loadedMembers);
+    };
+
+    if (todoList?.type === 'division' && todoList.division_id) {
+      listDivisionMembers({ division_id: todoList.division_id })
+        .then(res => resetForm(res.members))
+        .catch(() => resetForm([]));
+    } else {
+      resetForm([]);
     }
-  }, [task, form]);
+  }, [open, task]);
 
   const onSubmit = async (data: EditTaskFormData) => {
     if (!task) return;
@@ -161,7 +175,11 @@ export function EditTodoListTaskDialog({ open, onOpenChange, task, todoList, onS
                       <SelectValue placeholder="Unassigned (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* TODO(IvanYonathan): Load division members here */}
+                      {members.map(member => (
+                        <SelectItem key={member.id} value={member.id.toString()}>
+                          {member.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}

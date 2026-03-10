@@ -45,6 +45,7 @@ const router = createBrowserRouter([
           { path: '/settings/profile', lazy: () => import('./settings/profile').then(m => ({ Component: m.default })) },
           { path: '/settings/password', lazy: () => import('./settings/password').then(m => ({ Component: m.default })) },
           { path: '/settings/google-calendar', lazy: () => import('./settings/google-calendar').then(m => ({ Component: m.default })) },
+          { path: '/settings/language', lazy: () => import('./settings/language').then(m => ({ Component: m.default })) },
         ],
       },
     ],

@@ -10,9 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Loader2 } from 'lucide-react';
 
 import { addTodoItem } from '@/lib/api/todo-list/items/add-todo-item';
+import { listDivisionMembers } from '@/lib/api/division/members/list-division-members';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TodoList } from '@/types/todo-list/todo-list';
+import { User } from '@/types/user/user';
 
 const addTaskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -34,6 +36,15 @@ interface AddTodoListTaskDialogProps {
 export function AddTodoListTaskDialog({ open, onOpenChange, todoList, onSuccess }: Readonly<AddTodoListTaskDialogProps>) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [members, setMembers] = useState<User[]>([]);
+
+  useEffect(() => {
+    if (open && todoList?.type === 'division' && todoList.division_id) {
+      listDivisionMembers({ division_id: todoList.division_id })
+        .then(res => setMembers(res.members))
+        .catch(() => setMembers([]));
+    }
+  }, [open, todoList?.division_id, todoList?.type]);
 
   const form = useForm<AddTaskFormData>({
     resolver: zodResolver(addTaskSchema),
@@ -149,7 +160,11 @@ export function AddTodoListTaskDialog({ open, onOpenChange, todoList, onSuccess 
                       <SelectValue placeholder="Unassigned (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* TODO(IvanYonathan): Load division members here */}
+                      {members.map(member => (
+                        <SelectItem key={member.id} value={member.id.toString()}>
+                          {member.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}

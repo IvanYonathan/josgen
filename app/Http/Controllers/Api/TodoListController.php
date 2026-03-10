@@ -64,7 +64,7 @@ class TodoListController extends ApiController
                          ->whereIn('division_id', $userDivisionIds);
                 });
             })
-            ->with(['user:id,name', 'division:id,name', 'items']);
+            ->with(['user:id,name', 'division:id,name', 'items.assignedTo:id,name']);
 
         // Filter by type (personal or division)
         if ($type) {

@@ -19,8 +19,10 @@ import { connectGoogleCalendar } from '@/lib/api/google-calendar/connect';
 import { disconnectGoogleCalendar } from '@/lib/api/google-calendar/disconnect';
 import { GoogleCalendarStatus } from '@/types/google-calendar/google-calendar';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function GoogleCalendarSettings() {
+    const { t } = useTranslation('settings');
     const [status, setStatus] = useState<GoogleCalendarStatus | null>(null);
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
@@ -28,7 +30,6 @@ export default function GoogleCalendarSettings() {
     useEffect(() => {
         document.title = 'Google Calendar settings';
 
-        // Handle OAuth redirect query params
         const params = new URLSearchParams(window.location.search);
         if (params.get('success') === 'true') {
             toast.success('Google Calendar connected successfully! Your items are being synced.');
@@ -88,8 +89,8 @@ export default function GoogleCalendarSettings() {
         return (
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Google Calendar" description="Manage your Google Calendar integration" />
-                    <p className="text-muted-foreground text-sm">Loading...</p>
+                    <HeadingSmall title={t('googleCalendar.title')} description={t('googleCalendar.description')} />
+                    <p className="text-muted-foreground text-sm">{t('googleCalendar.loading')}</p>
                 </div>
             </SettingsLayout>
         );
@@ -98,12 +99,12 @@ export default function GoogleCalendarSettings() {
     return (
         <SettingsLayout>
             <div className="space-y-6">
-                <HeadingSmall title="Google Calendar" description="Sync your events, projects, tasks, and to-do items to Google Calendar" />
+                <HeadingSmall title={t('googleCalendar.title')} description={t('googleCalendar.description')} />
 
                 {status?.connected ? (
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                            <Badge className="bg-green-600 text-white">Connected</Badge>
+                            <Badge className="bg-green-600 text-white">{t('googleCalendar.connected')}</Badge>
                             {status.google_email && (
                                 <span className="text-muted-foreground text-sm">{status.google_email}</span>
                             )}
@@ -111,12 +112,12 @@ export default function GoogleCalendarSettings() {
 
                         <div className="text-sm space-y-1">
                             <p>
-                                <span className="text-muted-foreground">Synced items: </span>
+                                <span className="text-muted-foreground">{t('googleCalendar.syncedItems')}: </span>
                                 <span className="font-medium">{status.synced_events_count}</span>
                             </p>
                             {status.connected_at && (
                                 <p>
-                                    <span className="text-muted-foreground">Connected since: </span>
+                                    <span className="text-muted-foreground">{t('googleCalendar.connectedSince')}: </span>
                                     <span className="font-medium">
                                         {new Date(status.connected_at).toLocaleDateString()}
                                     </span>
@@ -124,27 +125,25 @@ export default function GoogleCalendarSettings() {
                             )}
                         </div>
 
-                        <p className="text-muted-foreground text-sm">
-                            Your events, projects, tasks, and to-do items with dates are automatically synced to your Google Calendar.
-                        </p>
+                        <p className="text-muted-foreground text-sm">{t('googleCalendar.connectedInfo')}</p>
 
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button variant="destructive" disabled={processing}>
-                                    Disconnect
+                                    {t('googleCalendar.disconnect')}
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>Disconnect Google Calendar?</AlertDialogTitle>
+                                    <AlertDialogTitle>{t('googleCalendar.disconnectDialog.title')}</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        This will remove all JosGen-created events from your Google Calendar and revoke access. You can reconnect at any time.
+                                        {t('googleCalendar.disconnectDialog.description')}
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>{t('googleCalendar.disconnectDialog.cancel')}</AlertDialogCancel>
                                     <AlertDialogAction onClick={handleDisconnect} disabled={processing}>
-                                        Disconnect
+                                        {t('googleCalendar.disconnectDialog.confirm')}
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
@@ -152,12 +151,9 @@ export default function GoogleCalendarSettings() {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <p className="text-muted-foreground text-sm">
-                            Connect your Google account to automatically sync your events, projects, tasks, and to-do items to Google Calendar. Only calendar event access is requested.
-                        </p>
-
+                        <p className="text-muted-foreground text-sm">{t('googleCalendar.notConnectedInfo')}</p>
                         <Button onClick={handleConnect} disabled={processing}>
-                            {processing ? 'Connecting...' : 'Connect Google Calendar'}
+                            {processing ? t('googleCalendar.connecting') : t('googleCalendar.connect')}
                         </Button>
                     </div>
                 )}
