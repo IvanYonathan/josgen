@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, FileText, X, AlertCircle, Plus, Trash2 } from 'lucide-react';
 import { expense_categories, TreasuryRequest } from '@/types/treasury/treasury';
+import { useTranslation } from '@/hooks/use-translation';
 
 export interface ItemInput {
     id?: number;
@@ -60,6 +61,7 @@ export function RequestForm({
     existingAttachment,
 }: Readonly<RequestFormProps>) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { t } = useTranslation('treasury');
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = e.target.files;
@@ -118,17 +120,17 @@ export function RequestForm({
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Request Details</CardTitle>
+                    <CardTitle>{t('form.requestDetails')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="title" className="flex items-center gap-1">
-                                Title <span className="text-red-500">*</span>
+                                {t('form.titleLabel')} <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="title"
-                                placeholder="e.g., Office supplies purchase"
+                                placeholder={t('form.titlePlaceholder')}
                                 value={formData.title}
                                 onChange={(e) => {
                                     setFormData({ ...formData, title: e.target.value });
@@ -143,14 +145,14 @@ export function RequestForm({
                             )}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="type">Type</Label>
+                            <Label htmlFor="type">{t('form.type')}</Label>
                             <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v as any })}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="reimbursement">Reimbursement</SelectItem>
-                                    <SelectItem value="fund_request">Fund Request</SelectItem>
+                                    <SelectItem value="reimbursement">{t('form.reimbursement')}</SelectItem>
+                                    <SelectItem value="fund_request">{t('form.fundRequest')}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -158,11 +160,11 @@ export function RequestForm({
 
                     <div className="space-y-2">
                         <Label htmlFor="description" className="flex items-center gap-1">
-                            Description <span className="text-red-500">*</span>
+                            {t('form.descriptionLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <Textarea
                             id="description"
-                            placeholder="Provide details about your request..."
+                            placeholder={t('form.descriptionPlaceholder')}
                             value={formData.description}
                             onChange={(e) => {
                                 setFormData({ ...formData, description: e.target.value });
@@ -184,10 +186,10 @@ export function RequestForm({
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="flex items-center gap-1">
-                            Items <span className="text-red-500">*</span>
+                            {t('form.items')} <span className="text-red-500">*</span>
                         </CardTitle>
                         <span className="text-sm font-medium">
-                            Total: Rp{calculateTotalAmount().toLocaleString('id-ID')}
+                            {t('form.total')} Rp{calculateTotalAmount().toLocaleString('id-ID')}
                         </span>
                     </div>
                 </CardHeader>
@@ -195,7 +197,7 @@ export function RequestForm({
                     {items.map((item, index) => (
                         <div key={index} className="p-4 bg-muted/30 rounded-lg space-y-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-muted-foreground">Item {index + 1}</span>
+                                <span className="text-sm font-medium text-muted-foreground">{t('form.itemLabel', { number: index + 1 })}</span>
                                 <Button
                                     type="button"
                                     variant="ghost"
@@ -208,16 +210,16 @@ export function RequestForm({
                                 </Button>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-muted-foreground">Description</Label>
+                                <Label className="text-muted-foreground">{t('form.itemDescription')}</Label>
                                 <Input
-                                    placeholder="Item description"
+                                    placeholder={t('form.itemDescPlaceholder')}
                                     value={item.description}
                                     onChange={(e) => updateItem(index, 'description', e.target.value)}
                                 />
                             </div>
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="space-y-2">
-                                    <Label className="text-muted-foreground">Amount (Rp) <span className="text-red-500">*</span></Label>
+                                    <Label className="text-muted-foreground">{t('form.amount')} <span className="text-red-500">*</span></Label>
                                     <Input
                                         placeholder="0"
                                         value={item.amount ? item.amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
@@ -229,13 +231,13 @@ export function RequestForm({
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-muted-foreground">Category <span className="text-red-500">*</span></Label>
+                                    <Label className="text-muted-foreground">{t('form.category')} <span className="text-red-500">*</span></Label>
                                     <Select
                                         value={item.category}
                                         onValueChange={(v) => updateItem(index, 'category', v)}
                                     >
                                         <SelectTrigger className={errors.items?.[index]?.category ? 'border-red-500' : ''}>
-                                            <SelectValue placeholder="Select" />
+                                            <SelectValue placeholder={t('form.categoryPlaceholder')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {Object.entries(expense_categories).map(([key, label]) => (
@@ -245,7 +247,7 @@ export function RequestForm({
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-muted-foreground">Date <span className="text-red-500">*</span></Label>
+                                    <Label className="text-muted-foreground">{t('form.date')} <span className="text-red-500">*</span></Label>
                                     <Input
                                         type="date"
                                         value={item.item_date}
@@ -264,7 +266,7 @@ export function RequestForm({
                         className="w-full border-dashed"
                     >
                         <Plus className="h-4 w-4 mr-2" />
-                        Add Item
+                        {t('form.addItem')}
                     </Button>
                 </CardContent>
             </Card>
@@ -272,7 +274,7 @@ export function RequestForm({
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-1">
-                        Attachments (Proof/Bills) <span className="text-red-500">*</span>
+                        {t('form.attachments')} <span className="text-red-500">*</span>
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -291,10 +293,10 @@ export function RequestForm({
                     >
                         <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
                         <p className="text-sm text-muted-foreground">
-                            Click to upload or drag and drop
+                            {t('form.uploadText')}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                            PDF, PNG, JPG up to 10MB
+                            {t('form.uploadHint')}
                         </p>
                     </div>
                     {errors.attachment && (
@@ -320,7 +322,7 @@ export function RequestForm({
 
                     {existingAttachment && !file && (
                         <div className="mt-4">
-                            <p className="text-sm text-muted-foreground mb-2">Current attachment:</p>
+                            <p className="text-sm text-muted-foreground mb-2">{t('form.currentAttachment')}</p>
                             <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                                 <div className="flex items-center gap-2 text-sm">
                                     <FileText className="h-5 w-5" />
@@ -332,7 +334,7 @@ export function RequestForm({
                                     size="sm"
                                     onClick={() => fileInputRef.current?.click()}
                                 >
-                                    Change
+                                    {t('form.change')}
                                 </Button>
                             </div>
                         </div>

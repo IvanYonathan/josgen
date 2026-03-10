@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/use-translation';
 import { TreasuryRequest } from '@/types/treasury/treasury';
 import { rejectTreasury } from '@/lib/api/treasury';
 
@@ -18,23 +19,24 @@ export function RejectDialog({ open, onOpenChange, request, onSuccess }: Readonl
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [reason, setReason] = useState('');
+    const { t } = useTranslation('treasury');
 
     const handleReject = async () => {
         if (!request || !reason.trim()) {
-            toast.error(new Error('Please provide a reason for rejection'), { title: 'Validation error' });
+            toast.error(new Error(t('toast.provideReason')), { title: t('toast.validationError') });
             return;
         }
 
-        const { id } = toast.loading({ title: 'Rejecting request...' });
+        const { id } = toast.loading({ title: t('toast.rejecting') });
         try {
             setLoading(true);
             await rejectTreasury({ id: request.id, notes: reason });
-            toast.success({ itemID: id, title: 'Request rejected successfully' });
+            toast.success({ itemID: id, title: t('toast.rejected') });
             onOpenChange(false);
             setReason('');
             onSuccess();
         } catch (err) {
-            toast.error(err, { itemID: id, title: 'Failed to reject request' });
+            toast.error(err, { itemID: id, title: t('toast.failedReject') });
         } finally {
             setLoading(false);
         }
@@ -44,15 +46,15 @@ export function RejectDialog({ open, onOpenChange, request, onSuccess }: Readonl
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[400px]">
                 <DialogHeader>
-                    <DialogTitle>Reject Request</DialogTitle>
+                    <DialogTitle>{t('dialogs.rejectTitle')}</DialogTitle>
                     <DialogDescription>
-                        Please provide a reason for rejecting "{request?.title}".
+                        {t('dialogs.rejectDesc', { title: request?.title })}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4">
                     <Textarea
-                        placeholder="Enter reason for rejection..."
+                        placeholder={t('dialogs.rejectPlaceholder')}
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
                         rows={4}
@@ -60,11 +62,11 @@ export function RejectDialog({ open, onOpenChange, request, onSuccess }: Readonl
 
                     <div className="flex justify-end gap-2">
                         <Button variant="outline" onClick={() => onOpenChange(false)}>
-                            Cancel
+                            {t('form.cancel')}
                         </Button>
                         <Button variant="destructive" onClick={handleReject} disabled={loading || !reason.trim()}>
                             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            Reject Request
+                            {t('dialogs.rejectRequest')}
                         </Button>
                     </div>
                 </div>

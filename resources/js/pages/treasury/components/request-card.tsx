@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/use-translation';
 import { TreasuryRequest } from '@/types/treasury/treasury';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -70,6 +71,7 @@ export function RequestCard({
     onReject,
     hideAmounts = false
 }: Readonly<RequestCardProps>) {
+    const { t } = useTranslation('treasury');
     const canEdit = request.status === 'draft' || request.status === 'submitted' || request.status === 'rejected';
     const canDelete = request.status === 'draft' || request.status === 'submitted' || request.status === 'approved';
     const canResubmit = request.status === 'rejected';
@@ -104,7 +106,7 @@ export function RequestCard({
                     <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                         <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
                         <p className="text-sm text-red-700">
-                            <strong>Rejection Reason:</strong> {rejectionNotes}
+                            <strong>{t('card.rejectionReason')}</strong> {rejectionNotes}
                         </p>
                     </div>
                 )}
@@ -130,7 +132,7 @@ export function RequestCard({
 
                 {request.approval_stage && request.status !== 'draft' && request.status !== 'rejected' && (
                     <div className="pt-2 border-t">
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Approval Status:</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">{t('card.approvalStatus')}</p>
                         {request.approvals && request.approvals.length > 0 ? (
                             <div className="space-y-1">
                                 {request.approvals.map((approval) => (
@@ -152,13 +154,13 @@ export function RequestCard({
                                 {request.approval_stage === 'pending_leader' && (
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                         <Clock className="h-4 w-4" />
-                                        <span>Waiting for Leader approval</span>
+                                        <span>{t('card.waitingLeader')}</span>
                                     </div>
                                 )}
                                 {request.approval_stage === 'pending_treasurer' && (
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                         <Clock className="h-4 w-4" />
-                                        <span>Waiting for Treasurer approval</span>
+                                        <span>{t('card.waitingTreasurer')}</span>
                                     </div>
                                 )}
                             </div>
@@ -176,14 +178,14 @@ export function RequestCard({
                         <>
                             <Button size="sm" className="!bg-green-600 hover:!bg-green-700 text-white" onClick={onApprove}>
                                 <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
+                                {t('card.approve')}
                             </Button>
                             <Button size="sm" variant="destructive" className="bg-red-600 hover:bg-red-700" onClick={onReject}>
                                 <XCircle className="h-4 w-4 mr-1" />
-                                Reject
+                                {t('card.reject')}
                             </Button>
                             <Button size="sm" variant="outline" onClick={onView}>
-                                View
+                                {t('card.view')}
                             </Button>
                         </>
                     ) : (
@@ -191,24 +193,24 @@ export function RequestCard({
                             {canEdit && onEdit && (
                                 <Button size="sm" variant="outline" onClick={onEdit}>
                                     <Edit className="h-4 w-4 mr-1" />
-                                    Edit
+                                    {t('card.edit')}
                                 </Button>
                             )}
                             {canResubmit && onResubmit && (
                                 <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={onResubmit}>
                                     <RefreshCw className="h-4 w-4 mr-1" />
-                                    Resubmit
+                                    {t('card.resubmit')}
                                 </Button>
                             )}
                             {canDelete && onDelete && (
                                 <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700" onClick={onDelete}>
                                     <Trash2 className="h-4 w-4 mr-1" />
-                                    Delete
+                                    {t('card.delete')}
                                 </Button>
                             )}
                             {onView && (
                                 <Button size="sm" variant="ghost" onClick={onView}>
-                                    View
+                                    {t('card.view')}
                                 </Button>
                             )}
                         </>

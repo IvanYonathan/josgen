@@ -15,6 +15,7 @@ import {
 import { TreasuryRequest } from '@/types/treasury/treasury';
 import { formatCurrency, getStatusBadgeClass } from './request-card';
 import { formatDate } from '@/utils/date';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface RequestDetailDialogProps {
     open: boolean;
@@ -29,6 +30,8 @@ export function RequestDetailDialog({
     request,
     hideAmounts = false
 }: Readonly<RequestDetailDialogProps>) {
+    const { t } = useTranslation('treasury');
+
     if (!request) return null;
 
     return (
@@ -57,7 +60,7 @@ export function RequestDetailDialog({
                 <div className="space-y-6">
                     {request.description && (
                         <div>
-                            <h4 className="text-sm font-medium text-muted-foreground mb-2">Description</h4>
+                            <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('detail.description')}</h4>
                             <p className="text-sm">{request.description}</p>
                         </div>
                     )}
@@ -68,13 +71,13 @@ export function RequestDetailDialog({
                         <div className="space-y-3">
                             <div className="flex items-center gap-2 text-sm">
                                 <User className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-muted-foreground">Requested by:</span>
-                                <span className="font-medium">{request.requester?.name || 'Unknown'}</span>
+                                <span className="text-muted-foreground">{t('detail.requestedBy')}</span>
+                                <span className="font-medium">{request.requester?.name || t('detail.unknown')}</span>
                             </div>
                             {request.division && (
                                 <div className="flex items-center gap-2 text-sm">
                                     <Building className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-muted-foreground">Division:</span>
+                                    <span className="text-muted-foreground">{t('detail.division')}</span>
                                     <span className="font-medium">{request.division.name}</span>
                                 </div>
                             )}
@@ -82,13 +85,13 @@ export function RequestDetailDialog({
                         <div className="space-y-3">
                             <div className="flex items-center gap-2 text-sm">
                                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-muted-foreground">Request date:</span>
+                                <span className="text-muted-foreground">{t('detail.requestDate')}</span>
                                 <span className="font-medium">{formatDate(request.request_date, { format: 'MMM DD, YYYY' })}</span>
                             </div>
                             {request.needed_by_date && (
                                 <div className="flex items-center gap-2 text-sm">
                                     <Clock className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-muted-foreground">Needed by:</span>
+                                    <span className="text-muted-foreground">{t('detail.neededBy')}</span>
                                     <span className="font-medium">{formatDate(request.needed_by_date, { format: 'MMM DD, YYYY' })}</span>
                                 </div>
                             )}
@@ -99,7 +102,7 @@ export function RequestDetailDialog({
                         <>
                             <Separator />
                             <div>
-                                <h4 className="text-sm font-medium text-muted-foreground mb-3">Items</h4>
+                                <h4 className="text-sm font-medium text-muted-foreground mb-3">{t('detail.items')}</h4>
                                 <div className="space-y-2">
                                     {request.items.map((item, index) => (
                                         <div key={item.id || index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
@@ -122,7 +125,7 @@ export function RequestDetailDialog({
                             <Separator />
                             <div>
                                 <h4 className="text-sm font-medium text-muted-foreground mb-3">
-                                    Proof / Evidence
+                                    {t('detail.proofEvidence')}
                                 </h4>
                                 <div className="border rounded-lg overflow-hidden">
                                     {(request.attachment_type?.startsWith('image/') ||
@@ -160,7 +163,7 @@ export function RequestDetailDialog({
                                                 onClick={() => window.open(`/storage/${request.attachment_path}`, '_blank')}
                                                 title="View file"
                                             >
-                                                View
+                                                {t('card.view')}
                                             </Button>
                                             <Button
                                                 variant="ghost"
@@ -182,7 +185,7 @@ export function RequestDetailDialog({
                         <>
                             <Separator />
                             <div>
-                                <h4 className="text-sm font-medium text-muted-foreground mb-3">Approval History</h4>
+                                <h4 className="text-sm font-medium text-muted-foreground mb-3">{t('detail.approvalHistory')}</h4>
                                 <div className="space-y-3">
                                     {request.approvals.map((approval) => (
                                         <div key={approval.id} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
@@ -194,7 +197,7 @@ export function RequestDetailDialog({
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <span className="font-medium capitalize">{approval.approval_level} Approval</span>
+                                                        <span className="font-medium capitalize">{approval.approval_level} {t('detail.approval')}</span>
                                                         <span className={`ml-2 text-sm ${approval.decision === 'approved' ? 'text-green-600' : 'text-red-600'}`}>
                                                             ({approval.decision})
                                                         </span>
@@ -204,7 +207,7 @@ export function RequestDetailDialog({
                                                     </span>
                                                 </div>
                                                 <p className="text-sm text-muted-foreground">
-                                                    by {approval.approver?.name || 'Unknown'}
+                                                    {t('detail.by')} {approval.approver?.name || t('detail.unknown')}
                                                 </p>
                                                 {approval.notes && (
                                                     <p className="text-sm mt-1 italic">"{approval.notes}"</p>
@@ -224,8 +227,8 @@ export function RequestDetailDialog({
                                 <Clock className="h-5 w-5" />
                                 <span>
                                     {request.approval_stage === 'pending_leader'
-                                        ? 'Waiting for Leader approval'
-                                        : 'Waiting for Treasurer approval'}
+                                        ? t('card.waitingLeader')
+                                        : t('card.waitingTreasurer')}
                                 </span>
                             </div>
                         </>
@@ -234,7 +237,7 @@ export function RequestDetailDialog({
 
                 <div className="flex justify-end pt-4">
                     <Button variant="outline" onClick={() => onOpenChange(false)}>
-                        Close
+                        {t('detail.close')}
                     </Button>
                 </div>
             </DialogContent>

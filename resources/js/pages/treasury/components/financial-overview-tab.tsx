@@ -14,6 +14,7 @@ import {
 import { TreasuryStats } from '@/types/treasury/treasury';
 import { formatCurrency, getStatusBadgeClass } from './request-card';
 import { formatDate } from '@/utils/date';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface FinancialOverviewTabProps {
     stats: TreasuryStats | null;
@@ -34,6 +35,8 @@ export function FinancialOverviewTab({
     onLoadStats,
     onAddReport,
 }: Readonly<FinancialOverviewTabProps>) {
+    const { t } = useTranslation('treasury');
+
     // Prepare chart data - now using income/expense from FinancialRecord
     const chartData = stats?.chart_data?.map(d => ({
         month: d.month,
@@ -57,7 +60,7 @@ export function FinancialOverviewTab({
         return (
             <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin" />
-                <span className="ml-2 text-muted-foreground">Loading statistics...</span>
+                <span className="ml-2 text-muted-foreground">{t('financialOverview.loadingStats')}</span>
             </div>
         );
     }
@@ -66,11 +69,11 @@ export function FinancialOverviewTab({
         return (
             <div className="text-center py-12">
                 <XCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Failed to load statistics</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('financialOverview.failedLoadStats')}</h3>
                 <p className="text-muted-foreground mb-4">{statsError}</p>
                 <Button variant="outline" onClick={onLoadStats}>
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Try Again
+                    {t('financialOverview.tryAgain')}
                 </Button>
             </div>
         );
@@ -80,10 +83,10 @@ export function FinancialOverviewTab({
         return (
             <div className="text-center py-12">
                 <DollarSign className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No statistics available</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('financialOverview.noStats')}</h3>
                 <Button variant="outline" onClick={onLoadStats}>
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Load Statistics
+                    {t('financialOverview.loadStats')}
                 </Button>
             </div>
         );
@@ -94,7 +97,7 @@ export function FinancialOverviewTab({
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="border-l-4 border-l-green-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Income</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('financialOverview.totalIncome')}</CardTitle>
                         <TrendingUp className="h-4 w-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
@@ -106,7 +109,7 @@ export function FinancialOverviewTab({
 
                 <Card className="border-l-4 border-l-red-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('financialOverview.totalExpenses')}</CardTitle>
                         <TrendingDown className="h-4 w-4 text-red-600" />
                     </CardHeader>
                     <CardContent>
@@ -118,7 +121,7 @@ export function FinancialOverviewTab({
 
                 <Card className="border-l-4 border-l-blue-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Current Balance</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('financialOverview.currentBalance')}</CardTitle>
                         <DollarSign className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
@@ -130,7 +133,7 @@ export function FinancialOverviewTab({
 
                 <Card className="border-l-4 border-l-yellow-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('financialOverview.pendingRequests')}</CardTitle>
                         <FileText className="h-4 w-4 text-yellow-600" />
                     </CardHeader>
                     <CardContent>
@@ -143,14 +146,14 @@ export function FinancialOverviewTab({
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Monthly Cash Flow</CardTitle>
+                    <CardTitle>{t('financialOverview.monthlyCashFlow')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {chartData.length > 0 ? (
                         <MonthlyBarChart data={chartData} height={300} />
                     ) : (
                         <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg">
-                            <p className="text-muted-foreground">No data available</p>
+                            <p className="text-muted-foreground">{t('financialOverview.noData')}</p>
                         </div>
                     )}
                 </CardContent>
@@ -159,14 +162,14 @@ export function FinancialOverviewTab({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-green-600">Income by Category</CardTitle>
+                        <CardTitle className="text-green-600">{t('financialOverview.incomeByCategory')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {incomeCategoryData.length > 0 ? (
                             <CategoryPieChart data={incomeCategoryData} height={300} />
                         ) : (
                             <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg">
-                                <p className="text-muted-foreground">No income data available</p>
+                                <p className="text-muted-foreground">{t('financialOverview.noIncomeData')}</p>
                             </div>
                         )}
                     </CardContent>
@@ -174,14 +177,14 @@ export function FinancialOverviewTab({
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-red-600">Expense by Category</CardTitle>
+                        <CardTitle className="text-red-600">{t('financialOverview.expenseByCategory')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {categoryData.length > 0 ? (
                             <CategoryPieChart data={categoryData} height={300} />
                         ) : (
                             <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg">
-                                <p className="text-muted-foreground">No expense data available</p>
+                                <p className="text-muted-foreground">{t('financialOverview.noExpenseData')}</p>
                             </div>
                         )}
                     </CardContent>
@@ -190,7 +193,7 @@ export function FinancialOverviewTab({
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Recent Transactions</CardTitle>
+                    <CardTitle>{t('financialOverview.recentTransactions')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {stats.pending_approval.length > 0 ? (
@@ -225,7 +228,7 @@ export function FinancialOverviewTab({
                             ))}
                         </div>
                     ) : (
-                        <p className="text-center text-muted-foreground py-8">No recent transactions</p>
+                        <p className="text-center text-muted-foreground py-8">{t('financialOverview.noRecentTransactions')}</p>
                     )}
                 </CardContent>
             </Card>

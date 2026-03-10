@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/use-translation';
 import { Loader2, CheckCircle } from 'lucide-react';
 import { TreasuryRequest } from '@/types/treasury/treasury';
 import { RequestCard } from './request-card';
@@ -19,6 +20,7 @@ export function PendingApprovalsTab({
     onReject,
     onView,
 }: Readonly<PendingApprovalsTabProps>) {
+    const { t } = useTranslation('treasury');
     const pendingApprovals = requests.filter(r =>
         r.status === 'submitted' || r.status === 'under_review'
     );
@@ -41,9 +43,9 @@ export function PendingApprovalsTab({
         return (
             <div className="text-center py-12">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">All caught up!</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('pendingApprovals.allCaughtUp')}</h3>
                 <p className="text-muted-foreground">
-                    There are no requests pending your approval.
+                    {t('pendingApprovals.noRequestsPending')}
                 </p>
             </div>
         );

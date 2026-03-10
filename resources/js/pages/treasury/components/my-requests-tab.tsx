@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/use-translation';
 import { Button } from '@/components/ui/button';
 import { Loader2, DollarSign, PlusCircle } from 'lucide-react';
 import { TreasuryRequest } from '@/types/treasury/treasury';
@@ -22,6 +23,8 @@ export function MyRequestsTab({
     onResubmit,
     onCreateNew,
 }: Readonly<MyRequestsTabProps>) {
+    const { t } = useTranslation('treasury');
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -34,13 +37,13 @@ export function MyRequestsTab({
         return (
             <div className="text-center py-12">
                 <DollarSign className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No requests yet</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('myRequests.noRequests')}</h3>
                 <p className="text-muted-foreground mb-4">
-                    Create your first treasury request to get started.
+                    {t('myRequests.noRequestsDesc')}
                 </p>
                 <Button onClick={onCreateNew}>
                     <PlusCircle className="h-4 w-4 mr-2" />
-                    Create Request
+                    {t('myRequests.createRequest')}
                 </Button>
             </div>
         );

@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/use-translation';
 import { createTreasury, uploadTreasuryAttachment } from '@/lib/api/treasury';
 import { RequestForm, RequestFormData, ItemInput, FieldErrors, createEmptyItem } from './request-form';
 
 export function CreateRequestPage() {
     const navigate = useNavigate();
     const { toast } = useToast();
+    const { t } = useTranslation('treasury');
 
     const [loading, setLoading] = useState(false);
     const [file, setFile] = useState<File | null>(null);
@@ -33,23 +35,23 @@ export function CreateRequestPage() {
         const newErrors: FieldErrors = {};
 
         if (!formData.title.trim()) {
-            newErrors.title = 'Title is required';
+            newErrors.title = t('validation.titleRequired');
         }
         if (!formData.description.trim()) {
-            newErrors.description = 'Description is required';
+            newErrors.description = t('validation.descriptionRequired');
         }
 
         const itemErrors: { [index: number]: { description?: string; amount?: string; category?: string; item_date?: string } } = {};
         items.forEach((item, index) => {
             const errs: { description?: string; amount?: string; category?: string; item_date?: string } = {};
             if (!item.amount || Number.parseFloat(item.amount) <= 0) {
-                errs.amount = 'Amount must be greater than 0';
+                errs.amount = t('validation.amountRequired');
             }
             if (!item.category) {
-                errs.category = 'Category is required';
+                errs.category = t('validation.categoryRequired');
             }
             if (!item.item_date) {
-                errs.item_date = 'Date is required';
+                errs.item_date = t('validation.dateRequired');
             }
             if (Object.keys(errs).length > 0) {
                 itemErrors[index] = errs;
@@ -61,13 +63,13 @@ export function CreateRequestPage() {
         }
 
         if (!file) {
-            newErrors.attachment = 'Attachment is required';
+            newErrors.attachment = t('validation.attachmentRequired');
         }
 
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) {
-            toast.error(new Error('Please fill in all required fields'), { title: 'Validation error' });
+            toast.error(new Error(t('toast.fillRequired')), { title: t('toast.validationError') });
             return false;
         }
 
@@ -91,7 +93,7 @@ export function CreateRequestPage() {
         setShowSubmitConfirm(false);
 
         const totalAmount = calculateTotalAmount();
-        const { id: toastId } = toast.loading({ title: 'Submitting request...' });
+        const { id: toastId } = toast.loading({ title: t('toast.submitting') });
 
         try {
             setLoading(true);
@@ -120,10 +122,10 @@ export function CreateRequestPage() {
                 });
             }
 
-            toast.success({ itemID: toastId, title: 'Request submitted successfully' });
+            toast.success({ itemID: toastId, title: t('toast.submitted') });
             navigate('/treasury');
         } catch (err) {
-            toast.error(err, { itemID: toastId, title: 'Failed to create request' });
+            toast.error(err, { itemID: toastId, title: t('toast.failedCreate') });
         } finally {
             setLoading(false);
         }
@@ -152,9 +154,9 @@ export function CreateRequestPage() {
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold">Submit New Request</h1>
+                            <h1 className="text-2xl font-bold">{t('form.submitNewRequest')}</h1>
                             <p className="text-muted-foreground">
-                                Create a new treasury request for reimbursement or funding.
+                                {t('form.submitNewRequestDesc')}
                             </p>
                         </div>
                     </div>
@@ -175,11 +177,11 @@ export function CreateRequestPage() {
 
                         <div className="flex justify-end gap-3 mt-6">
                             <Button type="button" variant="outline" onClick={handleCancelClick}>
-                                Cancel
+                                {t('form.cancel')}
                             </Button>
                             <Button type="submit" disabled={loading}>
                                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                                Submit Request
+                                {t('form.submitRequest')}
                             </Button>
                         </div>
                     </form>
@@ -189,15 +191,15 @@ export function CreateRequestPage() {
             <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('dialogs.discardTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            You have unsaved changes. Are you sure you want to cancel? Your changes will be lost.
+                            {t('dialogs.discardDesc')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Keep Editing</AlertDialogCancel>
+                        <AlertDialogCancel>{t('dialogs.keepEditing')}</AlertDialogCancel>
                         <AlertDialogAction onClick={() => navigate('/treasury')} className="bg-red-600 hover:bg-red-700">
-                            Discard Changes
+                            {t('dialogs.discardChanges')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -206,15 +208,15 @@ export function CreateRequestPage() {
             <AlertDialog open={showSubmitConfirm} onOpenChange={setShowSubmitConfirm}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Submit Request?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('dialogs.submitTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to submit this request? It will be sent for approval.
+                            {t('dialogs.submitDesc')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t('form.cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmSubmit}>
-                            Submit
+                            {t('dialogs.submit')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
