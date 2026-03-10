@@ -40,7 +40,12 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
     {
         accessorKey: 'email',
         header: ({ column }) => <DataTableColumnHeader column={column} title={t('email')} />,
-        cell: ({ row }) => <div className="break-words whitespace-normal">{row.getValue('email')}</div>,
+        cell: ({ row }) => {
+            const email = row.getValue('email') as string;
+            const [local, domain] = email.split('@');
+            const masked = local.slice(0, 4) + '****@' + domain;
+            return <div className="break-words whitespace-normal">{masked}</div>;
+        },
         enableSorting: true,
     },
     {
