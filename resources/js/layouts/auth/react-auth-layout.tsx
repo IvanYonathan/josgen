@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import AppLogoIcon from '@/components/app-logo-icon';
-import { type PropsWithChildren, useEffect, useState } from 'react';
+import { type PropsWithChildren, useEffect, useRef, useState } from 'react';
 import { useDailyVerse } from '@/hooks/use-daily-verse';
 
 interface AuthLayoutProps {
@@ -8,24 +8,36 @@ interface AuthLayoutProps {
     description?: string;
 }
 
+const AUTH_IMAGES = [
+    '/image/auth-image/bg-image1.JPG',
+    '/image/auth-image/bg-image2.JPG',
+    '/image/auth-image/bg-image3.JPG',
+    '/image/auth-image/bg-image4.JPG',
+    '/image/auth-image/bg-image5.JPG',
+    '/image/auth-image/bg-image6.JPG',
+    '/image/auth-image/bg-image7.JPG',
+    '/image/auth-image/bg-image8.JPG',
+];
+
 export default function ReactAuthLayout({ children, title, description }: PropsWithChildren<AuthLayoutProps>) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const { verse, loading } = useDailyVerse();
+    const loadedImages = useRef<Set<string>>(new Set());
 
-    const images = [
-        '/image/auth-image/bg-image1.JPG',
-        '/image/auth-image/bg-image2.JPG',
-        '/image/auth-image/bg-image3.JPG',
-        '/image/auth-image/bg-image4.JPG',
-        '/image/auth-image/bg-image5.JPG',
-        '/image/auth-image/bg-image6.JPG',
-        '/image/auth-image/bg-image7.JPG',
-        '/image/auth-image/bg-image8.JPG',
-    ];
+    // Preload only the next image before transitioning
+    useEffect(() => {
+        const nextIndex = (currentImageIndex + 1) % AUTH_IMAGES.length;
+        const nextSrc = AUTH_IMAGES[nextIndex];
+        if (!loadedImages.current.has(nextSrc)) {
+            const img = new Image();
+            img.src = nextSrc;
+            loadedImages.current.add(nextSrc);
+        }
+    }, [currentImageIndex]);
 
     useEffect(() => {
         const imageInterval = setInterval(() => {
-            setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+            setCurrentImageIndex((prevIndex) => (prevIndex + 1) % AUTH_IMAGES.length);
         }, 10000);
 
         return () => clearInterval(imageInterval);
@@ -34,20 +46,27 @@ export default function ReactAuthLayout({ children, title, description }: PropsW
     return (
         <div className="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div className="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r overflow-hidden">
-                {/* Render all images with opacity transitions */}
-                {images.map((image, index) => (
-                    <div
-                        key={image}
-                        className="absolute inset-0 bg-zinc-900 transition-opacity duration-1000 ease-in-out"
-                        style={{
-                            backgroundImage: `url(${image})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            opacity: currentImageIndex === index ? 1 : 0,
-                            zIndex: currentImageIndex === index ? 1 : 0,
-                        }}
-                    />
-                ))}
+                {/* Only render current and adjacent images to avoid loading all 8 at once */}
+                {AUTH_IMAGES.map((image, index) => {
+                    const isCurrent = currentImageIndex === index;
+                    const isNext = (currentImageIndex + 1) % AUTH_IMAGES.length === index;
+                    const isPrev = (currentImageIndex - 1 + AUTH_IMAGES.length) % AUTH_IMAGES.length === index;
+                    // Only render current, next, and previous for smooth transitions
+                    if (!isCurrent && !isNext && !isPrev) return null;
+                    return (
+                        <div
+                            key={image}
+                            className="absolute inset-0 bg-zinc-900 transition-opacity duration-1000 ease-in-out"
+                            style={{
+                                backgroundImage: `url(${image})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                opacity: isCurrent ? 1 : 0,
+                                zIndex: isCurrent ? 1 : 0,
+                            }}
+                        />
+                    );
+                })}
                 
                 {/* Dark Overlay */}
                 <div className="absolute inset-0 bg-black/40 z-10" />

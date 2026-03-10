@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -158,8 +159,9 @@ class UserController extends ApiController
 
         // Handle avatar upload
         if ($request->hasFile('avatar')) {
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $data['ava'] = basename($avatarPath);
+            $disk = $this->storageDisk();
+            $avatarPath = $request->file('avatar')->store('avatars', $disk);
+            $data['ava'] = Storage::disk($disk)->url($avatarPath);
         }
 
         unset($data['avatar']);
@@ -219,8 +221,9 @@ class UserController extends ApiController
         $userToUpdate = User::findOrFail($data['id']);
 
         if ($request->hasFile('avatar')) {
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $data['ava'] = basename($avatarPath);
+            $disk = $this->storageDisk();
+            $avatarPath = $request->file('avatar')->store('avatars', $disk);
+            $data['ava'] = Storage::disk($disk)->url($avatarPath);
         }
         unset($data['avatar']);
 

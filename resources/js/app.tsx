@@ -11,12 +11,12 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => {
-        // For the 'app' page, load our SPA
+        // For the 'app' page, load our SPA (with lazy-loaded routes inside)
         if (name === 'app') {
             return import('./pages/app');
         }
-        // For all other pages (auth, settings, etc.), use the normal Inertia resolution
-        return resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx'));
+        // Lazy glob — pages are loaded on demand, not bundled into the entry chunk
+        return resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx', { eager: false }));
     },
     setup({ el, App, props }) {
         const root = createRoot(el);

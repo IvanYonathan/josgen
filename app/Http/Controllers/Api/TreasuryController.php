@@ -362,7 +362,7 @@ class TreasuryController extends ApiController
         }
 
         if ($treasuryRequest->attachment_path) {
-            Storage::disk('public')->delete($treasuryRequest->attachment_path);
+            Storage::disk($this->storageDisk())->delete($treasuryRequest->attachment_path);
         }
 
         if (in_array($treasuryRequest->status, ['submitted', 'approved'])) {
@@ -806,12 +806,12 @@ class TreasuryController extends ApiController
         }
 
         if ($treasuryRequest->attachment_path) {
-            Storage::disk('public')->delete($treasuryRequest->attachment_path);
+            Storage::disk($this->storageDisk())->delete($treasuryRequest->attachment_path);
         }
 
         $file = $request->file('file');
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('treasury_attachments', $filename, 'public');
+        $path = $file->storeAs('treasury_attachments', $filename, $this->storageDisk());
 
         $treasuryRequest->update([
             'attachment_filename' => $filename,
@@ -828,7 +828,7 @@ class TreasuryController extends ApiController
                 'path' => $treasuryRequest->attachment_path,
                 'type' => $treasuryRequest->attachment_type,
                 'size' => $treasuryRequest->attachment_size,
-                'url' => Storage::disk('public')->url($path),
+                'url' => Storage::disk($this->storageDisk())->url($path),
             ],
         ], 'Attachment uploaded successfully');
     }
@@ -864,7 +864,7 @@ class TreasuryController extends ApiController
             return $this->error('No attachment to delete');
         }
 
-        Storage::disk('public')->delete($treasuryRequest->attachment_path);
+        Storage::disk($this->storageDisk())->delete($treasuryRequest->attachment_path);
 
         $treasuryRequest->update([
             'attachment_filename' => null,

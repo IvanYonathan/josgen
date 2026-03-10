@@ -29,27 +29,28 @@ class ImageController extends ApiController
         try {
             $file = $request->file('image');
             $userId = Auth::id();
+            $disk = $this->storageDisk();
 
             // Generate unique filename
             $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
             $path = "images/notes/{$userId}/{$filename}";
 
             // Store the file
-            Storage::disk('public')->put($path, file_get_contents($file));
+            Storage::disk($disk)->put($path, file_get_contents($file));
 
             // Create image record
             $image = Image::create([
                 'user_id' => $userId,
                 'filename' => $file->getClientOriginalName(),
                 'path' => $path,
-                'disk' => 'public',
+                'disk' => $disk,
                 'mime_type' => $file->getMimeType(),
                 'size' => $file->getSize(),
                 'note_id' => $request->note_id,
             ]);
 
             // Generate URL
-            $url = Storage::disk('public')->url($path);
+            $url = Storage::disk($disk)->url($path);
 
             return $this->success([
                 'image' => [

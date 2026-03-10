@@ -7,29 +7,31 @@ import {
 import { Toaster } from '@/components/ui/sonner';
 import { ApplicationLayout } from '@/layouts/application-layout';
 import { DashboardLayout } from '@/layouts/dashboard-layout';
-import DivisionPage from './division/division-page';
-import UserPage from './user/user-page';
-import DashboardPage from './dashboard/dashboard-page';
-import RolePage from './role/role-page';
-import EventPage from './event/event-page';
-import { PersonalTodoListPage } from './todo-list/personal/personal-todo-list-page';
-import { DivisionTodoListPage } from './todo-list/division/division-todo-list-page';
-import { ProjectPage } from './project/project-page';
-import { TreasuryPage } from './treasury/treasury-page';
-import { CreateRequestPage } from './treasury/request/create-request-page';
-import { EditRequestPage } from './treasury/request/edit-request-page';
-import { CreateRecordPage } from './treasury/record/create-record-page';
-import { EditRecordPage } from './treasury/record/edit-record-page';
-import { NotePage } from './note/note-page';
 import { NotFoundPage } from './not-found-page';
 import { ErrorPage } from './error-page';
-import LoginPage from './auth/login-page';
-import RegisterPage from './auth/register-page';
-import AppearancePage from './settings/appearance';
-import ProfilePage from './settings/profile';
-import PasswordPage from './settings/password';
-import GoogleCalendarPage from './settings/google-calendar';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+
+// Lazy-loaded pages — only downloaded when the route is visited
+const LoginPage = lazy(() => import('./auth/login-page'));
+const RegisterPage = lazy(() => import('./auth/register-page'));
+const DashboardPage = lazy(() => import('./dashboard/dashboard-page'));
+const DivisionPage = lazy(() => import('./division/division-page'));
+const UserPage = lazy(() => import('./user/user-page'));
+const RolePage = lazy(() => import('./role/role-page'));
+const EventPage = lazy(() => import('./event/event-page'));
+const PersonalTodoListPage = lazy(() => import('./todo-list/personal/personal-todo-list-page').then(m => ({ default: m.PersonalTodoListPage })));
+const DivisionTodoListPage = lazy(() => import('./todo-list/division/division-todo-list-page').then(m => ({ default: m.DivisionTodoListPage })));
+const ProjectPage = lazy(() => import('./project/project-page').then(m => ({ default: m.ProjectPage })));
+const TreasuryPage = lazy(() => import('./treasury/treasury-page').then(m => ({ default: m.TreasuryPage })));
+const CreateRequestPage = lazy(() => import('./treasury/request/create-request-page').then(m => ({ default: m.CreateRequestPage })));
+const EditRequestPage = lazy(() => import('./treasury/request/edit-request-page').then(m => ({ default: m.EditRequestPage })));
+const CreateRecordPage = lazy(() => import('./treasury/record/create-record-page').then(m => ({ default: m.CreateRecordPage })));
+const EditRecordPage = lazy(() => import('./treasury/record/edit-record-page').then(m => ({ default: m.EditRecordPage })));
+const NotePage = lazy(() => import('./note/note-page').then(m => ({ default: m.NotePage })));
+const AppearancePage = lazy(() => import('./settings/appearance'));
+const ProfilePage = lazy(() => import('./settings/profile'));
+const PasswordPage = lazy(() => import('./settings/password'));
+const GoogleCalendarPage = lazy(() => import('./settings/google-calendar'));
 
 function App() {
   useEffect(() => {
@@ -91,7 +93,9 @@ function App() {
 
   return (
     <>
-      <RouterProvider router={router} />
+      <Suspense fallback={<div className="flex h-dvh items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
+        <RouterProvider router={router} />
+      </Suspense>
       <Toaster />
     </>
   );

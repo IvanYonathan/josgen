@@ -9,6 +9,15 @@ use Illuminate\Support\Facades\Auth;
 class ApiController extends Controller
 {
     protected const NOT_AUTHENTICATED = 'Not authenticated';
+
+    /**
+     * Get the storage disk for file uploads.
+     * Uses R2 in production when configured, falls back to local public disk.
+     */
+    protected function storageDisk(): string
+    {
+        return config('filesystems.disks.r2.key') ? 'r2' : 'public';
+    }
     /**
      * Return a success response
      */
