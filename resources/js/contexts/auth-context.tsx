@@ -3,6 +3,7 @@ import { me } from '@/lib/api/auth/me';
 import { TokenManager } from '@/lib/auth/token-manager';
 import { User, UserPermissions } from '@/types/user/user';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface AuthContextValue {
     user: User;
@@ -13,6 +14,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
+    const { t } = useTranslation('common');
     const [user, setUser] = useState<User | null>(null);
     const [permissions, setPermissions] = useState<UserPermissions | null>(null);
     const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
                     <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                    <p className="text-muted-foreground">Loading application...</p>
+                    <p className="text-muted-foreground">{t('loadingApplication')}</p>
                 </div>
             </div>
         );

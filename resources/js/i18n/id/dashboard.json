@@ -12,5 +12,9 @@
     "today": "Hari Ini",
     "thisWeek": "Minggu Ini",
     "upcoming": "Mendatang",
-    "viewAllTasks": "Lihat Semua Tugas"
+    "viewAllTasks": "Lihat Semua Tugas",
+    "noTasks": "Tidak ada tugas dalam kategori ini",
+    "due": "Jatuh Tempo {{date}}",
+    "priority": "Prioritas {{priority}}",
+    "noTasksForThisDate": "Tidak ada tugas untuk tanggal ini."
 }

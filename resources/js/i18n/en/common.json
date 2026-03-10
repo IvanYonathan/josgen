@@ -17,5 +17,6 @@
       },
       "reset": "Reset"
     }
-  }
+  },
+  "loadingApplication": "Loading application..."
 }

@@ -12,5 +12,9 @@
     "today": "Today",
     "thisWeek": "This Week",
     "upcoming": "Upcoming",
-    "viewAllTasks": "View All Tasks"
+    "viewAllTasks": "View All Tasks",
+    "noTasks": "No tasks in this category",
+    "due": "Due {{date}}",
+    "priority": "{{priority}} Priority",
+    "noTasksForThisDate": "No tasks for this date."
 }

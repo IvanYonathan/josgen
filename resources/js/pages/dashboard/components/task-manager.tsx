@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/use-translation';
 import { Task } from '@/types/todo-list/task';
 import { ChevronDown, Calendar, Clock } from 'lucide-react';
 import { FC, useState } from 'react';
@@ -10,6 +11,7 @@ interface TaskManagerProps {
 }
 
 export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>) {
+    const { t } = useTranslation('dashboard');
     const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({ today: true, nextWeek: true, upcoming: true });
 
     const toggleSection = (section: SectionKey) => setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -92,7 +94,7 @@ export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>)
                                     {/* Priority Badge */}
                                     <div className="flex items-center gap-2">
                                         <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide ${getPriorityBadge(task.priority)}`}>
-                                            {task.priority} Priority
+                                            {t('priority', { priority: task.priority })}
                                         </span>
                                     </div>
 
@@ -106,7 +108,7 @@ export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>)
                                     {/* Due Date */}
                                     <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                                         <Calendar className="h-3.5 w-3.5" />
-                                        <span>Due {formatDate(task.date)}</span>
+                                        <span>{t('due', { date: formatDate(task.date) })}</span>
                                     </div>
                                 </div>
                             </div>
@@ -122,7 +124,7 @@ export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>)
                     {tasks.length === 0 && (
                         <div className="py-8 text-center">
                             <Clock className="mx-auto h-8 w-8 text-gray-300 dark:text-gray-600" />
-                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No tasks in this category</p>
+                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('noTasks')}</p>
                         </div>
                     )}
                 </div>
@@ -132,9 +134,9 @@ export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>)
 
     return (
         <div className="space-y-4">
-            <TaskSection title="Today" tasks={currentTasks.today} sectionKey="today" gradient="from-red-500 to-pink-500" />
-            <TaskSection title="This Week" tasks={currentTasks.nextWeek} sectionKey="nextWeek" gradient="from-yellow-500 to-orange-500" />
-            <TaskSection title="Upcoming" tasks={currentTasks.upcoming} sectionKey="upcoming" gradient="from-gray-500 to-gray-600" />
+            <TaskSection title={t('today')} tasks={currentTasks.today} sectionKey="today" gradient="from-red-500 to-pink-500" />
+            <TaskSection title={t('thisWeek')} tasks={currentTasks.nextWeek} sectionKey="nextWeek" gradient="from-yellow-500 to-orange-500" />
+            <TaskSection title={t('upcoming')} tasks={currentTasks.upcoming} sectionKey="upcoming" gradient="from-gray-500 to-gray-600" />
         </div>
     );
 }

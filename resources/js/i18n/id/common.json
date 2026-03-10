@@ -4,5 +4,19 @@
     "success": "Berhasil",
     "warning": "Peringatan",
     "error": "Terjadi Kesalahan"
-  }
+  },
+  "dataTable": {
+    "noResult": "Tidak ada hasil.",
+    "pagination": {
+      "rowsPerPage": "Baris per halaman",
+      "pageOf": "Halaman {{page}} dari {{total}}"
+    },
+    "filter": {
+      "select": {
+        "nonePlaceholder": "Tidak Ada"
+      },
+      "reset": "Atur Ulang"
+    }
+  },
+  "loadingApplication": "Memuat aplikasi..."
 }

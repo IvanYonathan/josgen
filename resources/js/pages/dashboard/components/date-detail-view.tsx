@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/use-translation';
 import { Task } from '@/types/todo-list/task';
 
 interface DateDetailViewProps {
@@ -7,6 +8,7 @@ interface DateDetailViewProps {
 }
 
 export function DateDetailView({ selectedDate, tasks, onClose }: Readonly<DateDetailViewProps>) {
+    const { t } = useTranslation('dashboard');
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr + 'T00:00:00');
         return date.toLocaleDateString('en-US', {
@@ -49,7 +51,7 @@ export function DateDetailView({ selectedDate, tasks, onClose }: Readonly<DateDe
                                     <div className="mb-1 flex items-center">
                                         <div className={`h-2 w-2 rounded-full ${getPriorityColor(task.priority)} mr-2`}></div>
                                         <span className="text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
-                                            {task.priority} priority
+                                            {t('priority', { priority: task.priority })}
                                         </span>
                                     </div>
                                     <p className="text-sm text-gray-700 dark:text-gray-300">{task.text}</p>
@@ -58,7 +60,7 @@ export function DateDetailView({ selectedDate, tasks, onClose }: Readonly<DateDe
                         </div>
                     ))
                 ) : (
-                    <p className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">No tasks for this date.</p>
+                    <p className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">{t('noTasksForThisDate')}</p>
                 )}
             </div>
         </div>
