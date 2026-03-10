@@ -33,10 +33,21 @@ const Link: FC<{ href: string; children: React.ReactNode; className?: string }> 
 
 // Transform TodoItem to Task format for compatibility with existing components
 const transformTodoItemToTask = (item: TodoItem): Task => {
-    // Extract just the date part (YYYY-MM-DD) from ISO timestamp
-    const dateOnly = item.due_date
-        ? item.due_date.split('T')[0]
-        : new Date().toISOString().split('T')[0];
+    // Parse as Date so the browser converts UTC → local timezone, then extract YYYY-MM-DD
+    let dateOnly: string;
+    if (item.due_date) {
+        const d = new Date(item.due_date);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        dateOnly = `${yyyy}-${mm}-${dd}`;
+    } else {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        dateOnly = `${yyyy}-${mm}-${dd}`;
+    }
 
     return {
         id: item.id,
