@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/use-translation';
 import { Task } from '@/types/todo-list/task';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
@@ -9,6 +10,7 @@ interface CalendarProps {
 }
 
 export function Calendar({ tasks, onDateClick, selectedDate }: Readonly<CalendarProps>) {
+    const { t } = useTranslation('dashboard');
     const [currentDate, setCurrentDate] = useState(new Date());
 
     const today = new Date();
@@ -20,8 +22,8 @@ export function Calendar({ tasks, onDateClick, selectedDate }: Readonly<Calendar
     const firstDayWeekday = firstDayOfMonth.getDay();
     const daysInMonth = lastDayOfMonth.getDate();
 
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const monthNames = t('monthNames', { returnObjects: true }) as unknown as string[];
+    const weekdays = t('weekdays', { returnObjects: true }) as unknown as string[];
 
     const navigateMonth = (direction: 'prev' | 'next') => {
         setCurrentDate((prev) => {

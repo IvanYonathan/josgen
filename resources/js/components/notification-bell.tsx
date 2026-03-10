@@ -1,3 +1,4 @@
+import { useTranslation } from '@/hooks/use-translation';
 import { listNotifications } from '@/lib/api/notification/list-notifications';
 import { markAllNotificationsRead } from '@/lib/api/notification/mark-all-notifications-read';
 import { markNotificationsRead } from '@/lib/api/notification/mark-notifications-read';
@@ -20,6 +21,7 @@ function toastVariant(level: NotificationLevel): 'success' | 'warning' | 'error'
 export function NotificationBell() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, i18n } = useTranslation('common');
 
   const [notifications, setNotifications] = React.useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = React.useState(0);
@@ -124,15 +126,15 @@ export function NotificationBell() {
 
       <DropdownMenuContent align="end" className="w-[360px] p-0">
         <div className="flex items-center justify-between border-b px-3 py-2">
-          <div className="text-sm font-semibold">Notifications</div>
+          <div className="text-sm font-semibold">{t('notifications.title')}</div>
           <Button variant="ghost" size="sm" onClick={markAllRead} disabled={unreadCount === 0}>
-            Mark all read
+            {t('notifications.markAllRead')}
           </Button>
         </div>
 
         <div className="max-h-[420px] overflow-auto">
           {notifications.length === 0 ? (
-            <div className="px-3 py-6 text-center text-sm text-muted-foreground">No notifications yet.</div>
+            <div className="px-3 py-6 text-center text-sm text-muted-foreground">{t('notifications.noNotifications')}</div>
           ) : (
             <div className="divide-y">
               {notifications.map((n) => (
@@ -146,7 +148,7 @@ export function NotificationBell() {
                     {!n.read_at && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />}
                   </div>
                   {n.data.body && <div className="text-xs text-muted-foreground">{n.data.body}</div>}
-                  <div className="text-[11px] text-muted-foreground">{formatDate(n.created_at)}</div>
+                  <div className="text-[11px] text-muted-foreground">{formatDate(n.created_at, { locale: i18n.language })}</div>
                 </button>
               ))}
             </div>

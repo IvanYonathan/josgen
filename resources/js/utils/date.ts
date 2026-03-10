@@ -1,4 +1,5 @@
 import moment from "moment"
+import "moment/locale/id"
 
 export function parseDate(date?: string): moment.Moment
 {
@@ -20,6 +21,7 @@ export interface FormatDateOptions
 {
   format?: string
   fullFormat?: boolean
+  locale?: string
 }
 
 export interface FormatDateProps
@@ -43,26 +45,33 @@ export function formatDate(date?: Date | string | number | 'now', opts?: FormatD
     opts = { format: "DD MMM YYYY HH:mm:ss", ...opts }
   }
 
-  // Parsing the date
+  // Parse the date into a moment instance
+  let m: moment.Moment;
   if (date === undefined || date === 'now')
   {
-    return moment().format(opts.format)
+    m = moment()
   }
   else if (typeof date === "string" && /^\d{14}$/.test(date))
   {
     // YYYYMMDDHHmmss format
-    return moment(date, "YYYYMMDDHHmmss").format(opts.format)
+    m = moment(date, "YYYYMMDDHHmmss")
   }
   else if (typeof date === "string" && date.endsWith('Z'))
   {
     // ISO 8601 with 'Z' suffix - remove 'Z' to treat as local time
     const localDateString = date.replace('Z', '');
-    return moment(localDateString).format(opts.format)
+    m = moment(localDateString)
   }
   else
   {
-    return moment(date).format(opts.format)
+    m = moment(date)
   }
+
+  if (opts.locale) {
+    m = m.locale(opts.locale)
+  }
+
+  return m.format(opts.format)
 }
 
 export function generateTimestamp(): string

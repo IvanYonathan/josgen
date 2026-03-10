@@ -18,5 +18,10 @@
       "reset": "Reset"
     }
   },
-  "loadingApplication": "Loading application..."
+  "loadingApplication": "Loading application...",
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "noNotifications": "No notifications yet."
+  }
 }

@@ -18,5 +18,10 @@
       "reset": "Atur Ulang"
     }
   },
-  "loadingApplication": "Memuat aplikasi..."
+  "loadingApplication": "Memuat aplikasi...",
+  "notifications": {
+    "title": "Notifikasi",
+    "markAllRead": "Tandai semua dibaca",
+    "noNotifications": "Belum ada notifikasi."
+  }
 }

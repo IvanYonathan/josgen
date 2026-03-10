@@ -11,7 +11,7 @@ interface TaskManagerProps {
 }
 
 export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>) {
-    const { t } = useTranslation('dashboard');
+    const { t, i18n } = useTranslation('dashboard');
     const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({ today: true, nextWeek: true, upcoming: true });
 
     const toggleSection = (section: SectionKey) => setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -52,14 +52,15 @@ export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>)
 
         // Check if it's today
         if (date.toDateString() === today.toDateString()) {
-            return 'Today';
+            return t('dateToday');
         }
         // Check if it's tomorrow
         if (date.toDateString() === tomorrow.toDateString()) {
-            return 'Tomorrow';
+            return t('dateTomorrow');
         }
         // Otherwise show the date
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const locale = i18n.language === 'id' ? 'id-ID' : 'en-US';
+        return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
     };
 
     const TaskSection: FC<{ title: string; tasks: Task[]; sectionKey: SectionKey; gradient: string }> = ({ title, tasks, sectionKey, gradient }) => (
@@ -117,7 +118,7 @@ export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>)
                     {tasks.length > 3 && (
                         <div className="pt-2 text-center">
                             <button className="rounded-full bg-gray-100 px-4 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600">
-                                +{tasks.length - 3} more tasks
+                                {t('moreTasks', { count: tasks.length - 3 })}
                             </button>
                         </div>
                     )}

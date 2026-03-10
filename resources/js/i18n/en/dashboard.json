@@ -16,5 +16,10 @@
     "noTasks": "No tasks in this category",
     "due": "Due {{date}}",
     "priority": "{{priority}} Priority",
-    "noTasksForThisDate": "No tasks for this date."
+    "noTasksForThisDate": "No tasks for this date.",
+    "monthNames": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    "weekdays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "dateToday": "Today",
+    "dateTomorrow": "Tomorrow",
+    "moreTasks": "+{{count}} more tasks"
 }

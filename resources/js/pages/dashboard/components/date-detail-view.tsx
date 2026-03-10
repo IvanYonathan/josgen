@@ -8,10 +8,11 @@ interface DateDetailViewProps {
 }
 
 export function DateDetailView({ selectedDate, tasks, onClose }: Readonly<DateDetailViewProps>) {
-    const { t } = useTranslation('dashboard');
+    const { t, i18n } = useTranslation('dashboard');
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr + 'T00:00:00');
-        return date.toLocaleDateString('en-US', {
+        const locale = i18n.language === 'id' ? 'id-ID' : 'en-US';
+        return date.toLocaleDateString(locale, {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
