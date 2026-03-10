@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import AppLogoIcon from '@/components/app-logo-icon';
-import { type PropsWithChildren, useEffect, useRef, useState } from 'react';
+import { type PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
 import { useDailyVerse } from '@/hooks/use-daily-verse';
 
 interface AuthLayoutProps {
@@ -21,51 +21,60 @@ const AUTH_IMAGE_PATHS = [
     'image/auth-image/bg-image8.JPG',
 ];
 
-// Use R2 CDN URL in production, local path in dev
 const AUTH_IMAGES = AUTH_IMAGE_PATHS.map(path =>
     STORAGE_BASE ? `${STORAGE_BASE}/${path}` : `/${path}`
 );
 
 export default function ReactAuthLayout({ children, title, description }: PropsWithChildren<AuthLayoutProps>) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [loadedSrcs, setLoadedSrcs] = useState<Set<string>>(() => new Set([AUTH_IMAGES[0]]));
     const { verse, loading } = useDailyVerse();
-    const loadedImages = useRef<Set<string>>(new Set());
+    const preloadedRef = useRef<Set<string>>(new Set());
 
-    // Preload only the next image before transitioning
-    useEffect(() => {
-        const nextIndex = (currentImageIndex + 1) % AUTH_IMAGES.length;
-        const nextSrc = AUTH_IMAGES[nextIndex];
-        if (!loadedImages.current.has(nextSrc)) {
-            const img = new Image();
+    // Preload next image before transition
+    const preloadNext = useCallback((currentIdx: number) => {
+        const nextIdx = (currentIdx + 1) % AUTH_IMAGES.length;
+        const nextSrc = AUTH_IMAGES[nextIdx];
+        if (!preloadedRef.current.has(nextSrc)) {
+            preloadedRef.current.add(nextSrc);
+            const img = new window.Image();
+            img.onload = () => setLoadedSrcs(prev => new Set(prev).add(nextSrc));
             img.src = nextSrc;
-            loadedImages.current.add(nextSrc);
         }
-    }, [currentImageIndex]);
-
-    useEffect(() => {
-        const imageInterval = setInterval(() => {
-            setCurrentImageIndex((prevIndex) => (prevIndex + 1) % AUTH_IMAGES.length);
-        }, 10000);
-
-        return () => clearInterval(imageInterval);
     }, []);
+
+    // Preload the next image after current renders
+    useEffect(() => {
+        preloadNext(currentImageIndex);
+    }, [currentImageIndex, preloadNext]);
+
+    // Auto-advance every 10s
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentImageIndex(prev => {
+                const next = (prev + 1) % AUTH_IMAGES.length;
+                // Start preloading the one after next
+                preloadNext(next);
+                return next;
+            });
+        }, 10000);
+        return () => clearInterval(interval);
+    }, [preloadNext]);
 
     return (
         <div className="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div className="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r overflow-hidden">
-                {/* Only render current and adjacent images to avoid loading all 8 at once */}
+                {/* Only render images that have been loaded */}
                 {AUTH_IMAGES.map((image, index) => {
                     const isCurrent = currentImageIndex === index;
-                    const isNext = (currentImageIndex + 1) % AUTH_IMAGES.length === index;
-                    const isPrev = (currentImageIndex - 1 + AUTH_IMAGES.length) % AUTH_IMAGES.length === index;
-                    // Only render current, next, and previous for smooth transitions
-                    if (!isCurrent && !isNext && !isPrev) return null;
+                    // Only mount this div if the image has been loaded (or is current)
+                    if (!loadedSrcs.has(image) && !isCurrent) return null;
                     return (
                         <div
                             key={image}
                             className="absolute inset-0 bg-zinc-900 transition-opacity duration-1000 ease-in-out"
                             style={{
-                                backgroundImage: `url(${image})`,
+                                backgroundImage: loadedSrcs.has(image) ? `url(${image})` : undefined,
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'center',
                                 opacity: isCurrent ? 1 : 0,
@@ -74,10 +83,10 @@ export default function ReactAuthLayout({ children, title, description }: PropsW
                         />
                     );
                 })}
-                
+
                 {/* Dark Overlay */}
                 <div className="absolute inset-0 bg-black/40 z-10" />
-                
+
                 <Link to="/" className="relative z-20 flex items-center text-lg font-medium">
                     <AppLogoIcon className="mr-2 size-8 fill-current text-white" />
                     Joshua Generation

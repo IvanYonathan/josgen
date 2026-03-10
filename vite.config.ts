@@ -28,16 +28,6 @@ export default defineConfig({
         port: 5174,
     },
     build: {
-        rollupOptions: {
-            output: {
-                manualChunks: {
-                    'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-                    'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-select', '@radix-ui/react-tabs', '@radix-ui/react-tooltip'],
-                    'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
-                    'vendor-charts': ['recharts'],
-                    'vendor-editor': ['quill', 'react-quill-new'],
-                },
-            },
-        },
+        chunkSizeWarningLimit: 500,
     },
 });
