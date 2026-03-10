@@ -1,0 +1,150 @@
+{
+    "events": "Acara",
+    "create_event": "Buat Acara",
+    "edit_event": "Edit Acara",
+    "delete_event": "Hapus Acara",
+    "back": "Kembali",
+    "refresh": "Segarkan",
+    "save_changes": "Simpan Perubahan",
+    "delete": "Hapus",
+    "cancel": "Batal",
+    "view_details": "Lihat Detail",
+
+    "start": "Mulai:",
+    "end": "Selesai:",
+
+    "search_events_placeholder": "Cari acara...",
+    "all_status": "Semua Status",
+
+    "upcoming": "Mendatang",
+    "ongoing": "Berlangsung",
+    "completed": "Selesai",
+    "cancelled": "Dibatalkan",
+
+    "noEventsFound": "Tidak ada acara ditemukan",
+    "noEventsFoundMatchingFilters": "Tidak ada acara yang sesuai filter",
+    "create_first_event": "Buat acara pertama Anda",
+    "showing_events": "Menampilkan {{shown}} dari {{total}} acara",
+    "participants_count": "{{count}} peserta",
+
+    "failed_to_load_events": "Gagal memuat acara",
+    "view_only": "Anda hanya dapat melihat acara ini",
+    "failed_to_load_divisions_and_users": "Gagal memuat divisi dan pengguna",
+
+    "creating": "Membuat acara...",
+    "create_success": "Acara berhasil dibuat",
+    "create_error": "Gagal membuat acara",
+    "update_success": "Acara berhasil diperbarui",
+    "update_error": "Gagal memperbarui acara",
+    "delete_success": "Acara berhasil dihapus",
+    "delete_error": "Gagal menghapus acara",
+
+    "no_permission_edit": "Anda tidak memiliki izin untuk mengedit acara ini",
+    "participants_cannot_modify": "Peserta tidak dapat diubah karena acara berstatus {{status}}",
+    "participants_locked": "Peserta dikunci karena acara tidak dalam status mendatang",
+    "selected": "Dipilih: {{names}}",
+    "current_participants": "Peserta saat ini: {{names}}",
+    "none": "Tidak ada",
+
+    "search_users_placeholder": "Cari pengguna...",
+    "no_users_found": "Tidak ada pengguna ditemukan",
+    "no_divisions_found": "Tidak ada divisi ditemukan",
+
+    "confirm_delete": "Apakah Anda yakin ingin menghapus <bold>{{eventTitle}}</bold>? Tindakan ini tidak dapat dibatalkan.",
+
+    "reminderPresets": {
+        "label": "Pengingat Email",
+        "placeholder": "Pilih preset pengingat (opsional)",
+        "helperText": "Peserta akan menerima pengingat email pada waktu yang dipilih sebelum acara.",
+        "noPresets": "Tidak ada preset tersedia",
+        "presets": {
+            "1_day": "1 hari sebelumnya",
+            "7_days": "7 hari sebelumnya",
+            "1_month": "1 bulan sebelumnya"
+        }
+    },
+
+    "title": "Acara",
+    "description": "Lihat dan Kelola Acara di sini",
+    "createEvent": {
+        "title": "Buat Acara",
+        "description": "Buat acara baru untuk divisi Anda",
+        "form": {
+            "title": {
+                "label": "Judul *",
+                "placeholder": "Masukkan judul acara"
+            },
+            "description": {
+                "label": "Deskripsi",
+                "placeholder": "Masukkan deskripsi acara"
+            },
+            "start_date": {
+                "label": "Tanggal Mulai *"
+            },
+            "end_date": {
+                "label": "Tanggal Selesai *"
+            },
+            "location": {
+                "label": "Lokasi",
+                "placeholder": "Masukkan lokasi acara"
+            },
+            "division_ids": {
+                "label": "Divisi yang Ditugaskan *",
+                "placeholder": "Pilih divisi...",
+                "empty": "Tidak ada divisi ditemukan"
+            },
+            "participant_ids": {
+                "label": "Peserta (Opsional)"
+            }
+        },
+        "button": {
+            "create": "Buat Acara",
+            "cancel": "Batal"
+        }
+    },
+    "editEvent": {
+        "title": "Edit Acara",
+        "description": "Perbarui detail acara",
+        "form": {
+            "title": {
+                "label": "Judul *",
+                "placeholder": "Masukkan judul acara"
+            },
+            "description": {
+                "label": "Deskripsi",
+                "placeholder": "Masukkan deskripsi acara"
+            },
+            "start_date": {
+                "label": "Tanggal Mulai *"
+            },
+            "end_date": {
+                "label": "Tanggal Selesai *"
+            },
+            "location": {
+                "label": "Lokasi",
+                "placeholder": "Masukkan lokasi acara"
+            },
+            "division_ids": {
+                "label": "Divisi yang Ditugaskan *",
+                "placeholder": "Pilih divisi...",
+                "empty": "Tidak ada divisi ditemukan"
+            },
+            "participant_ids": {
+                "label": "Peserta ({{count}})"
+            }
+        },
+        "button": {
+            "update": "Simpan Perubahan",
+            "delete": "Hapus",
+            "cancel": "Batal"
+        }
+    },
+    "dialog": {
+        "unsavedChanges": {
+            "title": "Perubahan Belum Disimpan",
+            "description": "Anda memiliki perubahan yang belum disimpan. Yakin ingin meninggalkan halaman? Semua perubahan akan hilang.",
+            "cancel": "Lanjut Edit",
+            "confirm": "Buang Perubahan"
+        }
+    }
+}

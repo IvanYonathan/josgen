@@ -1,3 +1,16 @@
 {
-    "test": "This is a test"
+    "welcome": "Selamat datang, {{name}}",
+    "scheduleFor": "Ini jadwal Anda untuk {{date}}",
+    "refresh": "Segarkan",
+    "failedLoadTasks": "Gagal memuat tugas",
+    "failedUpdateTask": "Gagal memperbarui tugas. Silakan coba lagi.",
+    "taskManager": "Manajer Tugas",
+    "personalTasks": "Tugas pribadi Anda",
+    "teamTasks": "Tugas tim & divisi",
+    "personal": "Pribadi",
+    "division": "Divisi",
+    "today": "Hari Ini",
+    "thisWeek": "Minggu Ini",
+    "upcoming": "Mendatang",
+    "viewAllTasks": "Lihat Semua Tugas"
 }

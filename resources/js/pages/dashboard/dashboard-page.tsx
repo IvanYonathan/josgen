@@ -1,5 +1,6 @@
 import { useEffect, useState, type FC } from 'react';
 import { UserIcon, Users } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 import { Task } from '@/types/todo-list/task';
 import { TodoList, TodoItem } from '@/types/todo-list/todo-list';
 import { DateDetailView } from './components/date-detail-view';
@@ -48,6 +49,7 @@ const transformTodoItemToTask = (item: TodoItem): Task => {
 };
 
 export default function Dashboard() {
+    const { t, i18n } = useTranslation('dashboard');
     const [user, setUser] = useState<User | null>(null);
     const [activeView, setActiveView] = useState('personal');
     const [personalTasks, setPersonalTasks] = useState<Task[]>([]);
@@ -169,9 +171,9 @@ export default function Dashboard() {
             <div className="flex flex-col rounded-xl p-6">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Welcome, {`${user?.name}`}</h1>
+                        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{t('welcome', { name: user?.name ?? '' })}</h1>
                         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                            Here's your schedule for {today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.
+                            {t('scheduleFor', { date: today.toLocaleDateString(i18n.language === 'id' ? 'id-ID' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' }) })}
                         </p>
                     </div>
                     <button
@@ -188,7 +190,7 @@ export default function Dashboard() {
                         >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
-                        Refresh
+                        {t('refresh')}
                     </button>
                 </div>
 
@@ -206,9 +208,9 @@ export default function Dashboard() {
                     <div className="dark:border-sidebar-border/70 border-sidebar-border/70 rounded-xl border bg-white p-4 md:col-span-2 dark:bg-gray-800">
                         <div className="mb-4 flex items-center justify-between">
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Task Manager</h2>
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('taskManager')}</h2>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {activeView === 'personal' ? 'Your personal tasks' : 'Team & division tasks'}
+                                    {activeView === 'personal' ? t('personalTasks') : t('teamTasks')}
                                 </p>
                             </div>
                             <div className="flex items-center rounded-lg bg-gray-100 p-1 dark:bg-gray-700">
@@ -219,7 +221,7 @@ export default function Dashboard() {
                                         : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'}`}
                                 >
                                     <UserIcon className="mr-1 h-3 w-3" />
-                                    Personal
+                                    {t('personal')}
                                     {personalPendingCount > 0 && (
                                         <span className="ml-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm">
                                             {personalPendingCount}
@@ -233,7 +235,7 @@ export default function Dashboard() {
                                         : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'}`}
                                 >
                                     <Users className="mr-1 h-3 w-3" />
-                                    Division
+                                    {t('division')}
                                     {divisionPendingCount > 0 && (
                                         <span className="ml-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm">
                                             {divisionPendingCount}
@@ -245,15 +247,15 @@ export default function Dashboard() {
                         <div className="mb-4 grid grid-cols-3 gap-2">
                             <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700">
                                 <div className="text-lg font-bold text-blue-600">{tasksForToday.length}</div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">Today</div>
+                                <div className="text-xs text-gray-600 dark:text-gray-400">{t('today')}</div>
                             </div>
                             <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700">
                                 <div className="text-lg font-bold text-blue-600">{tasksForThisWeek.length}</div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">This Week</div>
+                                <div className="text-xs text-gray-600 dark:text-gray-400">{t('thisWeek')}</div>
                             </div>
                             <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700">
                                 <div className="text-lg font-bold text-gray-500">{tasksForUpcoming.length}</div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">Upcoming</div>
+                                <div className="text-xs text-gray-600 dark:text-gray-400">{t('upcoming')}</div>
                             </div>
                         </div>
                         <TaskManager tasks={tasksToDisplay} onToggleTask={handleToggleTask} />
@@ -263,7 +265,7 @@ export default function Dashboard() {
                                 href="/toDoList/personal"
                                 className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                             >
-                                View All Tasks
+                                {t('viewAllTasks')}
                             </Link>
                         </div>
                             )
@@ -275,7 +277,7 @@ export default function Dashboard() {
                                 href="/toDoList/division"
                                 className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                             >
-                                View All Tasks
+                                {t('viewAllTasks')}
                             </Link>
                         </div>
                             )

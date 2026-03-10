@@ -49,6 +49,82 @@
             "cancel": "Cancel"
         }
     },
+    "refresh": "Refresh",
+    "noFound": "No divisions found",
+    "createFirst": "Create your first division",
+    "back": "Back",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "noDescription": "No description provided",
+    "totalMembers": "Total Members",
+    "totalEvents": "Total Events",
+    "totalProjects": "Total Projects",
+    "totalTodoLists": "Total Todo Lists",
+    "tabs": {
+        "overview": "Overview",
+        "members": "Members",
+        "events": "Events",
+        "projects": "Projects",
+        "todoLists": "Todo Lists"
+    },
+    "detail": {
+        "information": "Division Information",
+        "editDescription": "Edit division details",
+        "viewDescription": "View division details",
+        "backToDivisions": "Back to Divisions",
+        "form": {
+            "nameLabel": "Division Name *",
+            "namePlaceholder": "Enter division name",
+            "descriptionLabel": "Description",
+            "descriptionPlaceholder": "Enter division description",
+            "leaderLabel": "Leader",
+            "leaderPlaceholder": "Select leader",
+            "noLeader": "No leader",
+            "noLeaderAssigned": "No leader assigned"
+        },
+        "stats": {
+            "title": "Statistics",
+            "members": "Members",
+            "events": "Events",
+            "projects": "Projects",
+            "todoLists": "Todo Lists"
+        },
+        "dangerZone": {
+            "title": "Danger Zone",
+            "description": "Irreversible actions for this division",
+            "deleteButton": "Delete Division",
+            "dialog": {
+                "title": "Delete Division",
+                "description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone. All associated data will be permanently removed.",
+                "cancel": "Cancel",
+                "confirm": "Delete Division"
+            }
+        },
+        "members": {
+            "title": "Division Members ({{count}})",
+            "description": "Manage who has access to this division",
+            "addButton": "Add Members",
+            "empty": "No members in this division",
+            "leaderBadge": "Leader"
+        },
+        "events": {
+            "title": "Events ({{count}})",
+            "description": "Events associated with this division",
+            "empty": "No events found for this division"
+        },
+        "projects": {
+            "title": "Projects ({{count}})",
+            "description": "Projects associated with this division",
+            "empty": "No projects found for this division"
+        },
+        "todoLists": {
+            "title": "Todo Lists ({{count}})",
+            "description": "Todo lists associated with this division",
+            "empty": "No todo lists found for this division"
+        }
+    },
+
     "toast": {
         "creating": "Creating division...",
         "createSuccess": "Division created successfully",

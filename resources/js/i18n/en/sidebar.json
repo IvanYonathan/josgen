@@ -9,5 +9,7 @@
     "notes": "Notes",
     "todoLists": "To-Do Lists",
     "personal": "Personal",
-    "division": "Division"
+    "division": "Division",
+    "settings": "Settings",
+    "logOut": "Log out"
 }

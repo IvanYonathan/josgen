@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, PlusCircle, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/use-translation';
 import { TreasuryRequest, TreasuryStats } from '@/types/treasury/treasury';
 import { listTreasury, getTreasuryStats, deleteTreasury, approveTreasury } from '@/lib/api/treasury';
 import { AxiosJosgen, ApiResponse } from '@/lib/axios/axios-josgen';
@@ -19,6 +20,7 @@ import { DeleteRequestDialog } from './components/delete-request-dialog';
 export function TreasuryPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation('treasury');
   const { user, permissions } = useAuth();
   const canAccessAdmin = permissions.can_view_all_treasury_requests || permissions.can_approve_treasury_requests || permissions.can_view_treasury_reports;
   const canCreateRequest = permissions.can_create_treasury_requests;
@@ -61,7 +63,7 @@ export function TreasuryPage() {
         setPendingCount(pending);
       }
     } catch (err) {
-      toast.error(err, { title: 'Failed to load requests' });
+      toast.error(err, { title: t('toast.failedLoad') });
     } finally {
       setLoading(false);
     }
@@ -77,7 +79,7 @@ export function TreasuryPage() {
       const statsData = await getTreasuryStats();
       setStats(statsData);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load statistics';
+      const errorMessage = err instanceof Error ? err.message : t('toast.failedLoadStats');
       setStatsError(errorMessage);
     } finally {
       setStatsLoading(false);
@@ -93,14 +95,14 @@ export function TreasuryPage() {
 
   // Handlers
   const handleApprove = async (request: TreasuryRequest) => {
-    const { id } = toast.loading({ title: 'Approving request...' });
+    const { id } = toast.loading({ title: t('toast.approving') });
     try {
       await approveTreasury({ id: request.id });
-      toast.success({ itemID: id, title: 'Request approved successfully' });
+      toast.success({ itemID: id, title: t('toast.approved') });
       loadRequests();
       loadStats();
     } catch (err) {
-      toast.error(err, { itemID: id, title: 'Failed to approve request' });
+      toast.error(err, { itemID: id, title: t('toast.failedApprove') });
     }
   };
 
@@ -113,15 +115,15 @@ export function TreasuryPage() {
     if (!deleteRequest) return;
 
     setDeleteLoading(true);
-    const { id } = toast.loading({ title: 'Deleting request...' });
+    const { id } = toast.loading({ title: t('toast.deleting') });
     try {
       await deleteTreasury(deleteRequest.id);
-      toast.success({ itemID: id, title: 'Request deleted successfully' });
+      toast.success({ itemID: id, title: t('toast.deleted') });
       setDeleteDialogOpen(false);
       setDeleteRequest(null);
       loadRequests();
     } catch (err) {
-      toast.error(err, { itemID: id, title: 'Failed to delete request' });
+      toast.error(err, { itemID: id, title: t('toast.failedDelete') });
     } finally {
       setDeleteLoading(false);
     }
@@ -149,13 +151,13 @@ export function TreasuryPage() {
   };
 
   const handleResubmit = async (request: TreasuryRequest) => {
-    const { id } = toast.loading({ title: 'Resubmitting request...' });
+    const { id } = toast.loading({ title: t('toast.resubmitting') });
     try {
       await AxiosJosgen.post<ApiResponse<any>>('/treasury/submit', { id: request.id });
-      toast.success({ itemID: id, title: 'Request resubmitted successfully! It will go through a fresh approval cycle.' });
+      toast.success({ itemID: id, title: t('toast.resubmitted') });
       loadRequests();
     } catch (err) {
-      toast.error(err, { itemID: id, title: 'Failed to resubmit request' });
+      toast.error(err, { itemID: id, title: t('toast.failedResubmit') });
     }
   };
 
@@ -168,7 +170,7 @@ export function TreasuryPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">Treasury</h1>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
           <Button
             variant="outline"
             size="sm"
@@ -177,7 +179,7 @@ export function TreasuryPage() {
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('refresh')}
           </Button>
         </div>
 
@@ -188,14 +190,14 @@ export function TreasuryPage() {
                 variant="outline"
                 size="icon"
                 onClick={() => setHideAmounts(!hideAmounts)}
-                title={hideAmounts ? 'Show amounts' : 'Hide amounts'}
+                title={hideAmounts ? t('showAmounts') : t('hideAmounts')}
               >
                 {hideAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
               {canViewReports && (
                 <Button onClick={() => navigate('/treasury/record/new')}>
                   <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Report
+                  {t('addReport')}
                 </Button>
               )}
             </>
@@ -203,7 +205,7 @@ export function TreasuryPage() {
             canCreateRequest && (
               <Button onClick={() => navigate('/treasury/request/new')}>
                 <PlusCircle className="h-4 w-4 mr-2" />
-                New Request
+                {t('newRequest')}
               </Button>
             )
           )}
@@ -212,13 +214,13 @@ export function TreasuryPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
-          <TabsTrigger value="my-requests">My Requests</TabsTrigger>
+          <TabsTrigger value="my-requests">{t('tabs.myRequests')}</TabsTrigger>
           {canViewReports && (
-            <TabsTrigger value="financial-overview">Financial Overview</TabsTrigger>
+            <TabsTrigger value="financial-overview">{t('tabs.financialOverview')}</TabsTrigger>
           )}
           {canApprove && (
             <TabsTrigger value="pending-approvals" className="relative">
-              Pending Approvals
+              {t('tabs.pendingApprovals')}
               {pendingCount > 0 && (
                 <span className="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {pendingCount}

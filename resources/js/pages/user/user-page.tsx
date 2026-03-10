@@ -300,7 +300,7 @@ function UserPage() {
                             <h1 className="text-2xl font-bold">{t('users')}</h1>
                             <Button variant="outline" size="sm" onClick={() => fetchUsers()} disabled={loading} className="flex items-center gap-2">
                                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                                Refresh
+                                {t('refresh')}
                             </Button>
                         </div>
 
@@ -309,7 +309,7 @@ function UserPage() {
                             {userExportEnabled && (
                                 <Button variant="outline" size="sm" onClick={handleExportUsers} disabled={loading}>
                                     <Download className="mr-2 h-4 w-4" />
-                                    Export
+                                    {t('export')}
                                 </Button>
                             )}
 
@@ -317,7 +317,7 @@ function UserPage() {
                             {userBulkActionsEnabled && (
                                 <Button variant="outline" size="sm" onClick={handleBulkDelete} disabled={loading || users.length === 0}>
                                     <Trash2 className="mr-2 h-4 w-4" />
-                                    Bulk Delete
+                                    {t('bulkDelete')}
                                 </Button>
                             )}
 
@@ -333,9 +333,9 @@ function UserPage() {
                     {/* Filters Row */}
                     <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:gap-4">
                         <div className="min-w-[260px] flex-[2]">
-                            <label className="text-muted-foreground mb-2 block text-sm font-medium">Search</label>
+                            <label className="text-muted-foreground mb-2 block text-sm font-medium">{t('search')}</label>
                             <Input
-                                placeholder="Search by name or email"
+                                placeholder={t('searchPlaceholder')}
                                 value={searchInput}
                                 onChange={(event) => setSearchInput(event.target.value)}
                                 autoComplete="off"
@@ -343,17 +343,17 @@ function UserPage() {
                         </div>
 
                         <div className="min-w-[200px] flex-[1.3]">
-                            <label className="text-muted-foreground mb-2 block text-sm font-medium">Role</label>
+                            <label className="text-muted-foreground mb-2 block text-sm font-medium">{t('roleFilter')}</label>
                             <Select
                                 value={filters.roleFilter === 'all' ? undefined : filters.roleFilter}
                                 onValueChange={handleRoleFilterChange}
                                 disabled={loading}
                             >
                                 <SelectTrigger className={!filters.roleFilter || filters.roleFilter === 'all' ? 'text-muted-foreground' : ''}>
-                                    <SelectValue placeholder="All roles" />
+                                    <SelectValue placeholder={t('allRoles')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All roles</SelectItem>
+                                    <SelectItem value="all">{t('allRoles')}</SelectItem>
                                     {availableRoles.map((role) => (
                                         <SelectItem key={role} value={role}>
                                             {roleLabels[role] ?? formatRoleLabel(role)}
@@ -366,10 +366,10 @@ function UserPage() {
                         {/* Feature Flag: Advanced Filters (Sort dropdown) */}
                         {userAdvancedFiltersEnabled && (
                             <div className="min-w-[200px] flex-[1]">
-                                <label className="text-muted-foreground mb-2 block text-sm font-medium">Sort by</label>
+                                <label className="text-muted-foreground mb-2 block text-sm font-medium">{t('sortBy')}</label>
                                 <Select value={sortSelection} onValueChange={handleSortChange} disabled={loading}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Default sorting" />
+                                        <SelectValue placeholder={t('defaultSorting')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {SORT_OPTIONS.map((option) => (

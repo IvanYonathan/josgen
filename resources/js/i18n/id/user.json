@@ -144,6 +144,16 @@
             "cancel": "Batal"
         }
     },
+    "search": "Cari",
+    "searchPlaceholder": "Cari berdasarkan nama atau email",
+    "roleFilter": "Peran",
+    "allRoles": "Semua peran",
+    "refresh": "Segarkan",
+    "export": "Ekspor",
+    "bulkDelete": "Hapus Massal",
+    "sortBy": "Urutkan",
+    "defaultSorting": "Urutan default",
+
     "toast": {
         "creating": "Membuat pengguna...",
         "createSuccess": "Pengguna berhasil dibuat",

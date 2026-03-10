@@ -1,3 +1,16 @@
 {
-    "test": "This is a test"
+    "welcome": "Welcome, {{name}}",
+    "scheduleFor": "Here's your schedule for {{date}}",
+    "refresh": "Refresh",
+    "failedLoadTasks": "Failed to load tasks",
+    "failedUpdateTask": "Failed to update task. Please try again.",
+    "taskManager": "Task Manager",
+    "personalTasks": "Your personal tasks",
+    "teamTasks": "Team & division tasks",
+    "personal": "Personal",
+    "division": "Division",
+    "today": "Today",
+    "thisWeek": "This Week",
+    "upcoming": "Upcoming",
+    "viewAllTasks": "View All Tasks"
 }

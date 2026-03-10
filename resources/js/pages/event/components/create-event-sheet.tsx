@@ -92,7 +92,7 @@ export function CreateEventSheet() {
   };
 
   const onSubmit = async (data: any) => {
-    const { id } = toast.loading({ title: 'Creating event...' });
+    const { id } = toast.loading({ title: t('creating') });
     try {
       setIsSubmitting(true);
       const cleanedData = cleanEventFormData(data);
@@ -221,7 +221,7 @@ export function CreateEventSheet() {
               <div className="space-y-2">
                 <Label htmlFor="reminder_presets">
                   <Bell className="h-4 w-4 inline mr-1" />
-                  Email Reminders
+                  {t('reminderPresets.label')}
                 </Label>
                 <Controller
                   name="reminder_presets"
@@ -233,26 +233,26 @@ export function CreateEventSheet() {
                     >
                       <MultiSelectTrigger>
                         <MultiSelectValue
-                          placeholder="Select reminder presets (optional)"
+                          placeholder={t('reminderPresets.placeholder')}
                           itemComponent={(props) => (
                             <Badge variant="secondary" className="mr-1">
-                              {props.value === '1_day' ? '1 day before' : props.value === '7_days' ? '7 days before' : '1 month before'}
+                              {t(`reminderPresets.presets.${props.value}`)}
                             </Badge>
                           )}
                         />
                       </MultiSelectTrigger>
                       <MultiSelectContent>
-                        <MultiSelectEmpty>No presets available</MultiSelectEmpty>
+                        <MultiSelectEmpty>{t('reminderPresets.noPresets')}</MultiSelectEmpty>
                         <MultiSelectGroup>
-                          <MultiSelectItem value="1_day">1 day before</MultiSelectItem>
-                          <MultiSelectItem value="7_days">7 days before</MultiSelectItem>
-                          <MultiSelectItem value="1_month">1 month before</MultiSelectItem>
+                          <MultiSelectItem value="1_day">{t('reminderPresets.presets.1_day')}</MultiSelectItem>
+                          <MultiSelectItem value="7_days">{t('reminderPresets.presets.7_days')}</MultiSelectItem>
+                          <MultiSelectItem value="1_month">{t('reminderPresets.presets.1_month')}</MultiSelectItem>
                         </MultiSelectGroup>
                       </MultiSelectContent>
                     </MultiSelect>
                   )}
                 />
-                <p className="text-xs text-muted-foreground">Participants will receive email reminders at the selected times before the event.</p>
+                <p className="text-xs text-muted-foreground">{t('reminderPresets.helperText')}</p>
               </div>
 
               <div className="space-y-2">

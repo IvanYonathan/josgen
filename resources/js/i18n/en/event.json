@@ -126,6 +126,19 @@
             "cancel": "Cancel"
         }
     },
+    "creating": "Creating event...",
+    "reminderPresets": {
+        "label": "Email Reminders",
+        "placeholder": "Select reminder presets (optional)",
+        "helperText": "Participants will receive email reminders at the selected times before the event.",
+        "noPresets": "No presets available",
+        "presets": {
+            "1_day": "1 day before",
+            "7_days": "7 days before",
+            "1_month": "1 month before"
+        }
+    },
+
     "dialog": {
         "unsavedChanges": {
             "title": "Unsaved Changes",

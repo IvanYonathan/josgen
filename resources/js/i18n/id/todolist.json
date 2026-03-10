@@ -1,0 +1,45 @@
+{
+    "title": {
+        "personal": "Daftar Tugas Pribadi",
+        "division": "Daftar Tugas Divisi"
+    },
+    "refresh": "Segarkan",
+    "createList": "Buat Daftar",
+    "noFound": "Tidak ada daftar tugas ditemukan",
+    "createFirst": "Buat daftar pertama Anda",
+    "showing": "Menampilkan {{shown}} dari {{total}} daftar",
+    "tasksToggled": "{{count}} tugas diubah",
+    "failedToggle": "Gagal mengubah tugas",
+    "failedLoad": "Gagal memuat daftar tugas",
+    "form": {
+        "backToList": "Kembali ke Daftar",
+        "createTitle": {
+            "personal": "Buat Daftar Tugas Pribadi Baru",
+            "division": "Buat Daftar Tugas Divisi Baru"
+        },
+        "editTitle": "Edit Daftar Tugas",
+        "cardTitle": "Informasi Daftar Tugas",
+        "createDescription": "Masukkan detail untuk daftar tugas baru Anda",
+        "editDescription": "Perbarui detail daftar tugas Anda",
+        "noSelected": "Tidak ada daftar tugas dipilih",
+        "titleLabel": "Judul *",
+        "titlePlaceholder": "Masukkan judul daftar tugas",
+        "titleRequired": "Judul wajib diisi",
+        "divisionLabel": "Divisi *",
+        "loadingDivisions": "Memuat divisi...",
+        "selectDivision": "Pilih divisi",
+        "divisionRequired": "Divisi wajib dipilih untuk daftar tugas divisi",
+        "cancel": "Batal",
+        "createButton": "Buat Daftar Tugas",
+        "creating": "Membuat...",
+        "updateButton": "Perbarui Daftar Tugas",
+        "updating": "Memperbarui..."
+    },
+    "toast": {
+        "createSuccess": "Daftar tugas berhasil dibuat",
+        "createError": "Gagal membuat daftar tugas",
+        "updateSuccess": "Daftar tugas berhasil diperbarui",
+        "updateError": "Gagal memperbarui daftar tugas",
+        "failedLoadDivisions": "Gagal memuat divisi"
+    }
+}

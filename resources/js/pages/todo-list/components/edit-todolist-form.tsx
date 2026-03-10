@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/use-translation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { updateTodoList } from '@/lib/api/todo-list/update-todo-list';
 import { useTodoListManagementStore } from '../store/todo-list-management-store';
@@ -26,6 +27,7 @@ interface EditTodoListFormProps {
 
 export function EditTodoListForm({ todoList, onBack }: Readonly<EditTodoListFormProps>) {
   const { toast } = useToast();
+  const { t } = useTranslation('todolist');
   const { updateTodoListInList } = useTodoListManagementStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,10 +53,10 @@ export function EditTodoListForm({ todoList, onBack }: Readonly<EditTodoListForm
       setIsSubmitting(true);
       const response = await updateTodoList(data);
       updateTodoListInList(response.todo_list);
-      toast.success({ title: 'Todo list updated successfully' });
+      toast.success({ title: t('toast.updateSuccess') });
       onBack();
     } catch (error) {
-      toast.error({ title: error instanceof Error ? error.message : 'Failed to update todo list' });
+      toast.error({ title: error instanceof Error ? error.message : t('toast.updateError') });
     } finally {
       setIsSubmitting(false);
     }
@@ -71,13 +73,13 @@ export function EditTodoListForm({ todoList, onBack }: Readonly<EditTodoListForm
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to List
+            {t('form.backToList')}
           </Button>
-          <h1 className="text-2xl font-bold">Edit Todo List</h1>
+          <h1 className="text-2xl font-bold">{t('form.editTitle')}</h1>
         </div>
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            No todo list selected
+            {t('form.noSelected')}
           </CardContent>
         </Card>
       </div>
@@ -95,26 +97,26 @@ export function EditTodoListForm({ todoList, onBack }: Readonly<EditTodoListForm
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to List
+          {t('form.backToList')}
         </Button>
-        <h1 className="text-2xl font-bold">Edit Todo List</h1>
+        <h1 className="text-2xl font-bold">{t('form.editTitle')}</h1>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card>
           <CardHeader>
-            <CardTitle>Todo List Information</CardTitle>
+            <CardTitle>{t('form.cardTitle')}</CardTitle>
             <CardDescription>
-              Update your todo list details
+              {t('form.editDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">{t('form.titleLabel')}</Label>
               <Input
                 id="title"
                 {...form.register('title')}
-                placeholder="Enter todo list title"
+                placeholder={t('form.titlePlaceholder')}
                 disabled={isSubmitting}
               />
               {form.formState.errors.title && (
@@ -129,11 +131,11 @@ export function EditTodoListForm({ todoList, onBack }: Readonly<EditTodoListForm
                 onClick={onBack}
                 disabled={isSubmitting}
               >
-                Cancel
+                {t('form.cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSubmitting ? 'Updating...' : 'Update Todo List'}
+                {isSubmitting ? t('form.updating') : t('form.updateButton')}
               </Button>
             </div>
           </CardContent>

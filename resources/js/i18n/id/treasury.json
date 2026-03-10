@@ -1,0 +1,26 @@
+{
+    "title": "Keuangan",
+    "refresh": "Segarkan",
+    "showAmounts": "Tampilkan nominal",
+    "hideAmounts": "Sembunyikan nominal",
+    "addReport": "Tambah Laporan",
+    "newRequest": "Permintaan Baru",
+    "tabs": {
+        "myRequests": "Permintaan Saya",
+        "financialOverview": "Ikhtisar Keuangan",
+        "pendingApprovals": "Menunggu Persetujuan"
+    },
+    "toast": {
+        "approving": "Menyetujui permintaan...",
+        "approved": "Permintaan berhasil disetujui",
+        "failedApprove": "Gagal menyetujui permintaan",
+        "deleting": "Menghapus permintaan...",
+        "deleted": "Permintaan berhasil dihapus",
+        "failedDelete": "Gagal menghapus permintaan",
+        "resubmitting": "Mengirim ulang permintaan...",
+        "resubmitted": "Permintaan berhasil dikirim ulang! Akan melalui siklus persetujuan baru.",
+        "failedResubmit": "Gagal mengirim ulang permintaan",
+        "failedLoad": "Gagal memuat permintaan",
+        "failedLoadStats": "Gagal memuat statistik"
+    }
+}

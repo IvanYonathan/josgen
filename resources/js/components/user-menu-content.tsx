@@ -1,6 +1,7 @@
 import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { useTranslation } from '@/hooks/use-translation';
 import { User } from '@/types/user/user';
 import { Link } from 'react-router-dom';
 import { LogOut, Settings } from 'lucide-react';
@@ -12,6 +13,7 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
+    const { t } = useTranslation('sidebar');
 
     const handleLogout = async () => {
         cleanup();
@@ -35,7 +37,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 <DropdownMenuItem asChild>
                     <Link className="block w-full cursor-pointer" to="/settings/profile" onClick={cleanup}>
                         <Settings className="mr-2" />
-                        Settings
+                        {t('settings')}
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -43,7 +45,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuItem asChild>
                 <button className="w-full cursor-pointer" onClick={handleLogout}>
                     <LogOut className="mr-2" />
-                    Log out
+                    {t('logOut')}
                 </button>
             </DropdownMenuItem>
         </>

@@ -1,0 +1,45 @@
+{
+    "title": {
+        "personal": "Personal To-Do Lists",
+        "division": "Division To-Do Lists"
+    },
+    "refresh": "Refresh",
+    "createList": "Create List",
+    "noFound": "No todo lists found",
+    "createFirst": "Create your first list",
+    "showing": "Showing {{shown}} of {{total}} lists",
+    "tasksToggled": "{{count}} task(s) toggled",
+    "failedToggle": "Failed to toggle tasks",
+    "failedLoad": "Failed to load todo lists",
+    "form": {
+        "backToList": "Back to List",
+        "createTitle": {
+            "personal": "Create New Personal Todo List",
+            "division": "Create New Division Todo List"
+        },
+        "editTitle": "Edit Todo List",
+        "cardTitle": "Todo List Information",
+        "createDescription": "Enter the details for your new todo list",
+        "editDescription": "Update your todo list details",
+        "noSelected": "No todo list selected",
+        "titleLabel": "Title *",
+        "titlePlaceholder": "Enter todo list title",
+        "titleRequired": "Title is required",
+        "divisionLabel": "Division *",
+        "loadingDivisions": "Loading divisions...",
+        "selectDivision": "Select a division",
+        "divisionRequired": "Division is required for division todo lists",
+        "cancel": "Cancel",
+        "createButton": "Create Todo List",
+        "creating": "Creating...",
+        "updateButton": "Update Todo List",
+        "updating": "Updating..."
+    },
+    "toast": {
+        "createSuccess": "Todo list created successfully",
+        "createError": "Failed to create todo list",
+        "updateSuccess": "Todo list updated successfully",
+        "updateError": "Failed to update todo list",
+        "failedLoadDivisions": "Failed to load divisions"
+    }
+}

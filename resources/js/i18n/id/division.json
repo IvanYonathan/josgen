@@ -49,6 +49,82 @@
             "cancel": "Batal"
         }
     },
+    "refresh": "Segarkan",
+    "noFound": "Tidak ada divisi ditemukan",
+    "createFirst": "Buat divisi pertama Anda",
+    "back": "Kembali",
+    "edit": "Edit",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "noDescription": "Tidak ada deskripsi",
+    "totalMembers": "Total Anggota",
+    "totalEvents": "Total Acara",
+    "totalProjects": "Total Proyek",
+    "totalTodoLists": "Total Daftar Tugas",
+    "tabs": {
+        "overview": "Ikhtisar",
+        "members": "Anggota",
+        "events": "Acara",
+        "projects": "Proyek",
+        "todoLists": "Daftar Tugas"
+    },
+    "detail": {
+        "information": "Informasi Divisi",
+        "editDescription": "Edit detail divisi",
+        "viewDescription": "Lihat detail divisi",
+        "backToDivisions": "Kembali ke Divisi",
+        "form": {
+            "nameLabel": "Nama Divisi *",
+            "namePlaceholder": "Masukkan nama divisi",
+            "descriptionLabel": "Deskripsi",
+            "descriptionPlaceholder": "Masukkan deskripsi divisi",
+            "leaderLabel": "Kepala Divisi",
+            "leaderPlaceholder": "Pilih kepala divisi",
+            "noLeader": "Tanpa kepala divisi",
+            "noLeaderAssigned": "Belum ada kepala divisi"
+        },
+        "stats": {
+            "title": "Statistik",
+            "members": "Anggota",
+            "events": "Acara",
+            "projects": "Proyek",
+            "todoLists": "Daftar Tugas"
+        },
+        "dangerZone": {
+            "title": "Zona Berbahaya",
+            "description": "Tindakan yang tidak dapat dibatalkan untuk divisi ini",
+            "deleteButton": "Hapus Divisi",
+            "dialog": {
+                "title": "Hapus Divisi",
+                "description": "Apakah Anda yakin ingin menghapus \"{{name}}\"? Tindakan ini tidak dapat dibatalkan. Semua data terkait akan dihapus secara permanen.",
+                "cancel": "Batal",
+                "confirm": "Hapus Divisi"
+            }
+        },
+        "members": {
+            "title": "Anggota Divisi ({{count}})",
+            "description": "Kelola siapa yang memiliki akses ke divisi ini",
+            "addButton": "Tambah Anggota",
+            "empty": "Tidak ada anggota dalam divisi ini",
+            "leaderBadge": "Kepala"
+        },
+        "events": {
+            "title": "Acara ({{count}})",
+            "description": "Acara yang terkait dengan divisi ini",
+            "empty": "Tidak ada acara ditemukan untuk divisi ini"
+        },
+        "projects": {
+            "title": "Proyek ({{count}})",
+            "description": "Proyek yang terkait dengan divisi ini",
+            "empty": "Tidak ada proyek ditemukan untuk divisi ini"
+        },
+        "todoLists": {
+            "title": "Daftar Tugas ({{count}})",
+            "description": "Daftar tugas yang terkait dengan divisi ini",
+            "empty": "Tidak ada daftar tugas ditemukan untuk divisi ini"
+        }
+    },
+
     "toast": {
         "creating": "Membuat divisi...",
         "createSuccess": "Divisi berhasil dibuat",

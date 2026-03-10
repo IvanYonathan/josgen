@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/use-translation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { createTodoList } from '@/lib/api/todo-list/create-todo-list';
 import { listDivisions } from '@/lib/api/division/list-divisions';
@@ -37,6 +38,7 @@ interface CreateTodoListFormProps {
 
 export function CreateTodoListForm({ type, onBack }: Readonly<CreateTodoListFormProps>) {
   const { toast } = useToast();
+  const { t } = useTranslation('todolist');
   const { addTodoList } = useTodoListManagementStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [divisions, setDivisions] = useState<DivisionListResponse[]>([]);
@@ -59,7 +61,7 @@ export function CreateTodoListForm({ type, onBack }: Readonly<CreateTodoListForm
           const response = await listDivisions();
           setDivisions(response.divisions);
         } catch (error) {
-          toast.error({ title: error instanceof Error ? error.message : 'Failed to load divisions' });
+          toast.error({ title: error instanceof Error ? error.message : t('toast.failedLoadDivisions') });
         } finally {
           setLoadingDivisions(false);
         }
@@ -73,11 +75,11 @@ export function CreateTodoListForm({ type, onBack }: Readonly<CreateTodoListForm
       setIsSubmitting(true);
       const response = await createTodoList(data);
       addTodoList(response.todo_list);
-      toast.success({ title: 'Todo list created successfully' });
+      toast.success({ title: t('toast.createSuccess') });
       onBack();
       form.reset();
     } catch (error) {
-      toast.error({ title: error instanceof Error ? error.message : 'Failed to create todo list' });
+      toast.error({ title: error instanceof Error ? error.message : t('toast.createError') });
     } finally {
       setIsSubmitting(false);
     }
@@ -94,26 +96,26 @@ export function CreateTodoListForm({ type, onBack }: Readonly<CreateTodoListForm
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to List
+          {t('form.backToList')}
         </Button>
-        <h1 className="text-2xl font-bold">Create New {type === 'personal' ? 'Personal' : 'Division'} Todo List</h1>
+        <h1 className="text-2xl font-bold">{t(`form.createTitle.${type}`)}</h1>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card>
           <CardHeader>
-            <CardTitle>Todo List Information</CardTitle>
+            <CardTitle>{t('form.cardTitle')}</CardTitle>
             <CardDescription>
-              Enter the details for your new todo list
+              {t('form.createDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">{t('form.titleLabel')}</Label>
               <Input
                 id="title"
                 {...form.register('title')}
-                placeholder="Enter todo list title"
+                placeholder={t('form.titlePlaceholder')}
                 disabled={isSubmitting}
               />
               {form.formState.errors.title && (
@@ -123,7 +125,7 @@ export function CreateTodoListForm({ type, onBack }: Readonly<CreateTodoListForm
 
             {type === 'division' && (
               <div className="space-y-2">
-                <Label htmlFor="division">Division *</Label>
+                <Label htmlFor="division">{t('form.divisionLabel')}</Label>
                 <Controller
                   name="division_id"
                   control={form.control}
@@ -134,7 +136,7 @@ export function CreateTodoListForm({ type, onBack }: Readonly<CreateTodoListForm
                       disabled={isSubmitting || loadingDivisions}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder={loadingDivisions ? "Loading divisions..." : "Select a division"} />
+                        <SelectValue placeholder={loadingDivisions ? t('form.loadingDivisions') : t('form.selectDivision')} />
                       </SelectTrigger>
                       <SelectContent>
                         {divisions.map((division) => (
@@ -159,11 +161,11 @@ export function CreateTodoListForm({ type, onBack }: Readonly<CreateTodoListForm
                 onClick={onBack}
                 disabled={isSubmitting}
               >
-                Cancel
+                {t('form.cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSubmitting ? 'Creating...' : 'Create Todo List'}
+                {isSubmitting ? t('form.creating') : t('form.createButton')}
               </Button>
             </div>
           </CardContent>

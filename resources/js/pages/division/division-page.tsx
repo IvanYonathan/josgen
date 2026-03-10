@@ -426,7 +426,7 @@ export default function DivisionPage() {
                                     className="flex items-center gap-2"
                                 >
                                     <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                                    Refresh
+                                    {t('refresh')}
                                 </Button>
                             </div>
 
@@ -452,7 +452,7 @@ export default function DivisionPage() {
                             </div>
                         ) : divisions.length === 0 ? (
                             <div className="text-center py-8">
-                                <p className="text-muted-foreground">No divisions found</p>
+                                <p className="text-muted-foreground">{t('noFound')}</p>
                                 {canCreate && (
                                     <Button
                                         variant="outline"
@@ -460,7 +460,7 @@ export default function DivisionPage() {
                                         onClick={() => setCreateSheetOpen(true)}
                                     >
                                         <PlusCircle className="h-4 w-4 mr-2" />
-                                        Create your first division
+                                        {t('createFirst')}
                                     </Button>
                                 )}
                             </div>
@@ -480,13 +480,13 @@ export default function DivisionPage() {
 
                                         <CardContent>
                                             <p className="text-muted-foreground line-clamp-3">
-                                                {division.description || 'No description provided'}
+                                                {division.description || t('noDescription')}
                                             </p>
 
                                             <div className="mt-4">
                                                 <p className="text-sm flex items-center gap-1">
-                                                    <span className="font-medium">Leader:</span>
-                                                    {division.leader ? division.leader.name : 'None assigned'}
+                                                    <span className="font-medium">{t('detail.form.leaderLabel')}:</span>
+                                                    {division.leader ? division.leader.name : t('detail.form.noLeaderAssigned')}
                                                 </p>
                                             </div>
                                         </CardContent>
@@ -501,7 +501,7 @@ export default function DivisionPage() {
                                                         </Badge>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>Total Members</p>
+                                                        <p>{t('totalMembers')}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
@@ -515,7 +515,7 @@ export default function DivisionPage() {
                                                         </Badge>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>Total Events</p>
+                                                        <p>{t('totalEvents')}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
@@ -529,7 +529,7 @@ export default function DivisionPage() {
                                                         </Badge>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>Total Projects</p>
+                                                        <p>{t('totalProjects')}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
@@ -543,7 +543,7 @@ export default function DivisionPage() {
                                                         </Badge>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>Total Todo Lists</p>
+                                                        <p>{t('totalTodoLists')}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
@@ -565,7 +565,7 @@ export default function DivisionPage() {
                                     onClick={handleBackToList}
                                 >
                                     <ArrowLeft className="h-4 w-4 mr-2" />
-                                    Back
+                                    {t('back')}
                                 </Button>
                                 <div>
                                     <h1 className="text-2xl font-bold">{selectedDivision?.name || 'Loading...'}</h1>
@@ -584,7 +584,7 @@ export default function DivisionPage() {
                                             disabled={saveLoading}
                                         >
                                             <X className="h-4 w-4 mr-2" />
-                                            Cancel
+                                            {t('cancel')}
                                         </Button>
                                         <Button
                                             onClick={handleSave}
@@ -592,7 +592,7 @@ export default function DivisionPage() {
                                         >
                                             {saveLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                                             <Save className="h-4 w-4 mr-2" />
-                                            Save
+                                            {t('save')}
                                         </Button>
                                     </>
                                 ) : (
@@ -601,7 +601,7 @@ export default function DivisionPage() {
                                         onClick={handleEdit}
                                     >
                                         <Edit className="h-4 w-4 mr-2" />
-                                        Edit
+                                        {t('edit')}
                                     </Button>
                                 )}
                             </div>
@@ -627,19 +627,19 @@ export default function DivisionPage() {
                         ) : selectedDivision ? (
                             <Tabs defaultValue="overview" className="w-full" onValueChange={handleTabChange}>
                                 <TabsList className="grid w-full grid-cols-5">
-                                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                                    <TabsTrigger value="members">Members</TabsTrigger>
-                                    <TabsTrigger value="events">Events</TabsTrigger>
-                                    <TabsTrigger value="projects">Projects</TabsTrigger>
-                                    <TabsTrigger value="todo-lists">Todo Lists</TabsTrigger>
+                                    <TabsTrigger value="overview">{t('tabs.overview')}</TabsTrigger>
+                                    <TabsTrigger value="members">{t('tabs.members')}</TabsTrigger>
+                                    <TabsTrigger value="events">{t('tabs.events')}</TabsTrigger>
+                                    <TabsTrigger value="projects">{t('tabs.projects')}</TabsTrigger>
+                                    <TabsTrigger value="todo-lists">{t('tabs.todoLists')}</TabsTrigger>
                                 </TabsList>
 
                                 <TabsContent value="overview" className="space-y-6">
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle>Division Information</CardTitle>
+                                            <CardTitle>{t('detail.information')}</CardTitle>
                                             <CardDescription>
-                                                {isEditing ? 'Edit division details' : 'View division details'}
+                                                {isEditing ? t('detail.editDescription') : t('detail.viewDescription')}
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
@@ -647,12 +647,12 @@ export default function DivisionPage() {
                                                 <>
                                                     {/* Edit Form */}
                                                     <div className="grid gap-2">
-                                                        <Label htmlFor="name">Division Name *</Label>
+                                                        <Label htmlFor="name">{t('detail.form.nameLabel')}</Label>
                                                         <Input
                                                             id="name"
                                                             value={formData.name}
                                                             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                                            placeholder="Enter division name"
+                                                            placeholder={t('detail.form.namePlaceholder')}
                                                             className={detailErrors.name ? 'border-red-500' : ''}
                                                         />
                                                         {detailErrors.name && (
@@ -661,18 +661,18 @@ export default function DivisionPage() {
                                                     </div>
 
                                                     <div className="grid gap-2">
-                                                        <Label htmlFor="description">Description</Label>
+                                                        <Label htmlFor="description">{t('detail.form.descriptionLabel')}</Label>
                                                         <Textarea
                                                             id="description"
                                                             value={formData.description}
                                                             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                                            placeholder="Enter division description"
+                                                            placeholder={t('detail.form.descriptionPlaceholder')}
                                                             rows={3}
                                                         />
                                                     </div>
 
                                                     <div className="grid gap-2">
-                                                        <Label htmlFor="leader">Leader</Label>
+                                                        <Label htmlFor="leader">{t('detail.form.leaderLabel')}</Label>
                                                         <Select
                                                             value={formData.leader_id?.toString() || 'none'}
                                                             onValueChange={(value) => setFormData(prev => ({
@@ -681,10 +681,10 @@ export default function DivisionPage() {
                                                             }))}
                                                         >
                                                             <SelectTrigger>
-                                                                <SelectValue placeholder="Select leader" />
+                                                                <SelectValue placeholder={t('detail.form.leaderPlaceholder')} />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value="none">No leader</SelectItem> {/*TODO: May need refactor */}
+                                                                <SelectItem value="none">{t('detail.form.noLeader')}</SelectItem> {/*TODO: May need refactor */}
                                                                 {availableUsers.map(user => (
                                                                     <SelectItem key={user.id} value={user.id.toString()}>
                                                                         {user.name} ({user.email})
@@ -698,19 +698,19 @@ export default function DivisionPage() {
                                                 <>
                                                     {/* View Mode */}
                                                     <div>
-                                                        <h4 className="font-medium text-sm text-gray-500">Division Name</h4>
+                                                        <h4 className="font-medium text-sm text-gray-500">{t('detail.form.nameLabel').replace(' *', '')}</h4>
                                                         <p className="mt-1">{selectedDivision.name}</p>
                                                     </div>
                                                     {selectedDivision.description && (
                                                         <div>
-                                                            <h4 className="font-medium text-sm text-gray-500">Description</h4>
+                                                            <h4 className="font-medium text-sm text-gray-500">{t('detail.form.descriptionLabel')}</h4>
                                                             <p className="mt-1">{selectedDivision.description}</p>
                                                         </div>
                                                     )}
                                                     <div>
-                                                        <h4 className="font-medium text-sm text-gray-500">Leader</h4>
+                                                        <h4 className="font-medium text-sm text-gray-500">{t('detail.form.leaderLabel')}</h4>
                                                         <p className="mt-1">
-                                                            {selectedDivision.leader ? selectedDivision.leader.name : 'No leader assigned'}
+                                                            {selectedDivision.leader ? selectedDivision.leader.name : t('detail.form.noLeaderAssigned')}
                                                         </p>
                                                     </div>
                                                 </>
@@ -721,36 +721,32 @@ export default function DivisionPage() {
                                     {/* Statistics */}
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle>Statistics</CardTitle>
+                                            <CardTitle>{t('detail.stats.title')}</CardTitle>
                                         </CardHeader>
                                         <CardContent>
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                 <div className="flex items-center gap-2">
                                                     <Users className="h-4 w-4 text-gray-500" />
                                                     <span className="text-sm">
-                                                        Members: {selectedDivision.members_count ??
-                                                            (selectedDivision?.members_count)}
+                                                        {t('detail.stats.members')}: {selectedDivision.members_count ?? 0}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <CalendarDays className="h-4 w-4 text-gray-500" />
                                                     <span className="text-sm">
-                                                        Events: {selectedDivision.events_count ??
-                                                            (selectedDivision?.events_count)}
+                                                        {t('detail.stats.events')}: {selectedDivision.events_count ?? 0}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <Briefcase className="h-4 w-4 text-gray-500" />
                                                     <span className="text-sm">
-                                                        Projects: {selectedDivision.projects_count ??
-                                                            (selectedDivision?.projects_count)}
+                                                        {t('detail.stats.projects')}: {selectedDivision.projects_count ?? 0}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <ListTodo className="h-4 w-4 text-gray-500" />
                                                     <span className="text-sm">
-                                                        Todo Lists: {selectedDivision.todo_lists_count ??
-                                                            (selectedDivision?.todo_lists_count)}
+                                                        {t('detail.stats.todoLists')}: {selectedDivision.todo_lists_count ?? 0}
                                                     </span>
                                                 </div>
                                             </div>
@@ -761,9 +757,9 @@ export default function DivisionPage() {
                                     {!isEditing && (
                                         <Card className="border-red-200">
                                             <CardHeader>
-                                                <CardTitle className="text-red-600">Danger Zone</CardTitle>
+                                                <CardTitle className="text-red-600">{t('detail.dangerZone.title')}</CardTitle>
                                                 <CardDescription>
-                                                    Irreversible actions for this division
+                                                    {t('detail.dangerZone.description')}
                                                 </CardDescription>
                                             </CardHeader>
                                             <CardContent>
@@ -775,24 +771,23 @@ export default function DivisionPage() {
                                                         >
                                                             {deleteLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                                                             <Trash2 className="h-4 w-4 mr-2" />
-                                                            Delete Division
+                                                            {t('detail.dangerZone.deleteButton')}
                                                         </Button>
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>Delete Division</AlertDialogTitle>
+                                                            <AlertDialogTitle>{t('detail.dangerZone.dialog.title')}</AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                Are you sure you want to delete "{selectedDivision.name}"? This action cannot be undone.
-                                                                All associated data will be permanently removed.
+                                                                {t('detail.dangerZone.dialog.description', { name: selectedDivision.name })}
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogCancel>{t('detail.dangerZone.dialog.cancel')}</AlertDialogCancel>
                                                             <AlertDialogAction
                                                                 onClick={handleDelete}
                                                                 className="bg-red-600 hover:bg-red-700"
                                                             >
-                                                                Delete Division
+                                                                {t('detail.dangerZone.dialog.confirm')}
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
@@ -807,9 +802,9 @@ export default function DivisionPage() {
                                         <CardHeader>
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <CardTitle>Division Members ({divisionMembers?.members.length || 0})</CardTitle>
+                                                    <CardTitle>{t('detail.members.title', { count: divisionMembers?.members.length || 0 })}</CardTitle>
                                                     <CardDescription>
-                                                        Manage who has access to this division
+                                                        {t('detail.members.description')}
                                                     </CardDescription>
                                                 </div>
                                                 <Button
@@ -817,7 +812,7 @@ export default function DivisionPage() {
                                                     className="flex items-center gap-2"
                                                 >
                                                     <Users className="h-4 w-4" />
-                                                    Add Members
+                                                    {t('detail.members.addButton')}
                                                 </Button>
                                             </div>
                                         </CardHeader>
@@ -826,7 +821,7 @@ export default function DivisionPage() {
                                                 <>
                                                     {/* Current Members */}
                                                     {divisionMembers.members.length === 0 ? (
-                                                        <p className="text-gray-500 text-sm">No members in this division</p>
+                                                        <p className="text-gray-500 text-sm">{t('detail.members.empty')}</p>
                                                     ) : (
                                                         <div className="space-y-2">
                                                             {divisionMembers.members.map(member => (
@@ -837,7 +832,7 @@ export default function DivisionPage() {
                                                                             <p className="text-sm text-gray-500">{member.email}</p>
                                                                         </div>
                                                                         {member.id === selectedDivision.leader_id && (
-                                                                            <Badge variant="secondary">Leader</Badge>
+                                                                            <Badge variant="secondary">{t('detail.members.leaderBadge')}</Badge>
                                                                         )}
                                                                     </div>
                                                                     <Button
@@ -865,9 +860,9 @@ export default function DivisionPage() {
                                 <TabsContent value="events" className="space-y-6">
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
-                                            <h3 className="text-lg font-semibold">Events ({divisionEvents.length})</h3>
+                                            <h3 className="text-lg font-semibold">{t('detail.events.title', { count: divisionEvents.length })}</h3>
                                             <p className="text-sm text-muted-foreground">
-                                                Events associated with this division
+                                                {t('detail.events.description')}
                                             </p>
                                         </div>
                                     </div>
@@ -881,7 +876,7 @@ export default function DivisionPage() {
                                             <CardContent className="flex items-center justify-center py-12">
                                                 <div className="text-center">
                                                     <CalendarDays className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                                    <p className="text-muted-foreground">No events found for this division</p>
+                                                    <p className="text-muted-foreground">{t('detail.events.empty')}</p>
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -897,9 +892,9 @@ export default function DivisionPage() {
                                 <TabsContent value="projects" className="space-y-6">
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
-                                            <h3 className="text-lg font-semibold">Projects ({divisionProjects.length})</h3>
+                                            <h3 className="text-lg font-semibold">{t('detail.projects.title', { count: divisionProjects.length })}</h3>
                                             <p className="text-sm text-muted-foreground">
-                                                Projects associated with this division
+                                                {t('detail.projects.description')}
                                             </p>
                                         </div>
                                     </div>
@@ -913,7 +908,7 @@ export default function DivisionPage() {
                                             <CardContent className="flex items-center justify-center py-12">
                                                 <div className="text-center">
                                                     <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                                    <p className="text-muted-foreground">No projects found for this division</p>
+                                                    <p className="text-muted-foreground">{t('detail.projects.empty')}</p>
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -929,9 +924,9 @@ export default function DivisionPage() {
                                 <TabsContent value="todo-lists" className="space-y-6">
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
-                                            <h3 className="text-lg font-semibold">Todo Lists ({divisionTodoLists.length})</h3>
+                                            <h3 className="text-lg font-semibold">{t('detail.todoLists.title', { count: divisionTodoLists.length })}</h3>
                                             <p className="text-sm text-muted-foreground">
-                                                Todo lists associated with this division
+                                                {t('detail.todoLists.description')}
                                             </p>
                                         </div>
                                     </div>
@@ -945,7 +940,7 @@ export default function DivisionPage() {
                                             <CardContent className="flex items-center justify-center py-12">
                                                 <div className="text-center">
                                                     <ListTodo className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                                    <p className="text-muted-foreground">No todo lists found for this division</p>
+                                                    <p className="text-muted-foreground">{t('detail.todoLists.empty')}</p>
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -963,7 +958,7 @@ export default function DivisionPage() {
                                 <p className="text-red-600 mb-4">{detailError || 'Division not found'}</p>
                                 <Button onClick={handleBackToList} variant="outline">
                                     <ArrowLeft className="h-4 w-4 mr-2" />
-                                    Back to Divisions
+                                    {t('detail.backToDivisions')}
                                 </Button>
                             </div>
                         )}

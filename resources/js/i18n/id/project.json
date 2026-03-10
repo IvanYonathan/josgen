@@ -1,0 +1,231 @@
+{
+    "projects": "Proyek",
+    "title": "Proyek",
+    "description": "Lihat dan Kelola Proyek di sini",
+
+    "create_project": "Buat Proyek",
+    "edit_project": "Edit Proyek",
+    "delete_project": "Hapus Proyek",
+    "view_details": "Lihat Detail",
+
+    "back": "Kembali",
+    "refresh": "Segarkan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "save_changes": "Simpan Perubahan",
+
+    "search_projects_placeholder": "Cari proyek berdasarkan nama atau deskripsi...",
+    "filter_by_status": "Filter berdasarkan status",
+    "all_status": "Semua Status",
+
+    "planning": "Perencanaan",
+    "active": "Aktif",
+    "on_hold": "Ditunda",
+    "completed": "Selesai",
+    "cancelled": "Dibatalkan",
+
+    "noProjectsFound": "Tidak ada proyek ditemukan",
+    "noProjectsFoundMatchingFilters": "Tidak ada proyek yang sesuai filter",
+    "create_first_project": "Buat proyek pertama Anda",
+    "showing_projects": "Menampilkan {{shown}} dari {{total}} proyek",
+
+    "progress": "Progres",
+    "members_count_one": "{{count}} anggota",
+    "members_count_other": "{{count}} anggota",
+
+    "failed_to_load_projects": "Gagal memuat proyek",
+    "view_only": "Anda hanya dapat melihat proyek ini",
+    "failed_to_load_project_details": "Gagal memuat detail proyek",
+    "failed_to_refresh_project": "Gagal menyegarkan proyek",
+    "failed_to_load_divisions_and_users": "Gagal memuat divisi dan pengguna",
+
+    "create_success": "Proyek berhasil dibuat",
+    "create_error": "Gagal membuat proyek",
+    "update_success": "Proyek berhasil diperbarui",
+    "update_error": "Gagal memperbarui proyek",
+    "delete_success": "Proyek berhasil dihapus",
+    "delete_error": "Gagal menghapus proyek",
+
+    "project_details": "Detail Proyek",
+    "tasks_tab": "Tugas ({{count}})",
+    "tasks_available_after_creation": "Tugas (Tersedia Setelah Dibuat)",
+    "tasks_can_be_added_after_creation": "Tugas dapat ditambahkan setelah proyek dibuat",
+
+    "no_tasks_yet": "Belum ada tugas",
+    "add_first_task": "Tambah Tugas Pertama",
+    "add_task": "Tambah Tugas",
+    "toggle_completion": "Ubah Status Selesai",
+    "selected_count": "{{count}} dipilih",
+    "completed_label": "Selesai",
+    "task_start": "Mulai: {{date}}",
+    "task_end": "Selesai: {{date}}",
+    "task_assigned_to": "Ditugaskan ke: {{name}}",
+
+    "select_at_least_one_task": "Pilih setidaknya satu tugas",
+    "tasks_toggled_success_one": "{{count}} tugas berhasil diubah statusnya",
+    "tasks_toggled_success_other": "{{count}} tugas berhasil diubah statusnya",
+    "failed_to_toggle_tasks": "Gagal mengubah status tugas",
+
+    "task_create_success": "Tugas berhasil dibuat",
+    "task_create_error": "Gagal membuat tugas",
+    "task_delete_success": "Tugas berhasil dihapus",
+    "task_delete_error": "Gagal menghapus tugas",
+    "task_update_success": "Tugas berhasil diperbarui",
+    "task_update_error": "Gagal memperbarui tugas",
+
+    "confirm_delete_project": "Apakah Anda yakin ingin menghapus <bold>{{projectName}}</bold>? Tindakan ini tidak dapat dibatalkan.",
+    "confirm_delete_task": "Apakah Anda yakin ingin menghapus <bold>{{taskTitle}}</bold>? Tindakan ini tidak dapat dibatalkan.",
+
+    "createProject": {
+        "title": "Buat Proyek",
+        "description": "Tambahkan proyek baru ke organisasi Anda",
+        "tabs": {
+            "details": "Detail Proyek",
+            "tasks": "Tugas (Tersedia Setelah Dibuat)"
+        },
+        "form": {
+            "name": {
+                "label": "Nama Proyek",
+                "placeholder": "Masukkan nama proyek"
+            },
+            "description": {
+                "label": "Deskripsi",
+                "placeholder": "Masukkan deskripsi proyek"
+            },
+            "start_date": {
+                "label": "Tanggal Mulai"
+            },
+            "end_date": {
+                "label": "Tanggal Selesai"
+            },
+            "division_ids": {
+                "label": "Divisi yang Ditugaskan",
+                "placeholder": "Pilih divisi..."
+            },
+            "member_ids": {
+                "label": "Anggota Tim",
+                "description": "Pilih anggota tim dari divisi yang ditugaskan",
+                "placeholder_divisions_first": "Pilih divisi terlebih dahulu...",
+                "placeholder_select": "Pilih anggota tim...",
+                "empty_users": "Tidak ada pengguna ditemukan di divisi yang dipilih"
+            }
+        },
+        "button": {
+            "create": "Buat Proyek",
+            "cancel": "Batal"
+        }
+    },
+    "editProject": {
+        "description": "Edit detail proyek dan kelola tugas",
+        "tabs": {
+            "details": "Detail Proyek",
+            "tasks": "Tugas ({{count}})"
+        },
+        "form": {
+            "name": {
+                "label": "Nama Proyek"
+            },
+            "description": {
+                "label": "Deskripsi"
+            },
+            "start_date": {
+                "label": "Tanggal Mulai"
+            },
+            "end_date": {
+                "label": "Tanggal Selesai"
+            },
+            "status": {
+                "label": "Status"
+            },
+            "division_ids": {
+                "label": "Divisi yang Ditugaskan",
+                "placeholder": "Pilih divisi..."
+            },
+            "member_ids": {
+                "label": "Anggota Tim",
+                "placeholder": "Pilih anggota tim..."
+            }
+        },
+        "members_cannot_modify": "Anggota tidak dapat diubah karena status proyek adalah {{status}}",
+        "view_only_warning": "Anda dapat melihat proyek ini tetapi tidak memiliki izin untuk mengeditnya.",
+        "button": {
+            "cancel": "Batal",
+            "save": "Simpan Perubahan",
+            "delete": "Hapus"
+        }
+    },
+    "dialog": {
+        "unsavedChanges": {
+            "title": "Perubahan Belum Disimpan",
+            "description": "Anda memiliki perubahan yang belum disimpan. Yakin ingin kembali? Semua perubahan akan hilang.",
+            "cancel": "Batal",
+            "confirm": "Buang Perubahan"
+        },
+        "deleteProject": {
+            "title": "Hapus Proyek",
+            "cancel": "Batal",
+            "confirm": "Hapus Proyek"
+        },
+        "deleteTask": {
+            "title": "Hapus Tugas",
+            "cancel": "Batal",
+            "confirm": "Hapus"
+        },
+        "addTask": {
+            "title": "Tambah Tugas Baru",
+            "form": {
+                "title": {
+                    "label": "Judul Tugas",
+                    "placeholder": "Masukkan judul tugas"
+                },
+                "description": {
+                    "label": "Deskripsi"
+                },
+                "start_date": {
+                    "label": "Tanggal Mulai"
+                },
+                "end_date": {
+                    "label": "Tanggal Selesai"
+                },
+                "assigned_to": {
+                    "label": "Tugaskan Ke",
+                    "placeholder": "Pilih anggota tim..."
+                }
+            },
+            "button": {
+                "cancel": "Batal",
+                "add": "Tambah Tugas"
+            }
+        },
+        "editTask": {
+            "title": "Edit Tugas",
+            "form": {
+                "title": {
+                    "label": "Judul Tugas",
+                    "placeholder": "Masukkan judul tugas"
+                },
+                "description": {
+                    "label": "Deskripsi"
+                },
+                "start_date": {
+                    "label": "Tanggal Mulai"
+                },
+                "end_date": {
+                    "label": "Tanggal Selesai"
+                },
+                "assigned_to": {
+                    "label": "Tugaskan Ke",
+                    "placeholder": "Tidak ditugaskan - Pilih anggota tim..."
+                },
+                "is_completed": {
+                    "label": "Tandai sebagai selesai"
+                }
+            },
+            "button": {
+                "cancel": "Batal",
+                "save": "Simpan Perubahan",
+                "clear_assignment": "Hapus Penugasan"
+            }
+        }
+    }
+}

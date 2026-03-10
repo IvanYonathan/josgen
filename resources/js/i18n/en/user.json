@@ -144,6 +144,16 @@
             "cancel": "Cancel"
         }
     },
+    "search": "Search",
+    "searchPlaceholder": "Search by name or email",
+    "roleFilter": "Role",
+    "allRoles": "All roles",
+    "refresh": "Refresh",
+    "export": "Export",
+    "bulkDelete": "Bulk Delete",
+    "sortBy": "Sort by",
+    "defaultSorting": "Default sorting",
+
     "toast": {
         "creating": "Creating user...",
         "createSuccess": "User created successfully",

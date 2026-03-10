@@ -1,0 +1,26 @@
+{
+    "title": "Treasury",
+    "refresh": "Refresh",
+    "showAmounts": "Show amounts",
+    "hideAmounts": "Hide amounts",
+    "addReport": "Add Report",
+    "newRequest": "New Request",
+    "tabs": {
+        "myRequests": "My Requests",
+        "financialOverview": "Financial Overview",
+        "pendingApprovals": "Pending Approvals"
+    },
+    "toast": {
+        "approving": "Approving request...",
+        "approved": "Request approved successfully",
+        "failedApprove": "Failed to approve request",
+        "deleting": "Deleting request...",
+        "deleted": "Request deleted successfully",
+        "failedDelete": "Failed to delete request",
+        "resubmitting": "Resubmitting request...",
+        "resubmitted": "Request resubmitted successfully! It will go through a fresh approval cycle.",
+        "failedResubmit": "Failed to resubmit request",
+        "failedLoad": "Failed to load requests",
+        "failedLoadStats": "Failed to load statistics"
+    }
+}

@@ -183,7 +183,7 @@ function DivisionTodoListPageContent() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">Division To-Do Lists</h1>
+          <h1 className="text-2xl font-bold">{t('title.division')}</h1>
           <Button
             variant="outline"
             size="sm"
@@ -192,7 +192,7 @@ function DivisionTodoListPageContent() {
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('refresh')}
           </Button>
         </div>
 
@@ -200,7 +200,7 @@ function DivisionTodoListPageContent() {
           {permissions.can_create_todo_lists && (
             <Button onClick={() => setViewMode('create')}>
               <PlusCircle className="h-4 w-4 mr-2" />
-              Create List
+              {t('createList')}
             </Button>
           )}
         </div>
@@ -221,11 +221,11 @@ function DivisionTodoListPageContent() {
       ) : todoLists.length === 0 ? (
         <div className="text-center py-8">
           <ListTodo className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">No division todo lists found</p>
+          <p className="text-muted-foreground mb-4">{t('noFound')}</p>
           {permissions.can_create_todo_lists && (
             <Button variant="outline" onClick={() => setViewMode('create')}>
               <PlusCircle className="h-4 w-4 mr-2" />
-              Create your first list
+              {t('createFirst')}
             </Button>
           )}
         </div>
@@ -252,7 +252,7 @@ function DivisionTodoListPageContent() {
       {todoLists.length > 0 && pagination.total !== null && (
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            Showing {todoLists.length} of {pagination.total} lists
+            {t('showing', { shown: todoLists.length, total: pagination.total })}
           </p>
         </div>
       )}
