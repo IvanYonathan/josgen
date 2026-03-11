@@ -506,6 +506,10 @@ class TreasuryController extends ApiController
         $user = Auth::user();
         $treasuryRequest = TreasuryRequest::with('approvals')->findOrFail($request->id);
 
+        if ($treasuryRequest->requested_by === $user->id) {
+            return $this->forbidden('You cannot approve your own request');
+        }
+
         if (!in_array($treasuryRequest->status, ['submitted', 'under_review'])) {
             return $this->error('This request cannot be approved in its current state');
         }
@@ -586,6 +590,10 @@ class TreasuryController extends ApiController
 
         $user = Auth::user();
         $treasuryRequest = TreasuryRequest::with('approvals')->findOrFail($request->id);
+
+        if ($treasuryRequest->requested_by === $user->id) {
+            return $this->forbidden('You cannot reject your own request');
+        }
 
         if (!in_array($treasuryRequest->status, ['submitted', 'under_review'])) {
             return $this->error('This request cannot be rejected in its current state');

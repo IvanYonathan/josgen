@@ -31,6 +31,10 @@ export function PendingApprovalsTab({
         return request.approvals.some(a => a.user_id === currentUserId);
     };
 
+    const isOwnRequest = (request: TreasuryRequest): boolean => {
+        return request.requested_by === currentUserId;
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -57,7 +61,7 @@ export function PendingApprovalsTab({
                 <RequestCard
                     key={request.id}
                     request={request}
-                    showApprovalActions={!hasUserReviewed(request)}
+                    showApprovalActions={!hasUserReviewed(request) && !isOwnRequest(request)}
                     onApprove={() => onApprove(request)}
                     onReject={() => onReject(request)}
                     onView={() => onView(request)}
