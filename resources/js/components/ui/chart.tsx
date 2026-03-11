@@ -162,7 +162,7 @@ export function CategoryPieChart({ data, height = 300 }: CategoryPieChartProps) 
                     paddingAngle={2}
                     dataKey="value"
                     nameKey="name"
-                    label={({ name, percent }: { name: string; percent: number }) => `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`}
+                    label={(props: any) => `${props.name || ''} ${((props.percent || 0) * 100).toFixed(0)}%`}
                     labelLine={false}
                 >
                     {data.map((entry, index) => (

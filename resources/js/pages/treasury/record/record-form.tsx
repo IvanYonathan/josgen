@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 export interface RecordFormData {
     type: 'income' | 'expense';
@@ -39,17 +40,19 @@ export function RecordForm({
     incomeCategories,
     expenseCategories,
 }: Readonly<RecordFormProps>) {
+    const { t } = useTranslation('treasury', {keyPrefix: 'recordForm'});
+    const { t: tc } = useTranslation('treasury');
     const categories = formData.type === 'income' ? incomeCategories : expenseCategories;
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Record Details</CardTitle>
+                <CardTitle>{t('recordDetails')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="record-type">Type</Label>
+                        <Label htmlFor="record-type">{t('typeLabel')}</Label>
                         <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v as any, category: '' })}>
                             <SelectTrigger>
                                 <SelectValue />
@@ -58,13 +61,13 @@ export function RecordForm({
                                 <SelectItem value="income">
                                     <span className="flex items-center gap-2">
                                         <TrendingUp className="h-4 w-4 text-green-600" />
-                                        Income
+                                        {t('income')}
                                     </span>
                                 </SelectItem>
                                 <SelectItem value="expense">
                                     <span className="flex items-center gap-2">
                                         <TrendingDown className="h-4 w-4 text-red-600" />
-                                        Expense
+                                        {t('expense')}
                                     </span>
                                 </SelectItem>
                             </SelectContent>
@@ -72,7 +75,7 @@ export function RecordForm({
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="record-category" className="flex items-center gap-1">
-                            Category <span className="text-red-500">*</span>
+                            {t('categoryLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <Select
                             value={formData.category}
@@ -82,11 +85,11 @@ export function RecordForm({
                             }}
                         >
                             <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
-                                <SelectValue placeholder="Select category" />
+                                <SelectValue placeholder={t('selectCategory')} />
                             </SelectTrigger>
                             <SelectContent>
-                                {Object.entries(categories).map(([key, label]) => (
-                                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                                {Object.keys(categories).map((key) => (
+                                    <SelectItem key={key} value={key}>{tc(`categories.${key}`)}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -100,11 +103,11 @@ export function RecordForm({
 
                 <div className="space-y-2">
                     <Label htmlFor="record-title" className="flex items-center gap-1">
-                        Title <span className="text-red-500">*</span>
+                        {t('titleLabel')} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                         id="record-title"
-                        placeholder="e.g., Monthly donation from member"
+                        placeholder={t('titlePlaceholder')}
                         value={formData.title}
                         onChange={(e) => {
                             setFormData({ ...formData, title: e.target.value });
@@ -120,10 +123,10 @@ export function RecordForm({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="record-description">Description (Optional)</Label>
+                    <Label htmlFor="record-description">{t('descriptionLabel')}</Label>
                     <Textarea
                         id="record-description"
-                        placeholder="Additional details..."
+                        placeholder={t('descriptionPlaceholder')}
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         rows={3}
@@ -133,7 +136,7 @@ export function RecordForm({
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="record-amount" className="flex items-center gap-1">
-                            Amount (Rp) <span className="text-red-500">*</span>
+                            {t('amountLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="record-amount"
@@ -155,7 +158,7 @@ export function RecordForm({
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="record-date" className="flex items-center gap-1">
-                            Date <span className="text-red-500">*</span>
+                            {t('dateLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="record-date"
@@ -176,10 +179,10 @@ export function RecordForm({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="record-reference">Reference Number (Optional)</Label>
+                    <Label htmlFor="record-reference">{t('referenceNumberLabel')}</Label>
                     <Input
                         id="record-reference"
-                        placeholder="e.g., Invoice number, receipt number"
+                        placeholder={t('referenceNumberPlaceholder')}
                         value={formData.reference_number}
                         onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
                     />

@@ -43,10 +43,10 @@ export function RequestDetailDialog({
                             <DialogTitle className="text-xl">{request.title}</DialogTitle>
                             <div className="flex items-center gap-2 mt-2">
                                 <Badge className={getStatusBadgeClass(request.status)}>
-                                    {request.status === 'under_review' ? 'pending' : request.status}
+                                    {t(`status.${request.status}`)}
                                 </Badge>
-                                <span className="text-sm text-muted-foreground capitalize">
-                                    {request.type.replace('_', ' ')}
+                                <span className="text-sm text-muted-foreground">
+                                    {t(`requestType.${request.type}`)}
                                 </span>
                             </div>
                         </div>
@@ -108,7 +108,7 @@ export function RequestDetailDialog({
                                         <div key={item.id || index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
                                             <div>
                                                 <p className="font-medium text-sm">{item.description}</p>
-                                                <p className="text-xs text-muted-foreground capitalize">{item.category?.replace('_', ' ')}</p>
+                                                <p className="text-xs text-muted-foreground">{item.category ? t(`categories.${item.category}`) : ''}</p>
                                             </div>
                                             <span className="font-medium">
                                                 {formatCurrency(item.amount, request.currency, hideAmounts)}
@@ -199,7 +199,7 @@ export function RequestDetailDialog({
                                                     <div>
                                                         <span className="font-medium capitalize">{approval.approval_level} {t('detail.approval')}</span>
                                                         <span className={`ml-2 text-sm ${approval.decision === 'approved' ? 'text-green-600' : 'text-red-600'}`}>
-                                                            ({approval.decision})
+                                                            ({t(`status.${approval.decision}`)})
                                                         </span>
                                                     </div>
                                                     <span className="text-xs text-muted-foreground">

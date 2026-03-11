@@ -5,8 +5,12 @@ import { Loader2, TrendingUp, TrendingDown, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AxiosJosgen, ApiResponse } from '@/lib/axios/axios-josgen';
 import { RecordForm, RecordFormData, RecordFieldErrors } from './record-form';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function CreateRecordPage() {
+    const { t } = useTranslation('treasury', { keyPrefix: 'createRecordPage' });
+    const { t: tv } = useTranslation('treasury', { keyPrefix: 'validation' });
+    const { t: tt } = useTranslation('treasury', { keyPrefix: 'toast' });
     const navigate = useNavigate();
     const { toast } = useToast();
 
@@ -47,22 +51,22 @@ export function CreateRecordPage() {
         const newErrors: RecordFieldErrors = {};
 
         if (!formData.title.trim()) {
-            newErrors.title = 'Title is required';
+            newErrors.title = tv('titleRequired');
         }
         if (!formData.amount || Number.parseFloat(formData.amount) <= 0) {
-            newErrors.amount = 'Amount must be greater than 0';
+            newErrors.amount = tv('amountRequired');
         }
         if (!formData.category) {
-            newErrors.category = 'Category is required';
+            newErrors.category = tv('categoryRequired');
         }
         if (!formData.record_date) {
-            newErrors.record_date = 'Date is required';
+            newErrors.record_date = tv('dateRequired');
         }
 
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) {
-            toast.error(new Error('Please fill in all required fields'), { title: 'Validation error' });
+            toast.error(new Error(tt('fillRequired')), { title: tt('validationError') });
             return false;
         }
 
@@ -74,7 +78,7 @@ export function CreateRecordPage() {
 
         if (!validateForm()) return;
 
-        const { id: toastId } = toast.loading({ title: 'Adding financial record...' });
+        const { id: toastId } = toast.loading({ title: t('adding') });
         try {
             setLoading(true);
 
@@ -92,10 +96,10 @@ export function CreateRecordPage() {
 
             if (!response.data.status) throw new Error(response.data.message);
 
-            toast.success({ itemID: toastId, title: 'Financial record added successfully' });
+            toast.success({ itemID: toastId, title: t('added') });
             navigate('/treasury');
         } catch (err) {
-            toast.error(err, { itemID: toastId, title: 'Failed to add record' });
+            toast.error(err, { itemID: toastId, title: t('failedAdd') });
         } finally {
             setLoading(false);
         }
@@ -115,9 +119,9 @@ export function CreateRecordPage() {
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <div>
-                        <h1 className="text-2xl font-bold">Add Financial Record</h1>
+                        <h1 className="text-2xl font-bold">{t('title')}</h1>
                         <p className="text-muted-foreground">
-                            Record organization income or expense transaction.
+                            {t('description')}
                         </p>
                     </div>
                 </div>
@@ -136,7 +140,7 @@ export function CreateRecordPage() {
 
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="outline" onClick={() => navigate('/treasury')}>
-                            Cancel
+                            {t('cancel')}
                         </Button>
                         <Button
                             type="submit"
@@ -145,7 +149,7 @@ export function CreateRecordPage() {
                         >
                             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                             {formData.type === 'income' ? <TrendingUp className="h-4 w-4 mr-2" /> : <TrendingDown className="h-4 w-4 mr-2" />}
-                            Add {formData.type === 'income' ? 'Income' : 'Expense'}
+                            {formData.type === 'income' ? t('addIncome') : t('addExpense')}
                         </Button>
                     </div>
                 </form>

@@ -1,5 +1,5 @@
 import { ApiResponse, AxiosJosgen } from "@/lib/axios/axios-josgen";
-import { TreasuryRequest, expense_categories } from "@/types/treasury/treasury";
+import { TreasuryRequest } from "@/types/treasury/treasury";
 
 export interface TreasuryGetResponse {
   request: TreasuryRequest;

@@ -38,14 +38,11 @@ export const formatCurrency = (amount: number, currency: string = 'IDR', hidden:
     return amount < 0 ? `-${prefix}${formatted}` : `${prefix}${formatted}`;
 };
 
-const getApprovalStageLabel = (stage: string) => {
-    switch (stage) {
-        case 'pending_leader': return 'Waiting for Leader';
-        case 'pending_treasurer': return 'Waiting for Treasurer';
-        case 'approved': return 'Fully Approved';
-        case 'rejected': return 'Rejected';
-        default: return stage;
-    }
+const approvalStageKeys: Record<string, string> = {
+    pending_leader: 'card.waitingLeader',
+    pending_treasurer: 'card.waitingTreasurer',
+    approved: 'card.fullyApproved',
+    rejected: 'card.rejected',
 };
 
 interface RequestCardProps {
@@ -86,7 +83,7 @@ export function RequestCard({
                         <div className="flex items-center gap-2 mb-1">
                             <CardTitle className="text-base truncate">{request.title}</CardTitle>
                             <Badge className={getStatusBadgeClass(request.status)}>
-                                {request.status === 'under_review' ? 'pending' : request.status}
+                                {t(`status.${request.status}`)}
                             </Badge>
                         </div>
                         {request.description && (
@@ -144,7 +141,7 @@ export function RequestCard({
                                         )}
                                         <span className="capitalize">{approval.approval_level}</span>
                                         <span className={approval.decision === 'approved' ? 'text-green-600' : 'text-red-600'}>
-                                            {approval.decision}
+                                            {t(`status.${approval.decision}`)}
                                         </span>
                                         {approval.approver && (
                                             <span className="text-muted-foreground">• {approval.approver.name}</span>
@@ -167,7 +164,7 @@ export function RequestCard({
                         ) : (
                             <p className="text-sm text-muted-foreground flex items-center gap-2">
                                 <Clock className="h-4 w-4" />
-                                {getApprovalStageLabel(request.approval_stage)}
+                                {approvalStageKeys[request.approval_stage] ? t(approvalStageKeys[request.approval_stage]) : request.approval_stage}
                             </p>
                         )}
                     </div>

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, FileText, X, AlertCircle, Plus, Trash2 } from 'lucide-react';
-import { expense_categories, TreasuryRequest } from '@/types/treasury/treasury';
+import { TreasuryRequest } from '@/types/treasury/treasury';
 import { useTranslation } from '@/hooks/use-translation';
 
 export interface ItemInput {
@@ -240,8 +240,8 @@ export function RequestForm({
                                             <SelectValue placeholder={t('form.categoryPlaceholder')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {Object.entries(expense_categories).map(([key, label]) => (
-                                                <SelectItem key={key} value={key}>{label}</SelectItem>
+                                            {['transportation', 'food', 'supplies', 'equipment', 'venue', 'printing', 'communication', 'utilities', 'maintenance', 'salary', 'insurance', 'tax', 'other'].map((key) => (
+                                                <SelectItem key={key} value={key}>{t(`categories.${key}`)}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MonthlyBarChart, CategoryPieChart, PIE_COLORS } from '@/components/ui/chart';
+import { MonthlyBarChart, CategoryPieChart, PIE_COLORS, CHART_COLORS } from '@/components/ui/chart';
 import {
     Loader2,
     DollarSign,
@@ -150,7 +150,14 @@ export function FinancialOverviewTab({
                 </CardHeader>
                 <CardContent>
                     {chartData.length > 0 ? (
-                        <MonthlyBarChart data={chartData} height={300} />
+                        <MonthlyBarChart
+                            data={chartData}
+                            height={300}
+                            dataKeys={[
+                                { key: 'income', color: CHART_COLORS.income, label: t('financialOverview.income') },
+                                { key: 'expense', color: CHART_COLORS.expense, label: t('financialOverview.expense') },
+                            ]}
+                        />
                     ) : (
                         <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg">
                             <p className="text-muted-foreground">{t('financialOverview.noData')}</p>
@@ -221,7 +228,7 @@ export function FinancialOverviewTab({
                                             {formatCurrency(request.amount, request.currency, hideAmounts)}
                                         </p>
                                         <Badge className={getStatusBadgeClass(request.status)}>
-                                            {request.status}
+                                            {t(`status.${request.status}`)}
                                         </Badge>
                                     </div>
                                 </div>
