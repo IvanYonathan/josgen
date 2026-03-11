@@ -5,7 +5,7 @@ import { Task } from '@/types/todo-list/task';
 import { TodoList, TodoItem } from '@/types/todo-list/todo-list';
 import { DateDetailView } from './components/date-detail-view';
 import { Calendar } from './components/calendar';
-import { TaskManager } from './components/task-manager';
+import { TaskManager, SectionKey } from './components/task-manager';
 import { listTodoLists } from '@/lib/api/todo-list/list-todo-lists';
 import { toggleTodoItem } from '@/lib/api/todo-list/items/toggle-todo-item';
 
@@ -66,6 +66,17 @@ export default function Dashboard() {
     const [personalTasks, setPersonalTasks] = useState<Task[]>([]);
     const [divisionTasks, setDivisionTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeSection, setActiveSection] = useState<SectionKey | null>('today');
+
+    const toggleSection = (section: SectionKey) =>
+        setActiveSection((prev) => (prev === section ? null : section));
+
+    const expandedSections: Record<SectionKey, boolean> = {
+        today: activeSection === 'today',
+        nextWeek: activeSection === 'nextWeek',
+        upcoming: activeSection === 'upcoming',
+        past: activeSection === 'past',
+    };
     const [error, setError] = useState<string | null>(null);
 
     const [dateDetail, setDateDetail] = useState<{ selectedDate: string; selectedTasks: Task[] }>({
@@ -259,48 +270,84 @@ export default function Dashboard() {
                             </div>
                         </div>
                         <div className="mb-4 grid grid-cols-4 gap-2">
-                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700 cursor-pointer">
-                                <div className="text-lg font-bold text-blue-600">{tasksForToday.length}</div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">{t('today')}</div>
-                            </div>
-                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700 cursor-pointer">
-                                <div className="text-lg font-bold text-blue-600">{tasksForThisWeek.length}</div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">{t('thisWeek')}</div>
-                            </div>
-                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700 cursor-pointer">
-                                <div className="text-lg font-bold text-gray-500">{tasksForUpcoming.length}</div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">{t('upcoming')}</div>
-                            </div>
-                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700 cursor-pointer">
-                                <div className="text-lg font-bold text-gray-500">{tasksForPast.length}</div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">{t('past')}</div>
-                            </div>
-                        </div>
-                        <TaskManager tasks={tasksToDisplay} onToggleTask={handleToggleTask} />
-                        { activeView === 'personal' &&(
-                            <div className="mt-4">
-                            <Link
-                                href="/toDoList/personal"
-                                className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                            {/* Today */}
+                            <button
+                                onClick={() => toggleSection('today')}
+                                className={`cursor-pointer rounded-xl p-3 text-center transition-all duration-200 hover:scale-105 active:scale-95 border-2 shadow-sm ${expandedSections.today
+                                    ? 'bg-blue-50 border-blue-500 dark:bg-blue-900/30 dark:border-blue-400'
+                                    : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600 hover:border-blue-300 hover:bg-blue-50/50 dark:hover:border-blue-600'
+                                    }`}
                             >
-                                {t('viewAllTasks')}
-                            </Link>
+                                <div className={`text-xl font-bold ${expandedSections.today ? 'text-blue-600' : 'text-blue-500'}`}>{tasksForToday.length}</div>
+                                <div className={`text-xs font-medium mt-0.5 ${expandedSections.today ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}>{t('today')}</div>
+                            </button>
+
+                            {/* This Week */}
+                            <button
+                                onClick={() => toggleSection('nextWeek')}
+                                className={`cursor-pointer rounded-xl p-3 text-center transition-all duration-200 hover:scale-105 active:scale-95 border-2 shadow-sm ${expandedSections.nextWeek
+                                    ? 'bg-yellow-50 border-yellow-500 dark:bg-yellow-900/30 dark:border-yellow-400'
+                                    : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600 hover:border-yellow-300 hover:bg-yellow-50/50 dark:hover:border-yellow-600'
+                                    }`}
+                            >
+                                <div className={`text-xl font-bold ${expandedSections.nextWeek ? 'text-yellow-600' : 'text-blue-500'}`}>{tasksForThisWeek.length}</div>
+                                <div className={`text-xs font-medium mt-0.5 ${expandedSections.nextWeek ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-600 dark:text-gray-400'}`}>{t('thisWeek')}</div>
+                            </button>
+
+                            {/* Upcoming */}
+                            <button
+                                onClick={() => toggleSection('upcoming')}
+                                className={`cursor-pointer rounded-xl p-3 text-center transition-all duration-200 hover:scale-105 active:scale-95 border-2 shadow-sm ${expandedSections.upcoming
+                                    ? 'bg-purple-50 border-purple-500 dark:bg-purple-900/30 dark:border-purple-400'
+                                    : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600 hover:border-purple-300 hover:bg-purple-50/50 dark:hover:border-purple-600'
+                                    }`}
+                            >
+                                <div className={`text-xl font-bold ${expandedSections.upcoming ? 'text-purple-600' : 'text-gray-500'}`}>{tasksForUpcoming.length}</div>
+                                <div className={`text-xs font-medium mt-0.5 ${expandedSections.upcoming ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-400'}`}>{t('upcoming')}</div>
+                            </button>
+
+                            {/* Past */}
+                            <button
+                                onClick={() => toggleSection('past')}
+                                className={`cursor-pointer rounded-xl p-3 text-center transition-all duration-200 hover:scale-105 active:scale-95 border-2 shadow-sm ${expandedSections.past
+                                    ? 'bg-gray-100 border-gray-500 dark:bg-gray-600/30 dark:border-gray-400'
+                                    : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600 hover:border-gray-400 hover:bg-gray-100 dark:hover:border-gray-500'
+                                    }`}
+                            >
+                                <div className={`text-xl font-bold ${expandedSections.past ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500'}`}>{tasksForPast.length}</div>
+                                <div className={`text-xs font-medium mt-0.5 ${expandedSections.past ? 'text-gray-700 dark:text-gray-300' : 'text-gray-600 dark:text-gray-400'}`}>{t('past')}</div>
+                            </button>
                         </div>
-                            )
+                        <TaskManager
+                            tasks={tasksToDisplay}
+                            onToggleTask={handleToggleTask}
+                            expandedSections={expandedSections}
+                            onToggleSection={toggleSection}
+                        />
+                        {activeView === 'personal' && (
+                            <div className="mt-4">
+                                <Link
+                                    href="/toDoList/personal"
+                                    className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                                >
+                                    {t('viewAllTasks')}
+                                </Link>
+                            </div>
+                        )
                         }
 
-                        { activeView === 'division' &&(
+                        {activeView === 'division' && (
                             <div className="mt-4">
-                            <Link
-                                href="/toDoList/division"
-                                className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-                            >
-                                {t('viewAllTasks')}
-                            </Link>
-                        </div>
-                            )
+                                <Link
+                                    href="/toDoList/division"
+                                    className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                                >
+                                    {t('viewAllTasks')}
+                                </Link>
+                            </div>
+                        )
                         }
-                        
+
                     </div>
 
                     <div className="flex flex-col gap-4 md:col-span-1">

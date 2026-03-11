@@ -8,13 +8,18 @@ type SectionKey = 'today' | 'nextWeek' | 'upcoming' | 'past';
 interface TaskManagerProps {
     tasks: Task[];
     onToggleTask?: (taskId: number) => Promise<void>;
+    expandedSections?: Record<SectionKey, boolean>;
+    onToggleSection?: (section: SectionKey) => void;
 }
 
-export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>) {
-    const { t, i18n } = useTranslation('dashboard');
-    const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({ today: true, nextWeek: true, upcoming: true, past: true });
+export type { SectionKey };
 
-    const toggleSection = (section: SectionKey) => setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
+export function TaskManager({ tasks, onToggleTask, expandedSections: expandedSectionsProp, onToggleSection }: Readonly<TaskManagerProps>) {
+    const { t, i18n } = useTranslation('dashboard');
+    const [expandedSectionsInternal, setExpandedSectionsInternal] = useState<Record<SectionKey, boolean>>({ today: false, nextWeek: false, upcoming: false, past: false });
+
+    const expandedSections = expandedSectionsProp ?? expandedSectionsInternal;
+    const toggleSection = onToggleSection ?? ((section: SectionKey) => setExpandedSectionsInternal((prev) => ({ ...prev, [section]: !prev[section] })));
 
     const categorizeTasks = (tasksToCategorize: Task[]) => {
         const now = new Date();
@@ -138,10 +143,18 @@ export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>)
 
     return (
         <div className="space-y-4">
-            <TaskSection title={t('today')} tasks={currentTasks.today} sectionKey="today" gradient="from-red-500 to-pink-500" />
-            <TaskSection title={t('thisWeek')} tasks={currentTasks.nextWeek} sectionKey="nextWeek" gradient="from-yellow-500 to-orange-500" />
-            <TaskSection title={t('upcoming')} tasks={currentTasks.upcoming} sectionKey="upcoming" gradient="from-gray-500 to-gray-600" />
-            <TaskSection title={t('past')} tasks={currentTasks.past} sectionKey="past" gradient="from-gray-500 to-gray-600" />
+            {expandedSections.today && (
+                <TaskSection title={t('today')} tasks={currentTasks.today} sectionKey="today" gradient="from-red-500 to-pink-500" />
+            )}
+            {expandedSections.nextWeek && (
+                <TaskSection title={t('thisWeek')} tasks={currentTasks.nextWeek} sectionKey="nextWeek" gradient="from-yellow-500 to-orange-500" />
+            )}
+            {expandedSections.upcoming && (
+                <TaskSection title={t('upcoming')} tasks={currentTasks.upcoming} sectionKey="upcoming" gradient="from-gray-500 to-gray-600" />
+            )}
+            {expandedSections.past && (
+                <TaskSection title={t('past')} tasks={currentTasks.past} sectionKey="past" gradient="from-gray-500 to-gray-600" />
+            )}
         </div>
     );
 }
