@@ -29,20 +29,5 @@ export default defineConfig({
     },
     build: {
         chunkSizeWarningLimit: 500,
-        rollupOptions: {
-            output: {
-                manualChunks(id) {
-                    if (id.includes('node_modules')) {
-                        if (id.includes('react-dom') || id.includes('/react/') || id.includes('react-router') || id.includes('scheduler')) return 'vendor-react';
-                        if (id.includes('@radix-ui')) return 'vendor-ui';
-                        if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
-                        if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('/zod/')) return 'vendor-forms';
-                        if (id.includes('lucide-react')) return 'vendor-icons';
-                        if (id.includes('axios') || id.includes('date-fns')) return 'vendor-utils';
-                        if (id.includes('i18next')) return 'vendor-i18n';
-                    }
-                },
-            },
-        },
     },
 });
