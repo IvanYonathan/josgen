@@ -232,7 +232,7 @@ export function TreasuryPage() {
 
         <TabsContent value="my-requests">
           <MyRequestsTab
-            requests={requests}
+            requests={requests.filter(r => r.requested_by === user.id)}
             loading={loading}
             onEdit={(req) => navigate(`/treasury/request/${req.id}/edit`)}
             onDelete={openDeleteDialog}

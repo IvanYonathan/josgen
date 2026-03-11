@@ -196,7 +196,7 @@ class TreasuryController extends ApiController
                 'needed_by_date' => $request->needed_by_date,
                 'status' => $request->input('submit', false) ? 'submitted' : 'draft',
                 'requested_by' => $user->id,
-                'division_id' => $request->division_id,
+                'division_id' => $request->division_id ?? $user->division_id,
                 'project_id' => $request->project_id,
                 'event_id' => $request->event_id,
             ]);

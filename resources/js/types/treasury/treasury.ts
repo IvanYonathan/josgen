@@ -71,6 +71,7 @@ export interface TreasuryRequest {
   attachment_path: string | null;
   attachment_type: string | null;
   attachment_size: number | null;
+  attachment_url: string | null;
 
   // Computed
   approval_stage?: 'pending_leader' | 'pending_treasurer' | 'approved' | 'rejected';

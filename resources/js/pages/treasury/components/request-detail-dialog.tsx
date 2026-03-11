@@ -120,7 +120,7 @@ export function RequestDetailDialog({
                         </>
                     )}
 
-                    {request.attachment_path && (
+                    {request.attachment_url && (
                         <>
                             <Separator />
                             <div>
@@ -132,7 +132,7 @@ export function RequestDetailDialog({
                                         /\.(jpg|jpeg|png|gif|webp)$/i.test(request.attachment_filename || '')) && (
                                             <div className="bg-gray-100 p-2">
                                                 <img
-                                                    src={`/storage/${request.attachment_path}`}
+                                                    src={request.attachment_url}
                                                     alt={request.attachment_original_name || request.attachment_filename || 'Attachment'}
                                                     className="max-h-48 w-auto mx-auto rounded object-contain"
                                                     onError={(e) => {
@@ -160,7 +160,7 @@ export function RequestDetailDialog({
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => window.open(`/storage/${request.attachment_path}`, '_blank')}
+                                                onClick={() => window.open(request.attachment_url!, '_blank')}
                                                 title="View file"
                                             >
                                                 {t('card.view')}
@@ -170,7 +170,7 @@ export function RequestDetailDialog({
                                                 size="sm"
                                                 asChild
                                             >
-                                                <a href={`/storage/${request.attachment_path}`} download title="Download file">
+                                                <a href={request.attachment_url!} download title="Download file">
                                                     <Download className="h-4 w-4" />
                                                 </a>
                                             </Button>

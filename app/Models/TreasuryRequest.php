@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class TreasuryRequest extends Model
 {
@@ -38,6 +39,8 @@ class TreasuryRequest extends Model
         'attachment_size',
     ];
 
+    protected $appends = ['attachment_url'];
+
     protected $casts = [
         'request_date' => 'date',
         'needed_by_date' => 'date',
@@ -45,6 +48,20 @@ class TreasuryRequest extends Model
         'payment_date' => 'date',
         'amount' => 'decimal:2',
     ];
+
+    /**
+     * Get the full URL for the attachment.
+     */
+    public function getAttachmentUrlAttribute(): ?string
+    {
+        if (!$this->attachment_path) {
+            return null;
+        }
+
+        $disk = config('filesystems.disks.r2.key') ? 'r2' : 'public';
+
+        return Storage::disk($disk)->url($this->attachment_path);
+    }
 
     /**
      * Get the user who requested the treasury item.
