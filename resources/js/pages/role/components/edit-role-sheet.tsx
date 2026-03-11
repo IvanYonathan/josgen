@@ -32,7 +32,6 @@ export function EditRoleSheet({
   const { t } = useTranslation('role');
 
   const [name, setName] = useState('');
-  const [guard, setGuard] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [loadingRole, setLoadingRole] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -49,7 +48,6 @@ export function EditRoleSheet({
 
   const resetState = () => {
     setName('');
-    setGuard('');
     setSelectedPermissions([]);
     setLoadingRole(false);
     setSaving(false);
@@ -64,7 +62,7 @@ export function EditRoleSheet({
       const response = await getRole({ id });
       const role = response.role;
       setName(role.name);
-      setGuard(role.guard_name);
+      // guard_name is always 'web' — no need to load it
       setSelectedPermissions(role.permissions?.map((permission) => permission.name) ?? []);
       setRoleProtected(Boolean(role.is_protected));
     } catch (err: any) {
@@ -92,7 +90,7 @@ export function EditRoleSheet({
       const response = await updateRole({
         id: roleId,
         name: name.trim(),
-        guard_name: guard.trim() || undefined,
+        guard_name: 'web',
         permissions: selectedPermissions,
       });
 
@@ -142,17 +140,6 @@ export function EditRoleSheet({
                         disabled={!canSubmit || roleProtected || saving}
                       />
                       <p className="text-xs text-muted-foreground">{t('editRole.form.name.helper')}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-role-guard">{t('editRole.form.guard.label')}</Label>
-                      <Input
-                        id="edit-role-guard"
-                        value={guard}
-                        onChange={(event) => setGuard(event.target.value)}
-                        disabled={!canSubmit || saving}
-                      />
-                      <p className="text-xs text-muted-foreground">{t('editRole.form.guard.helper')}</p>
                     </div>
 
                     <div className="space-y-2">

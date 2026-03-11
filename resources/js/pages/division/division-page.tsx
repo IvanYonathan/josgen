@@ -26,13 +26,13 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth-context';
 import { Division, DivisionListResponse, UpdateDivisionRequest } from '@/types/division/division';
 import { DivisionMembersResponse } from '@/types/division/members/division-members';
 import { User, UserOption } from '@/types/user/user';
 import { CreateDivisionSheet } from './components/create-division-sheet';
 import { BulkMemberSelectionDialog } from './components/bulk-member-selection-dialog';
 import { listDivisions } from '@/lib/api/division/list-divisions';
-import { me } from '@/lib/api/auth/me';
 import { getDivision } from '@/lib/api/division/get-division';
 import { updateDivision } from '@/lib/api/division/update-division';
 import { deleteDivision } from '@/lib/api/division/delete-division';
@@ -54,7 +54,8 @@ type ViewMode = 'list' | 'detail';
 export default function DivisionPage() {
     const { t } = useTranslation('division');
     const { toast } = useToast();
-    
+    const { user: authUser, permissions } = useAuth();
+
     // View state
     const [viewMode, setViewMode] = useState<ViewMode>('list');
     const [selectedDivisionId, setSelectedDivisionId] = useState<number | null>(null);
@@ -62,7 +63,6 @@ export default function DivisionPage() {
     // Division list state
     const [divisions, setDivisions] = useState<DivisionListResponse[]>([]);
     const [users, setUsers] = useState<UserOption[]>([]);
-    const [canCreate, setCanCreate] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -107,19 +107,16 @@ export default function DivisionPage() {
             setLoading(true);
             setError(null);
 
-            // Load divisions, user permissions, and user options in parallel
-            const [divisionsResponse, userResponse, userOptionsResponse] = await Promise.all([
+            // Load divisions and user options in parallel
+            const [divisionsResponse, userOptionsResponse] = await Promise.all([
                 listDivisions(),
-                me(),
                 listUserOptions()
             ]);
 
             setDivisions(divisionsResponse.divisions);
-            setCanCreate(userResponse.permissions.can_create_divisions);
             setUsers(userOptionsResponse.users);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to load data');
-            setCanCreate(false);
         } finally {
             setLoading(false);
         }
@@ -430,7 +427,7 @@ export default function DivisionPage() {
                                 </Button>
                             </div>
 
-                            {canCreate && (
+                            {permissions.can_create_divisions && (
                                 <Button onClick={() => setCreateSheetOpen(true)}>
                                     <PlusCircle className="h-4 w-4 mr-2" />
                                     {t('createDivision.button.create')}
@@ -453,7 +450,7 @@ export default function DivisionPage() {
                         ) : divisions.length === 0 ? (
                             <div className="text-center py-8">
                                 <p className="text-muted-foreground">{t('noFound')}</p>
-                                {canCreate && (
+                                {permissions.can_create_divisions && (
                                     <Button
                                         variant="outline"
                                         className="mt-4"
@@ -575,36 +572,38 @@ export default function DivisionPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                                {isEditing ? (
-                                    <>
+                            {(permissions.can_edit_divisions || authUser.id === selectedDivision?.leader_id) && (
+                                <div className="flex items-center gap-2">
+                                    {isEditing ? (
+                                        <>
+                                            <Button
+                                                variant="outline"
+                                                onClick={handleCancelEdit}
+                                                disabled={saveLoading}
+                                            >
+                                                <X className="h-4 w-4 mr-2" />
+                                                {t('cancel')}
+                                            </Button>
+                                            <Button
+                                                onClick={handleSave}
+                                                disabled={saveLoading}
+                                            >
+                                                {saveLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                                <Save className="h-4 w-4 mr-2" />
+                                                {t('save')}
+                                            </Button>
+                                        </>
+                                    ) : (
                                         <Button
                                             variant="outline"
-                                            onClick={handleCancelEdit}
-                                            disabled={saveLoading}
+                                            onClick={handleEdit}
                                         >
-                                            <X className="h-4 w-4 mr-2" />
-                                            {t('cancel')}
+                                            <Edit className="h-4 w-4 mr-2" />
+                                            {t('edit')}
                                         </Button>
-                                        <Button
-                                            onClick={handleSave}
-                                            disabled={saveLoading}
-                                        >
-                                            {saveLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                                            <Save className="h-4 w-4 mr-2" />
-                                            {t('save')}
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleEdit}
-                                    >
-                                        <Edit className="h-4 w-4 mr-2" />
-                                        {t('edit')}
-                                    </Button>
-                                )}
-                            </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Error Display */}
@@ -754,7 +753,7 @@ export default function DivisionPage() {
                                     </Card>
 
                                     {/* Danger Zone */}
-                                    {!isEditing && (
+                                    {!isEditing && permissions.can_delete_divisions && (
                                         <Card className="border-red-200">
                                             <CardHeader>
                                                 <CardTitle className="text-red-600">{t('detail.dangerZone.title')}</CardTitle>
@@ -807,13 +806,15 @@ export default function DivisionPage() {
                                                         {t('detail.members.description')}
                                                     </CardDescription>
                                                 </div>
-                                                <Button
-                                                    onClick={() => setMemberSelectionOpen(true)}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <Users className="h-4 w-4" />
-                                                    {t('detail.members.addButton')}
-                                                </Button>
+                                                {divisionMembers?.can_manage_members && (
+                                                    <Button
+                                                        onClick={() => setMemberSelectionOpen(true)}
+                                                        className="flex items-center gap-2"
+                                                    >
+                                                        <Users className="h-4 w-4" />
+                                                        {t('detail.members.addButton')}
+                                                    </Button>
+                                                )}
                                             </div>
                                         </CardHeader>
                                         <CardContent>
@@ -835,14 +836,16 @@ export default function DivisionPage() {
                                                                             <Badge variant="secondary">{t('detail.members.leaderBadge')}</Badge>
                                                                         )}
                                                                     </div>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        size="sm"
-                                                                        onClick={() => handleRemoveMember(member.id)}
-                                                                        className="text-red-600 hover:text-red-700"
-                                                                    >
-                                                                        <UserMinus className="h-4 w-4" />
-                                                                    </Button>
+                                                                    {divisionMembers?.can_manage_members && (
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() => handleRemoveMember(member.id)}
+                                                                            className="text-red-600 hover:text-red-700"
+                                                                        >
+                                                                            <UserMinus className="h-4 w-4" />
+                                                                        </Button>
+                                                                    )}
                                                                 </div>
                                                             ))}
                                                         </div>

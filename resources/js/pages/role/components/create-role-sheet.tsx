@@ -29,14 +29,12 @@ export function CreateRoleSheet({
   const { t } = useTranslation('role');
 
   const [name, setName] = useState('');
-  const [guard, setGuard] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const resetState = () => {
     setName('');
-    setGuard('');
     setSelectedPermissions([]);
     setError(null);
     setLoading(false);
@@ -65,7 +63,7 @@ export function CreateRoleSheet({
       setError(null);
       const response = await createRole({
         name: name.trim(),
-        guard_name: guard.trim() || undefined,
+        guard_name: 'web',
         permissions: selectedPermissions,
       });
 
@@ -107,18 +105,6 @@ export function CreateRoleSheet({
                 disabled={!canSubmit || loading}
               />
               <p className="text-xs text-muted-foreground">{t('createRole.form.name.helper')}</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="role-guard">{t('createRole.form.guard.label')}</Label>
-              <Input
-                id="role-guard"
-                value={guard}
-                onChange={(event) => setGuard(event.target.value)}
-                placeholder={t('createRole.form.guard.placeholder')}
-                disabled={!canSubmit || loading}
-              />
-              <p className="text-xs text-muted-foreground">{t('createRole.form.guard.helper')}</p>
             </div>
 
             <div className="space-y-2">

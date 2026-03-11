@@ -3,6 +3,7 @@ import { User } from "@/types/user/user";
 export interface DivisionMembersResponse {
   members: User[];
   available_users: User[];
+  can_manage_members: boolean;
 }
 
 export interface DivisionMembersRequest {

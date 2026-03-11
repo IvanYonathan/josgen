@@ -40,6 +40,7 @@ class PermissionRegistry
         // Divisions
         'view own divisions',
         'view all divisions',
+        'view division members',
         'create divisions',
         'edit divisions',
         'delete divisions',
@@ -86,6 +87,7 @@ class PermissionRegistry
             'create treasury requests',
             'view own treasury requests',
             'view own divisions',
+            'view division members',
             'view events',
             'view projects',
             'view todo lists',
@@ -101,6 +103,7 @@ class PermissionRegistry
             'approve treasury requests',
             'process payments',
             'view treasury reports',
+            'view division members',
         ],
         'division_leader' => [
             'create treasury requests',
@@ -108,6 +111,7 @@ class PermissionRegistry
             'view all treasury requests',
             'approve treasury requests',
             'view own divisions',
+            'view division members',
             'edit divisions',
         ],
     ];

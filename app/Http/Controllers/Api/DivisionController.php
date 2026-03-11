@@ -158,8 +158,9 @@ class DivisionController extends ApiController
 
         $canViewAll = $this->hasPermission('view all divisions');
         $canViewOwn = $this->hasPermission('view own divisions');
+        $canViewMembers = $this->hasPermission('view division members');
 
-        if (!$canViewAll && !$canViewOwn) {
+        if (!$canViewAll && !$canViewOwn && !$canViewMembers) {
             return $this->forbidden('You do not have permission to view division members');
         }
 
@@ -169,21 +170,23 @@ class DivisionController extends ApiController
 
         $canManageMembers = $this->hasPermission('edit divisions') || Auth::user()->id === $division->leader_id;
 
-        if (!$canManageMembers) {
-            return $this->forbidden('You do not have permission to manage division members');
-        }
-
         $members = $division->members()->with('roles')->get();
 
-        // Get users not already members of this division
-        $existingMemberIds = $division->members()->pluck('users.id')->toArray();
-        $availableUsers = User::whereNotIn('id', $existingMemberIds)
-            ->get(['id', 'name', 'email']);
-
-        return $this->success([
+        $data = [
             'members' => $members,
-            'available_users' => $availableUsers,
-        ], 'Division members retrieved successfully');
+            'can_manage_members' => $canManageMembers,
+        ];
+
+        // Only include available users if the user can manage members
+        if ($canManageMembers) {
+            $existingMemberIds = $division->members()->pluck('users.id')->toArray();
+            $data['available_users'] = User::whereNotIn('id', $existingMemberIds)
+                ->get(['id', 'name', 'email']);
+        } else {
+            $data['available_users'] = [];
+        }
+
+        return $this->success($data, 'Division members retrieved successfully');
     }
 
     public function addMember(Request $request): JsonResponse

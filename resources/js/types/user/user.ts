@@ -45,6 +45,7 @@ export interface UserPermissions {
     can_view_own_divisions: boolean;
     can_view_all_divisions: boolean;
     can_view_divisions: boolean;
+    can_view_division_members: boolean;
     can_create_divisions: boolean;
     can_edit_divisions: boolean;
     can_delete_divisions: boolean;
