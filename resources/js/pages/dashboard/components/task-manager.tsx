@@ -3,7 +3,7 @@ import { Task } from '@/types/todo-list/task';
 import { ChevronDown, Calendar, Clock } from 'lucide-react';
 import { FC, useState } from 'react';
 
-type SectionKey = 'today' | 'nextWeek' | 'upcoming';
+type SectionKey = 'today' | 'nextWeek' | 'upcoming' | 'past';
 
 interface TaskManagerProps {
     tasks: Task[];
@@ -12,7 +12,7 @@ interface TaskManagerProps {
 
 export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>) {
     const { t, i18n } = useTranslation('dashboard');
-    const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({ today: true, nextWeek: true, upcoming: true });
+    const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({ today: true, nextWeek: true, upcoming: true, past: true });
 
     const toggleSection = (section: SectionKey) => setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
 
@@ -30,6 +30,7 @@ export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>)
                 return d >= startOfWeek && d <= endOfWeek && d.getTime() !== startOfToday.getTime();
             }),
             upcoming: tasksToCategorize.filter((t) => new Date(t.date + 'T00:00:00') > endOfWeek),
+            past: tasksToCategorize.filter((t) => new Date(t.date + 'T00:00:00') < startOfToday),
         };
     };
 
@@ -140,6 +141,7 @@ export function TaskManager({ tasks, onToggleTask }: Readonly<TaskManagerProps>)
             <TaskSection title={t('today')} tasks={currentTasks.today} sectionKey="today" gradient="from-red-500 to-pink-500" />
             <TaskSection title={t('thisWeek')} tasks={currentTasks.nextWeek} sectionKey="nextWeek" gradient="from-yellow-500 to-orange-500" />
             <TaskSection title={t('upcoming')} tasks={currentTasks.upcoming} sectionKey="upcoming" gradient="from-gray-500 to-gray-600" />
+            <TaskSection title={t('past')} tasks={currentTasks.past} sectionKey="past" gradient="from-gray-500 to-gray-600" />
         </div>
     );
 }

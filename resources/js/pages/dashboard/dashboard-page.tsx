@@ -173,6 +173,7 @@ export default function Dashboard() {
         return d >= startOfWeek && d <= endOfWeek && d.getTime() !== startOfToday.getTime();
     });
     const tasksForUpcoming = tasksToDisplay.filter((t) => new Date(t.date + 'T00:00:00') > endOfWeek);
+    const tasksForPast = tasksToDisplay.filter((t) => new Date(t.date + 'T00:00:00') < startOfToday);
 
     // Calculate pending tasks for notification badges
     const personalPendingCount = personalTasks.filter(t => !t.completed).length;
@@ -257,18 +258,22 @@ export default function Dashboard() {
                                 </button>
                             </div>
                         </div>
-                        <div className="mb-4 grid grid-cols-3 gap-2">
-                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700">
+                        <div className="mb-4 grid grid-cols-4 gap-2">
+                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700 cursor-pointer">
                                 <div className="text-lg font-bold text-blue-600">{tasksForToday.length}</div>
                                 <div className="text-xs text-gray-600 dark:text-gray-400">{t('today')}</div>
                             </div>
-                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700">
+                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700 cursor-pointer">
                                 <div className="text-lg font-bold text-blue-600">{tasksForThisWeek.length}</div>
                                 <div className="text-xs text-gray-600 dark:text-gray-400">{t('thisWeek')}</div>
                             </div>
-                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700">
+                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700 cursor-pointer">
                                 <div className="text-lg font-bold text-gray-500">{tasksForUpcoming.length}</div>
                                 <div className="text-xs text-gray-600 dark:text-gray-400">{t('upcoming')}</div>
+                            </div>
+                            <div className="rounded-lg bg-gray-50 p-2 text-center dark:bg-gray-700 cursor-pointer">
+                                <div className="text-lg font-bold text-gray-500">{tasksForPast.length}</div>
+                                <div className="text-xs text-gray-600 dark:text-gray-400">{t('past')}</div>
                             </div>
                         </div>
                         <TaskManager tasks={tasksToDisplay} onToggleTask={handleToggleTask} />
