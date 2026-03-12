@@ -21,7 +21,7 @@ export default function Profile() {
     const [recentlySuccessful, setRecentlySuccessful] = useState(false);
 
     useEffect(() => {
-        document.title = 'Profile settings';
+        document.title = 'JOSGEN';
 
         me().then(data => {
             setUser(data.user);

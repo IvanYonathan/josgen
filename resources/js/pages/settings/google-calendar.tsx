@@ -28,7 +28,7 @@ export default function GoogleCalendarSettings() {
     const [processing, setProcessing] = useState(false);
 
     useEffect(() => {
-        document.title = 'Google Calendar settings';
+        document.title = 'JOSGEN';
 
         const params = new URLSearchParams(window.location.search);
         if (params.get('success') === 'true') {

@@ -18,11 +18,11 @@ const AppLayout: FC<{ children: React.ReactNode }> = ({ children }) => (
     </div>
 );
 
-const Head: FC<{ title: string }> = ({ title }) => {
+const Head: FC<{ title: string }> = () => {
     // This component normally sets the document head title.
     // In a real app, this would be handled by a library like React Helmet or Inertia's Head component.
     if (typeof document !== 'undefined') {
-        document.title = title;
+        document.title = 'JOSGEN';
     }
     return null;
 };

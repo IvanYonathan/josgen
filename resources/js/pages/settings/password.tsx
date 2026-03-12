@@ -21,7 +21,7 @@ export default function Password() {
     const [recentlySuccessful, setRecentlySuccessful] = useState(false);
 
     useEffect(() => {
-        document.title = 'Password settings';
+        document.title = 'JOSGEN';
     }, []);
 
     const updatePassword: FormEventHandler = async (e) => {

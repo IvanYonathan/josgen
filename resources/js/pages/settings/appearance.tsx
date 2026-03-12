@@ -8,7 +8,7 @@ export default function Appearance() {
     const { t } = useTranslation('settings');
 
     useEffect(() => {
-        document.title = 'Appearance settings';
+        document.title = 'JOSGEN';
     }, []);
 
     return (

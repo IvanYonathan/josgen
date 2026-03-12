@@ -14,7 +14,7 @@ export default function LanguageSettings() {
     );
 
     useEffect(() => {
-        document.title = 'Language settings';
+        document.title = 'JOSGEN';
     }, []);
 
     const handleLanguageChange = (code: string) => {
