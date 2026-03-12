@@ -150,7 +150,7 @@ export function TaskManager({ tasks, onToggleTask, expandedSections: expandedSec
                 <TaskSection title={t('thisWeek')} tasks={currentTasks.nextWeek} sectionKey="nextWeek" gradient="from-yellow-500 to-orange-500" />
             )}
             {expandedSections.upcoming && (
-                <TaskSection title={t('upcoming')} tasks={currentTasks.upcoming} sectionKey="upcoming" gradient="from-gray-500 to-gray-600" />
+                <TaskSection title={t('upcoming')} tasks={currentTasks.upcoming} sectionKey="upcoming" gradient="from-purple-500 to-purple-600" />
             )}
             {expandedSections.past && (
                 <TaskSection title={t('past')} tasks={currentTasks.past} sectionKey="past" gradient="from-gray-500 to-gray-600" />
