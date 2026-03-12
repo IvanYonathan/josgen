@@ -150,7 +150,7 @@ export function EditEventSheet() {
     }
   };
 
-  const canModifyParticipants = selectedEvent.can_modify_participants && selectedEvent.status === 'upcoming';
+  const canModifyParticipants = selectedEvent.can_edit && selectedEvent.can_modify_participants && selectedEvent.status === 'upcoming';
 
   return (
     <div className="p-6">
@@ -187,13 +187,15 @@ export function EditEventSheet() {
                 {t('editEvent.button.delete')}
               </Button>
             )}
-            <Button
-              onClick={form.handleSubmit(onSubmit)}
-              disabled={isSubmitting || isDeleting || loadingData || !selectedEvent.can_edit}
-            >
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('editEvent.button.update')}
-            </Button>
+            {selectedEvent.can_edit && (
+              <Button
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={isSubmitting || isDeleting || loadingData}
+              >
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {t('editEvent.button.update')}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -302,35 +304,49 @@ export function EditEventSheet() {
                   <Bell className="h-4 w-4 inline mr-1" />
                   Email Reminders
                 </Label>
-                <Controller
-                  name="reminder_presets"
-                  control={form.control}
-                  render={({ field }) => (
-                    <MultiSelect
-                      value={field.value || []}
-                      onValueChange={(values) => field.onChange(values)}
-                    >
-                      <MultiSelectTrigger>
-                        <MultiSelectValue
-                          placeholder="Select reminder presets (optional)"
-                          itemComponent={(props) => (
-                            <Badge variant="secondary" className="mr-1">
-                              {props.value === '1_day' ? '1 day before' : props.value === '7_days' ? '7 days before' : '1 month before'}
-                            </Badge>
-                          )}
-                        />
-                      </MultiSelectTrigger>
-                      <MultiSelectContent>
-                        <MultiSelectEmpty>No presets available</MultiSelectEmpty>
-                        <MultiSelectGroup>
-                          <MultiSelectItem value="1_day">1 day before</MultiSelectItem>
-                          <MultiSelectItem value="7_days">7 days before</MultiSelectItem>
-                          <MultiSelectItem value="1_month">1 month before</MultiSelectItem>
-                        </MultiSelectGroup>
-                      </MultiSelectContent>
-                    </MultiSelect>
-                  )}
-                />
+                {selectedEvent.can_edit ? (
+                  <Controller
+                    name="reminder_presets"
+                    control={form.control}
+                    render={({ field }) => (
+                      <MultiSelect
+                        value={field.value || []}
+                        onValueChange={(values) => field.onChange(values)}
+                      >
+                        <MultiSelectTrigger>
+                          <MultiSelectValue
+                            placeholder="Select reminder presets (optional)"
+                            itemComponent={(props) => (
+                              <Badge variant="secondary" className="mr-1">
+                                {props.value === '1_day' ? '1 day before' : props.value === '7_days' ? '7 days before' : '1 month before'}
+                              </Badge>
+                            )}
+                          />
+                        </MultiSelectTrigger>
+                        <MultiSelectContent>
+                          <MultiSelectEmpty>No presets available</MultiSelectEmpty>
+                          <MultiSelectGroup>
+                            <MultiSelectItem value="1_day">1 day before</MultiSelectItem>
+                            <MultiSelectItem value="7_days">7 days before</MultiSelectItem>
+                            <MultiSelectItem value="1_month">1 month before</MultiSelectItem>
+                          </MultiSelectGroup>
+                        </MultiSelectContent>
+                      </MultiSelect>
+                    )}
+                  />
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {(form.getValues('reminder_presets') || []).length > 0 ? (
+                      (form.getValues('reminder_presets') || []).map((preset: string) => (
+                        <Badge key={preset} variant="secondary">
+                          {preset === '1_day' ? '1 day before' : preset === '7_days' ? '7 days before' : '1 month before'}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">—</p>
+                    )}
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">Participants will receive email reminders at the selected times before the event.</p>
               </div>
 
@@ -339,37 +355,51 @@ export function EditEventSheet() {
                   <Building2 className="h-4 w-4 inline mr-1" />
                   {t('editEvent.form.division_ids.label')}
                 </Label>
-                <Controller
-                  name="division_ids"
-                  control={form.control}
-                  render={({ field }) => (
-                    <MultiSelect
-                      value={field.value?.map(String) || []}
-                      onValueChange={(values) => field.onChange(values.map(Number))}
-                    >
-                      <MultiSelectTrigger>
-                        <MultiSelectValue
-                          placeholder={t('editEvent.form.division_ids.placeholder')}
-                          itemComponent={(props) => (
-                            <Badge variant="secondary" className="mr-1">
-                              {divisions.find(d => d.id === Number(props.value))?.name || props.value}
-                            </Badge>
-                          )}
-                        />
-                      </MultiSelectTrigger>
-                      <MultiSelectContent>
-                        <MultiSelectEmpty>{t('editEvent.form.division_ids.empty')}</MultiSelectEmpty>
-                        <MultiSelectGroup>
-                          {divisions.map((division) => (
-                            <MultiSelectItem key={division.id} value={String(division.id)}>
-                              {division.name}
-                            </MultiSelectItem>
-                          ))}
-                        </MultiSelectGroup>
-                      </MultiSelectContent>
-                    </MultiSelect>
-                  )}
-                />
+                {selectedEvent.can_edit ? (
+                  <Controller
+                    name="division_ids"
+                    control={form.control}
+                    render={({ field }) => (
+                      <MultiSelect
+                        value={field.value?.map(String) || []}
+                        onValueChange={(values) => field.onChange(values.map(Number))}
+                      >
+                        <MultiSelectTrigger>
+                          <MultiSelectValue
+                            placeholder={t('editEvent.form.division_ids.placeholder')}
+                            itemComponent={(props) => (
+                              <Badge variant="secondary" className="mr-1">
+                                {divisions.find(d => d.id === Number(props.value))?.name || props.value}
+                              </Badge>
+                            )}
+                          />
+                        </MultiSelectTrigger>
+                        <MultiSelectContent>
+                          <MultiSelectEmpty>{t('editEvent.form.division_ids.empty')}</MultiSelectEmpty>
+                          <MultiSelectGroup>
+                            {divisions.map((division) => (
+                              <MultiSelectItem key={division.id} value={String(division.id)}>
+                                {division.name}
+                              </MultiSelectItem>
+                            ))}
+                          </MultiSelectGroup>
+                        </MultiSelectContent>
+                      </MultiSelect>
+                    )}
+                  />
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {(form.getValues('division_ids') || []).length > 0 ? (
+                      (form.getValues('division_ids') || []).map((id: number) => (
+                        <Badge key={id} variant="secondary">
+                          {divisions.find(d => d.id === id)?.name || id}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">—</p>
+                    )}
+                  </div>
+                )}
                 {form.formState.errors.division_ids && (
                   <p className="text-sm text-destructive">{form.formState.errors.division_ids.message}</p>
                 )}
@@ -409,9 +439,11 @@ export function EditEventSheet() {
                     <p className="text-sm text-muted-foreground mb-2">
                       {t('current_participants', { names: selectedEvent.participants?.map(p => p.name).join(', ') || t('none') })}
                     </p>
-                    <p className="text-xs text-blue-800">
-                      {t('participants_locked')}
-                    </p>
+                    {selectedEvent.can_edit && selectedEvent.status !== 'upcoming' && (
+                      <p className="text-xs text-blue-800">
+                        {t('participants_locked')}
+                      </p>
+                    )}
                   </div>
                 )}
 

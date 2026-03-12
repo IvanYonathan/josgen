@@ -84,6 +84,11 @@ class Project extends Model
      */
     public function canBeEditedBy(User $user): bool
     {
+        // Sysadmin can edit any project
+        if ($user->hasRole('sysadmin')) {
+            return true;
+        }
+
         // Check if user is the manager
         if ($this->manager_id === $user->id) {
             return true;

@@ -122,6 +122,11 @@ class Event extends Model
      */
     public function canBeEditedBy(User $user): bool
     {
+        // Sysadmin can edit any event
+        if ($user->hasRole('sysadmin')) {
+            return true;
+        }
+
         // Check if user is the organizer
         if ($this->organizer_id === $user->id) {
             return true;

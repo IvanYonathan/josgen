@@ -99,7 +99,10 @@ export function CreateProjectSheet() {
   };
 
   const selectedDivisionIds = form.watch('division_ids');
-  const filteredUsers = users.filter((user) => user.division_id && selectedDivisionIds.includes(user.division_id));
+  const filteredUsers = users.filter((user) =>
+    user.division_ids?.some((id) => selectedDivisionIds.includes(id)) ||
+    (user.division_id && selectedDivisionIds.includes(user.division_id))
+  );
 
   return (
     <div className="p-6">

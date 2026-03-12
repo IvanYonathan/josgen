@@ -235,7 +235,12 @@ class ProjectController extends ApiController
         if (!empty($validated['member_ids'])) {
             $divisionIds = $validated['division_ids'];
             $validMemberIds = User::whereIn('id', $validated['member_ids'])
-                ->whereIn('division_id', $divisionIds)
+                ->where(function ($query) use ($divisionIds) {
+                    $query->whereIn('division_id', $divisionIds)
+                        ->orWhereHas('divisions', function ($q) use ($divisionIds) {
+                            $q->whereIn('divisions.id', $divisionIds);
+                        });
+                })
                 ->pluck('id')
                 ->toArray();
 
@@ -328,7 +333,12 @@ class ProjectController extends ApiController
 
             $divisionIds = $project->divisions->pluck('id')->toArray();
             $validMemberIds = User::whereIn('id', $validated['member_ids'])
-                ->whereIn('division_id', $divisionIds)
+                ->where(function ($query) use ($divisionIds) {
+                    $query->whereIn('division_id', $divisionIds)
+                        ->orWhereHas('divisions', function ($q) use ($divisionIds) {
+                            $q->whereIn('divisions.id', $divisionIds);
+                        });
+                })
                 ->pluck('id')
                 ->toArray();
 
@@ -340,6 +350,7 @@ class ProjectController extends ApiController
 
         // Reload
         $project->load(['manager:id,name', 'divisions:id,name', 'members:id,name', 'tasks']);
+        $project->loadCount(['members', 'tasks']);
         $project->can_edit = $project->canBeEditedBy($user);
         $project->can_modify_members = $project->canModifyMembers();
 

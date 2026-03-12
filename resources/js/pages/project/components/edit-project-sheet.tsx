@@ -183,7 +183,6 @@ export function EditProjectSheet() {
     return null;
   }
 
-  const isManager = project.manager_id === project.manager?.id;
   const canManageTasks = project.can_edit || false;
 
   return (
@@ -201,7 +200,7 @@ export function EditProjectSheet() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {isManager && (
+            {project.can_edit && (
               <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} disabled={isSubmitting}>
                 <Trash2 className="h-4 w-4 mr-2" />
                 {t('editProject.button.delete')}

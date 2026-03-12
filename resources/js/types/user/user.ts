@@ -127,6 +127,7 @@ export interface UserOption {
     email: string;
     ava?: string | null;
     division_id?: number | null;
+    division_ids?: number[];
 }
 
 export interface UserOptionsResponse {

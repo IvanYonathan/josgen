@@ -82,11 +82,10 @@ function EventPageContent() {
   };
 
   const handleEventClick = (event: Event) => {
-    if (event.can_edit) {
-      openEditMode(event);
-    } else {
+    if (!event.can_edit) {
       toast.warning({ title: t('view_only') });
     }
+    openEditMode(event);
   };
 
   if (createMode) {

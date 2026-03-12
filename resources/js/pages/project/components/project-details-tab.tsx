@@ -63,7 +63,10 @@ export function ProjectDetailsTab({
 }: ProjectDetailsTabProps) {
   const { t } = useTranslation('project');
   const selectedDivisionIds = form.watch('division_ids');
-  const filteredUsers = users.filter((user) => user.division_id && selectedDivisionIds?.includes(user.division_id));
+  const filteredUsers = users.filter((user) =>
+    user.division_ids?.some((id) => selectedDivisionIds?.includes(id)) ||
+    (user.division_id && selectedDivisionIds?.includes(user.division_id))
+  );
 
   if (loadingData) {
     return (
@@ -162,9 +165,13 @@ export function ProjectDetailsTab({
             <MultiSelect
               key={`members-${filteredUsers.length}-${field.value?.join(',')}`}
               value={field.value?.map(String) || []}
-              onValueChange={(values) => field.onChange(values.map(Number))}
+              onValueChange={(values) => {
+                if (project.can_edit && project.can_modify_members) {
+                  field.onChange(values.map(Number));
+                }
+              }}
             >
-              <MultiSelectTrigger>
+              <MultiSelectTrigger disabled={!project.can_edit || !project.can_modify_members}>
                 <MultiSelectValue
                   placeholder={t('editProject.form.member_ids.placeholder')}
                   itemComponent={(props) => <MemberValueItem {...props} users={filteredUsers} />}
@@ -186,11 +193,13 @@ export function ProjectDetailsTab({
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           {t('editProject.button.cancel')}
         </Button>
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting || loadingData || !project.can_edit}>
-          {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          <Save className="h-4 w-4 mr-2" />
-          {t('editProject.button.save')}
-        </Button>
+        {project.can_edit && (
+          <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting || loadingData}>
+            {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            <Save className="h-4 w-4 mr-2" />
+            {t('editProject.button.save')}
+          </Button>
+        )}
       </div>
     </form>
   );

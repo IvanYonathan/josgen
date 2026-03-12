@@ -322,8 +322,14 @@ class UserController extends ApiController
     public function options(Request $request): JsonResponse
     {
         $users = User::select('id', 'name', 'email', 'ava', 'division_id')
+            ->with('divisions:id')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function ($user) {
+                $user->division_ids = $user->divisions->pluck('id');
+                unset($user->divisions);
+                return $user;
+            });
 
         return $this->success([
             'users' => $users,
