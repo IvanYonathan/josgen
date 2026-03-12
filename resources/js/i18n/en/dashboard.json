@@ -21,5 +21,6 @@
     "weekdays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     "dateToday": "Today",
     "dateTomorrow": "Tomorrow",
-    "moreTasks": "+{{count}} more tasks"
+    "moreTasks": "+{{count}} more tasks",
+    "past": "Past"
 }

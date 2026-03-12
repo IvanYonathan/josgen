@@ -21,5 +21,6 @@
     "weekdays": ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
     "dateToday": "Hari Ini",
     "dateTomorrow": "Besok",
-    "moreTasks": "+{{count}} tugas lainnya"
+    "moreTasks": "+{{count}} tugas lainnya",
+    "past": "Dahulu"
 }
