@@ -14,6 +14,7 @@ class GoogleCalendarToken extends Model
         'expires_at',
         'google_email',
         'scopes',
+        'connected_at',
     ];
 
     protected function casts(): array
@@ -22,6 +23,7 @@ class GoogleCalendarToken extends Model
             'access_token' => 'encrypted',
             'refresh_token' => 'encrypted',
             'expires_at' => 'datetime',
+            'connected_at' => 'datetime',
         ];
     }
 

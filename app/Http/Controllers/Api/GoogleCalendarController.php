@@ -94,7 +94,7 @@ class GoogleCalendarController extends ApiController
         return $this->success([
             'connected' => true,
             'google_email' => $token->google_email,
-            'connected_at' => $token->created_at->toIso8601String(),
+            'connected_at' => ($token->connected_at ?? $token->created_at)->toIso8601String(),
             'synced_events_count' => $user->googleCalendarEvents()->count(),
         ], 'Google Calendar status');
     }

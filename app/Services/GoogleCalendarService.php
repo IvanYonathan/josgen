@@ -102,6 +102,7 @@ class GoogleCalendarService
                 'expires_at' => now()->addSeconds($tokenData['expires_in'] ?? 3600),
                 'google_email' => $googleEmail,
                 'scopes' => implode(' ', self::SCOPES),
+                'connected_at' => now(),
             ]
         );
 
