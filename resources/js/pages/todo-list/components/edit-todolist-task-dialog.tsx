@@ -53,23 +53,20 @@ export function EditTodoListTaskDialog({ open, onOpenChange, task, todoList, onS
   useEffect(() => {
     if (!open || !task) return;
 
-    const resetForm = (loadedMembers: User[]) => {
-      form.reset({
-        title: task.title,
-        description: task.description || '',
-        priority: task.priority as 'low' | 'medium' | 'high',
-        due_date: task.due_date ? task.due_date.split('T')[0] : '',
-        assigned_to: task.assigned_to?.id || undefined,
-      });
-      setMembers(loadedMembers);
-    };
+    form.reset({
+      title: task.title,
+      description: task.description || '',
+      priority: task.priority as 'low' | 'medium' | 'high',
+      due_date: task.due_date ? task.due_date.split('T')[0] : '',
+      assigned_to: task.assigned_to?.id || undefined,
+    });
 
     if (todoList?.type === 'division' && todoList.division_id) {
       listDivisionMembers({ division_id: todoList.division_id })
-        .then(res => resetForm(res.members))
-        .catch(() => resetForm([]));
+        .then(res => setMembers(res.members))
+        .catch(() => setMembers([]));
     } else {
-      resetForm([]);
+      setMembers([]);
     }
   }, [open, task]);
 
@@ -109,7 +106,7 @@ export function EditTodoListTaskDialog({ open, onOpenChange, task, todoList, onS
               id="edit-task-title"
               {...form.register('title')}
               placeholder="Enter task title"
-              disabled={isSubmitting}
+              disabled
             />
             {form.formState.errors.title && (
               <p className="text-sm text-red-600">{form.formState.errors.title.message}</p>
@@ -134,7 +131,7 @@ export function EditTodoListTaskDialog({ open, onOpenChange, task, todoList, onS
                 name="priority"
                 control={form.control}
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange} disabled={isSubmitting}>
+                  <Select value={field.value} onValueChange={field.onChange} disabled>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -154,7 +151,7 @@ export function EditTodoListTaskDialog({ open, onOpenChange, task, todoList, onS
                 id="edit-task-due-date"
                 type="date"
                 {...form.register('due_date')}
-                disabled={isSubmitting}
+                disabled
               />
             </div>
           </div>
@@ -169,7 +166,7 @@ export function EditTodoListTaskDialog({ open, onOpenChange, task, todoList, onS
                   <Select
                     value={field.value?.toString()}
                     onValueChange={(v) => field.onChange(v ? Number(v) : undefined)}
-                    disabled={isSubmitting}
+                    disabled
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Unassigned (optional)" />
