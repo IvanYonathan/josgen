@@ -21,6 +21,8 @@ export interface User {
     updated_at: string;
     // Eager-loaded relation (list endpoints include id+name; detail may include full object)
     division?: UserDivisionLite | null;
+    // Many-to-many divisions (from division_members pivot)
+    divisions?: UserDivisionLite[];
     // Foreign key may be present in payloads
     division_id?: number | null;
 }

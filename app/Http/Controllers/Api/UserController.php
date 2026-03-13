@@ -45,7 +45,7 @@ class UserController extends ApiController
         $filters = $validated['filters'] ?? [];
         $sort = $validated['sort'] ?? [];
 
-        $query = User::query()->with(['roles', 'division:id,name']);
+        $query = User::query()->with(['roles', 'divisions:id,name']);
 
         $search = $filters['name'] ??  null;
         if (!empty($search)) {
@@ -64,7 +64,9 @@ class UserController extends ApiController
         }
 
         if (!empty($filters['division_id'])) {
-            $query->where('division_id', $filters['division_id']);
+            $query->whereHas('divisions', function ($q) use ($filters) {
+                $q->where('divisions.id', $filters['division_id']);
+            });
         }
 
         $sortableColumns = [

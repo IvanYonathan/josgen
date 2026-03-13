@@ -11,6 +11,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Loader2, Trash2, Eye, Pencil } from 'lucide-react';
 import { TFunction } from '@/hooks/use-translation';
 import { DotsHorizontalIcon } from '@radix-ui/react-icons';
@@ -57,9 +58,33 @@ export const createUserColumns = (t: TFunction, actions: UserTableActions): Colu
     {
         id: 'division',
         header: ({ column }) => <DataTableColumnHeader column={column} title={t('division')} />,
-        cell: ({ row }) => (
-            <div className="break-words whitespace-normal">{row.original.division?.name || '-'}</div>
-        ),
+        cell: ({ row }) => {
+            const divisions = row.original.divisions ?? [];
+            if (divisions.length === 0) return <div>-</div>;
+
+            const displayText = divisions.map((d) => d.name).join(', ');
+            const isTruncated = divisions.length > 2;
+
+            if (!isTruncated) {
+                return <div className="break-words whitespace-normal">{displayText}</div>;
+            }
+
+            const shortText = divisions.slice(0, 2).map((d) => d.name).join(', ') + ', ...';
+            return (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div className="cursor-default break-words whitespace-normal">{shortText}</div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <div className="space-y-1">
+                            {divisions.map((d) => (
+                                <div key={d.id}>{d.name}</div>
+                            ))}
+                        </div>
+                    </TooltipContent>
+                </Tooltip>
+            );
+        },
         enableSorting: false,
     },
     {
