@@ -185,6 +185,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('unread-count', [NotificationController::class, 'unreadCount']);
         Route::post('mark-read', [NotificationController::class, 'markRead']);
         Route::post('mark-all-read', [NotificationController::class, 'markAllRead']);
+        Route::post('clear-all', [NotificationController::class, 'clearAll']);
     });
 
     // Google Calendar endpoints

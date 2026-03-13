@@ -118,5 +118,16 @@ class NotificationController extends ApiController
             'unread_count' => 0,
         ], 'All notifications marked as read');
     }
+
+    public function clearAll(): JsonResponse
+    {
+        $user = Auth::user();
+
+        $deleted = $user->notifications()->delete();
+
+        return $this->success([
+            'deleted' => $deleted,
+        ], 'All notifications cleared');
+    }
 }
 

@@ -21,6 +21,7 @@
   "loadingApplication": "Memuat aplikasi...",
   "notifications": {
     "title": "Notifikasi",
+    "clear": "Hapus semua",
     "markAllRead": "Tandai semua dibaca",
     "noNotifications": "Belum ada notifikasi."
   }

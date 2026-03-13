@@ -21,6 +21,7 @@
   "loadingApplication": "Loading application...",
   "notifications": {
     "title": "Notifications",
+    "clear": "Clear",
     "markAllRead": "Mark all read",
     "noNotifications": "No notifications yet."
   }

@@ -1,5 +1,6 @@
 import { useTranslation } from '@/hooks/use-translation';
 import { listNotifications } from '@/lib/api/notification/list-notifications';
+import { clearAllNotifications } from '@/lib/api/notification/clear-all-notifications';
 import { markAllNotificationsRead } from '@/lib/api/notification/mark-all-notifications-read';
 import { markNotificationsRead } from '@/lib/api/notification/mark-notifications-read';
 import { AppNotification, NotificationLevel } from '@/types/notification/notification';
@@ -109,6 +110,12 @@ export function NotificationBell() {
     await refresh({ toastNew: false });
   }, [refresh]);
 
+  const clearAll = React.useCallback(async () => {
+    await clearAllNotifications();
+    setNotifications([]);
+    setUnreadCount(0);
+  }, []);
+
   return (
     <DropdownMenu onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
@@ -127,9 +134,14 @@ export function NotificationBell() {
       <DropdownMenuContent align="end" className="w-[360px] p-0">
         <div className="flex items-center justify-between border-b px-3 py-2">
           <div className="text-sm font-semibold">{t('notifications.title')}</div>
-          <Button variant="ghost" size="sm" onClick={markAllRead} disabled={unreadCount === 0}>
-            {t('notifications.markAllRead')}
-          </Button>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="sm" onClick={clearAll} disabled={notifications.length === 0}>
+              {t('notifications.clear')}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={markAllRead} disabled={unreadCount === 0}>
+              {t('notifications.markAllRead')}
+            </Button>
+          </div>
         </div>
 
         <div className="max-h-[420px] overflow-auto">
